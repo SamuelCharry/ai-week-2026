@@ -1,0 +1,289 @@
+{
+  "limite_parametros_decoder": 8000000000,
+  "encoders": [
+    {
+      "nombre": "multilingual-e5-large",
+      "repo_id": "intfloat/multilingual-e5-large",
+      "revision": "3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3",
+      "parametros": 559890432,
+      "parametros_tipo": "safetensors_sin_buffers_enteros",
+      "licencia": "mit",
+      "recomendado": true,
+      "prioridad": 1,
+      "contexto_tokens": 512,
+      "dimensiones": 1024,
+      "prefijo_consulta": "query: ",
+      "prefijo_pasaje": "passage: ",
+      "trust_remote_code": false,
+      "ruta": "cache_huggingface",
+      "fuente": "https://huggingface.co/intfloat/multilingual-e5-large"
+    },
+    {
+      "nombre": "bge-m3",
+      "repo_id": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "parametros": 567754752,
+      "parametros_tipo": "conteo_real_del_encoder_denso",
+      "licencia": "mit",
+      "recomendado": true,
+      "prioridad": 2,
+      "contexto_tokens": 8192,
+      "dimensiones": 1024,
+      "prefijo_consulta": "",
+      "prefijo_pasaje": "",
+      "trust_remote_code": false,
+      "ruta": "cache_huggingface",
+      "fuente": "https://huggingface.co/BAAI/bge-m3",
+      "parametros_publicados_modelo_completo": 569000000
+    },
+    {
+      "nombre": "jina-embeddings-v3",
+      "repo_id": "jinaai/jina-embeddings-v3",
+      "revision": "ab036b023d30b4d1138c4c3bfa9f0c445ab455d6",
+      "parametros": 572310396,
+      "parametros_tipo": "safetensors_sin_buffers_enteros",
+      "licencia": "cc-by-nc-4.0",
+      "recomendado": true,
+      "prioridad": 3,
+      "contexto_tokens": 8192,
+      "dimensiones": 1024,
+      "prefijo_consulta": "",
+      "prefijo_pasaje": "",
+      "trust_remote_code": true,
+      "ruta": "cache_huggingface",
+      "fuente": "https://huggingface.co/jinaai/jina-embeddings-v3",
+      "code_revision": "bd55a5ec8e6c0fb1d6c26efb4b6a4a74ce8a88d3",
+      "code_repo_id": "jinaai/xlm-roberta-flash-implementation",
+      "task_consulta": "retrieval.query",
+      "task_pasaje": "retrieval.passage",
+      "observacion_licencia": "Pesos abiertos con restriccion no comercial. No es una licencia OSI."
+    },
+    {
+      "nombre": "multilingual-e5-base",
+      "repo_id": "intfloat/multilingual-e5-base",
+      "revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+      "parametros": 278043648,
+      "parametros_tipo": "safetensors_sin_buffers_enteros",
+      "licencia": "mit",
+      "recomendado": false,
+      "prioridad": 4,
+      "contexto_tokens": 512,
+      "dimensiones": 768,
+      "prefijo_consulta": "query: ",
+      "prefijo_pasaje": "passage: ",
+      "trust_remote_code": false,
+      "ruta": "cache_huggingface",
+      "fuente": "https://huggingface.co/intfloat/multilingual-e5-base"
+    }
+  ],
+  "decoders": [
+    {
+      "nombre": "salamandra-7b-instruct",
+      "repo_id": "BSC-LT/salamandra-7b-instruct",
+      "revision": "a3ed5452fafb3698a0423b1a18bfb5888f4e611b",
+      "parametros": 7768117248,
+      "licencia": "apache-2.0",
+      "recomendado": true,
+      "prioridad": 1,
+      "contexto_tokens": 8192,
+      "cuantizacion": "Q4_K_M",
+      "trust_remote_code": false,
+      "fuente": "https://huggingface.co/BSC-LT/salamandra-7b-instruct",
+      "archivos": [
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/config.json",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/config.json",
+          "bytes": 730,
+          "git_blob": "aaa182560c2f6f4861d5dae66ecceb305f875200"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/generation_config.json",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/generation_config.json",
+          "bytes": 200,
+          "git_blob": "4c3088046f33fb60bbc5fe61e0c0610b8ba99208"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/model-00001-of-00004.safetensors",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/model-00001-of-00004.safetensors",
+          "bytes": 4982973048,
+          "sha256": "fcc2169183feced20b18de632f72e4a65ba214980b0847096a21a68b2e6ae1a6"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/model-00002-of-00004.safetensors",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/model-00002-of-00004.safetensors",
+          "bytes": 4995660232,
+          "sha256": "ec96547e03ac078d86a4bd93a3406ff5167b82108d80ad2d90b854bed7dfbcaa"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/model-00003-of-00004.safetensors",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/model-00003-of-00004.safetensors",
+          "bytes": 3460482936,
+          "sha256": "5bdb8d541a5e038490828fae5050dddf91c0427f64458450ae25348eb1449a42"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/model-00004-of-00004.safetensors",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/model-00004-of-00004.safetensors",
+          "bytes": 2097152128,
+          "sha256": "172792486af5a44c74d2d055ec3f9ba675b1d93173cd65258e34d07f18e7c275"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/model.safetensors.index.json",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/model.safetensors.index.json",
+          "bytes": 23950,
+          "git_blob": "5cbd69294c6a0f332f8633dfadce39a187c7e583"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/special_tokens_map.json",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/special_tokens_map.json",
+          "bytes": 513,
+          "git_blob": "4b560cfc637910c5461d01e837bb24823d1b3374"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/tokenizer.json",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/tokenizer.json",
+          "bytes": 19066993,
+          "sha256": "139de51e6bbe12b772a255e157829f43bd67b63a4d55f1fe0e3abce37b2d8c9a"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/tokenizer.model",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/tokenizer.model",
+          "bytes": 4813274,
+          "sha256": "fa490e57cebce5cb1a0a5b1a5d3fa4de05aee53dc3a44791f1c3401db44d802d"
+        },
+        {
+          "ruta": "data/modelos/salamandra-7b-instruct/original/tokenizer_config.json",
+          "url": "https://huggingface.co/BSC-LT/salamandra-7b-instruct/resolve/a3ed5452fafb3698a0423b1a18bfb5888f4e611b/tokenizer_config.json",
+          "bytes": 3798,
+          "git_blob": "473550742a33419eaf88aeb39a4a1a8035557a12"
+        }
+      ],
+      "snapshot": "data/modelos/salamandra-7b-instruct/original",
+      "ruta": "data/modelos/salamandra-7b-instruct/salamandra-7b-instruct-Q4_K_M.gguf",
+      "procedencia": "Conversion propia del snapshot oficial"
+    },
+    {
+      "nombre": "qwen3-4b",
+      "repo_id": "Qwen/Qwen3-4B",
+      "revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+      "parametros": 4022468096,
+      "licencia": "apache-2.0",
+      "recomendado": false,
+      "prioridad": 2,
+      "contexto_tokens": 32768,
+      "cuantizacion": "Q4_K_M",
+      "trust_remote_code": false,
+      "fuente": "https://huggingface.co/Qwen/Qwen3-4B",
+      "archivos": [
+        {
+          "ruta": "data/modelos/qwen3-4b/Qwen3-4B-Q4_K_M.gguf",
+          "url": "https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/bc640142c66e1fdd12af0bd68f40445458f3869b/Qwen3-4B-Q4_K_M.gguf",
+          "bytes": 2497280256,
+          "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5"
+        }
+      ],
+      "gguf_repo_id": "Qwen/Qwen3-4B-GGUF",
+      "gguf_revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+      "procedencia": "GGUF publicado por Qwen",
+      "ruta": "data/modelos/qwen3-4b/Qwen3-4B-Q4_K_M.gguf"
+    },
+    {
+      "nombre": "qwen2.5-7b-instruct",
+      "repo_id": "Qwen/Qwen2.5-7B-Instruct",
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "parametros": 7615616512,
+      "licencia": "apache-2.0",
+      "recomendado": false,
+      "prioridad": 3,
+      "contexto_tokens": 32768,
+      "cuantizacion": "Q4_K_M",
+      "trust_remote_code": false,
+      "fuente": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct",
+      "archivos": [
+        {
+          "ruta": "data/modelos/qwen2.5-7b-instruct/qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/bb5d59e06d9551d752d08b292a50eb208b07ab1f/qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
+          "bytes": 3993201344,
+          "sha256": "dfce12e3862a5283ccfb88221b48480e58745165de856439950d0f22590580db"
+        },
+        {
+          "ruta": "data/modelos/qwen2.5-7b-instruct/qwen2.5-7b-instruct-q4_k_m-00002-of-00002.gguf",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/bb5d59e06d9551d752d08b292a50eb208b07ab1f/qwen2.5-7b-instruct-q4_k_m-00002-of-00002.gguf",
+          "bytes": 689872288,
+          "sha256": "539cf93f78e887edea1c04e2d7d8cdaca9d01dae9c9025bcb8accbe29df3d72a"
+        }
+      ],
+      "gguf_repo_id": "Qwen/Qwen2.5-7B-Instruct-GGUF",
+      "gguf_revision": "bb5d59e06d9551d752d08b292a50eb208b07ab1f",
+      "procedencia": "GGUF publicado por Qwen",
+      "ruta": "data/modelos/qwen2.5-7b-instruct/qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf"
+    },
+    {
+      "nombre": "qwen2.5-1.5b-instruct",
+      "repo_id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+      "parametros": 1543714304,
+      "licencia": "apache-2.0",
+      "recomendado": false,
+      "prioridad": 4,
+      "contexto_tokens": 32768,
+      "cuantizacion": "Q4_K_M",
+      "trust_remote_code": false,
+      "fuente": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct",
+      "archivos": [
+        {
+          "ruta": "data/modelos/qwen2.5-1.5b-instruct/qwen2.5-1.5b-instruct-q4_k_m.gguf",
+          "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf",
+          "bytes": 1117320736,
+          "sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e"
+        }
+      ],
+      "gguf_repo_id": "Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+      "gguf_revision": "91cad51170dc346986eccefdc2dd33a9da36ead9",
+      "procedencia": "GGUF publicado por Qwen",
+      "ruta": "data/modelos/qwen2.5-1.5b-instruct/qwen2.5-1.5b-instruct-q4_k_m.gguf"
+    }
+  ],
+  "excluidos": [
+    {
+      "repo_id": "Qwen/Qwen3-8B",
+      "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "parametros": 8190735360,
+      "licencia": "apache-2.0",
+      "motivo": "Supera el limite estricto de 8000000000 parametros",
+      "fuente": "https://huggingface.co/api/models/Qwen/Qwen3-8B"
+    },
+    {
+      "repo_id": "meta-llama/Llama-3.1-8B-Instruct",
+      "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "parametros": 8030261248,
+      "licencia": "llama3.1",
+      "motivo": "Supera el limite estricto de 8000000000 parametros",
+      "fuente": "https://huggingface.co/api/models/meta-llama/Llama-3.1-8B-Instruct"
+    }
+  ],
+  "runtime": {
+    "version": "b11206",
+    "commit": "2b129ccfa03aea330d2d9ac4650a10de393dbe3a",
+    "ruta": "data/runtime/llama-b11206",
+    "archivos": [
+      {
+        "ruta": "data/runtime/descargas/cudart-llama-bin-win-cuda-12.4-x64.zip",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11206/cudart-llama-bin-win-cuda-12.4-x64.zip",
+        "bytes": 391443627,
+        "sha256": "8c79a9b226de4b3cacfd1f83d24f962d0773be79f1e7b75c6af4ded7e32ae1d6"
+      },
+      {
+        "ruta": "data/runtime/descargas/llama-b11206-bin-win-cuda-12.4-x64.zip",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11206/llama-b11206-bin-win-cuda-12.4-x64.zip",
+        "bytes": 263078000,
+        "sha256": "8327474c51ac8f830e6e0abf15707267fb39cc130d5700643a16e5f7b5451c62"
+      }
+    ],
+    "fuente": {
+      "repo_id": "ggml-org/llama.cpp",
+      "revision": "2b129ccfa03aea330d2d9ac4650a10de393dbe3a",
+      "metodo": "Archivos del conversor con identificador Git verificado",
+      "ruta": "data/runtime/fuente/llama.cpp-2b129ccfa03aea330d2d9ac4650a10de393dbe3a"
+    }
+  }
+}

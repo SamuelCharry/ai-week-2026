@@ -1,7 +1,17 @@
 /data/**
 !/data/**/
 !/data/**/.gitkeep
+/reports/
 .venv/
 __pycache__/
+*.py[cod]
 .ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
 .env
+.env.*
+!.env.example

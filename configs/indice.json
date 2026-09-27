@@ -1,0 +1,27 @@
+{
+  "encoder": {
+    "nombre": "multilingual-e5-large",
+    "repo_id": "intfloat/multilingual-e5-large",
+    "revision": "3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3",
+    "parametros": 559890432,
+    "parametros_tipo": "safetensors_sin_buffers_enteros",
+    "licencia": "mit",
+    "recomendado": true,
+    "prioridad": 1,
+    "contexto_tokens": 512,
+    "dimensiones": 1024,
+    "prefijo_consulta": "query: ",
+    "prefijo_pasaje": "passage: ",
+    "trust_remote_code": false,
+    "ruta": "cache_huggingface",
+    "fuente": "https://huggingface.co/intfloat/multilingual-e5-large"
+  },
+  "corpus": "data/processed/corpus",
+  "tamano_tokens": 320,
+  "solapamiento_tokens": 32,
+  "device": "cuda",
+  "precision": "float16",
+  "batch_size": 16,
+  "hibrido": true,
+  "salida": "data/index/corpus"
+}
