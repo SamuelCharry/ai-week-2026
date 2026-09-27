@@ -25,7 +25,9 @@ INSTRUCCIONES = (
     "Requisito mínimo: producción del objeto JSON correspondiente a cada formato, con las claves que se indican a continuación.\n"
     "Las claves del objeto JSON son obligatorias y no admiten modificación, dado que sobre ellas opera el evaluador.\n"
     "Toda norma citada debe proceder de un pasaje efectivamente recuperado.\n"
-    "El sistema debe disponer de un mecanismo de abstención, que registre abstencion: true cuando el corpus no proporcione fundamento suficiente."
+    "El sistema debe disponer de un mecanismo de abstención, que registre abstencion: true cuando el corpus no proporcione fundamento suficiente.\n"
+    "Al abstenerse, deja vacíos los campos de contenido y usa null en respuesta_correcta.\n"
+    "Las cabeceras identifican la fuente. El fundamento sustantivo debe estar en las unidades recuperadas."
 )
 
 
@@ -95,20 +97,25 @@ def ajustar_contexto(cliente, entrada, pasajes, contexto=4096, salida=512):
     tokens = cliente.contar(mensajes(entrada, []))
     if tokens > limite:
         raise ValueError("La pregunta supera el contexto disponible")
-    for pasaje in pasajes[:10]:
-        if not pasaje.get("texto") or len(pasaje["texto"]) != pasaje["fin"] - pasaje["inicio"]:
-            raise ValueError("El pasaje no conserva sus offsets")
-        if pasaje.get("recuperar_unidad_completa") and (
-                pasaje.get("unidad_inicio") != pasaje["inicio"] or pasaje.get("unidad_fin") != pasaje["fin"]):
-            raise ValueError("La evidencia contiene una ventana sin recuperar su unidad completa")
-        if any(c in pasaje and pasaje[c] != pasaje[limite] for c, limite in [("unidad_inicio", "inicio"), ("unidad_fin", "fin")]):
-            raise ValueError("El pasaje está cortado dentro de su unidad")
-        candidato = elegidos + [pasaje]
+    grupos = {}
+    for numero, pasaje in enumerate(pasajes[:10]):
+        clave = pasaje.get("grupo_evidencia", f"individual_{numero}")
+        grupos.setdefault(clave, []).append(pasaje)
+    for grupo in grupos.values():
+        for pasaje in grupo:
+            if not pasaje.get("texto") or len(pasaje["texto"]) != pasaje["fin"] - pasaje["inicio"]:
+                raise ValueError("El pasaje no conserva sus offsets")
+            if pasaje.get("recuperar_unidad_completa") and (
+                    pasaje.get("unidad_inicio") != pasaje["inicio"] or pasaje.get("unidad_fin") != pasaje["fin"]):
+                raise ValueError("La evidencia contiene una ventana sin recuperar su unidad completa")
+            if any(c in pasaje and pasaje[c] != pasaje[borde] for c, borde in [("unidad_inicio", "inicio"), ("unidad_fin", "fin")]):
+                raise ValueError("El pasaje está cortado dentro de su unidad")
+        candidato = elegidos + grupo
         cantidad = cliente.contar(mensajes(entrada, candidato))
         if cantidad <= limite:
             elegidos, tokens = candidato, cantidad
         else:
-            omitidos.append({"unidad_id": pasaje["unidad_id"], "motivo": "unidad_completa_no_cabe",
+            omitidos.append({"unidad_id": grupo[-1].get("unidad_id"), "motivo": "unidad_completa_no_cabe",
                              "tokens_con_unidad": cantidad})
     return elegidos, omitidos, tokens
 

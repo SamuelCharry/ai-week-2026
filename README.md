@@ -9,7 +9,9 @@ data/
   raw/          # Originales y manifest.json
   processed/    # Textos limpios y fragmentos
   index/        # Índices de recuperación
-  oficial/      # Material del lunes
+  oficial/      # Material oficial y evaluador
+  colab/        # ZIP para trasladar el proyecto
+  experimentos_oficiales/ # Resultados locales
 notebooks/      # Exploración y experimentación
 scripts/        # Auxiliares de los notebooks
   auxiliares/   # Funciones compartidas
@@ -61,6 +63,21 @@ Las salidas se guardan en `data/processed/<modo>/`: textos, metadatos, unidades 
 
 Las versiones de las bibliotecas de procesamiento corresponden a la ejecución guardada en los notebooks.
 
+## Local y Colab
+
+Los notebooks detectan el entorno. También se puede indicar `MODO = "local"` o `MODO = "colab"` en su primera celda.
+
+Para Colab:
+
+1. Subir `data/colab/ai-week-colab.zip` a `Mi unidad/AIWEEK` en Drive, sin descomprimir.
+2. Subir el notebook a Colab y elegir GPU A100.
+3. Ejecutar sus celdas en orden. Si la instalación solicita reiniciar, reiniciar la sesión y empezar desde la primera celda.
+
+El ZIP incluye código, originales, corpus procesado y material oficial. Excluye claves, modelos y entornos. Los pesos se descargan en Colab. La preparación inicial de Salamandra requiere 45 GiB libres para convertir su revisión oficial.
+
+Los resultados se guardan en `AIWEEK/resultados/<identificador del paquete>` mientras se ejecutan las preguntas. En local quedan en `data/experimentos_oficiales`. Para reanudar una comparación, escribir el nombre de su carpeta en `reanudar`. Si cambian la configuración o los archivos verificados, se necesita otra ejecución.
+
+
 ## Modelos
 
 Las opciones recomendadas en el enunciado. El límite del decoder se aplica a 8000000000 parámetros reales. Las revisiones, licencias y exclusiones están en configs/modelos.json.
@@ -72,7 +89,7 @@ Las opciones recomendadas en el enunciado. El límite del decoder se aplica a 80
 .venv\Scripts\python.exe scripts/comparar_decoders.py
 ```
 
-Los pesos se guardan fuera de Git. La comparación previa al lunes usa referencias y extractos del corpus. Mide recuperación y funcionamiento, sin asignar exactitud jurídica.
+Los pesos se guardan fuera de Git. Las comparaciones actuales se hacen desde los notebooks con las 50 preguntas oficiales. Las sondas anteriores quedan disponibles en los scripts como comprobación técnica.
 
 Los encoders y decoders se comparan por separado para medir el consumo de cada uno. No conviene ejecutar ambas comparaciones al mismo tiempo en una GPU de 4 GB.
 
@@ -92,13 +109,13 @@ Para ejecutar un notebook y guardar sus salidas desde la terminal:
 .venv\Scripts\python.exe scripts/ejecutar_notebook.py notebooks/02_indexacion_vectorial.ipynb
 ```
 
-El notebook 02 construye el índice dos veces en carpetas distintas y compara sus hashes. Después repite las sondas sobre el índice completo.
+El notebook 02 permite repetir la construcción y comparar sus hashes mediante `reconstruir_para_verificar`. Guarda los artículos completos y sus cabeceras literales para la evaluación.
 
 En Windows, el ejecutor evita la suspensión automática mientras corre el notebook y libera esa condición al terminar. No cambia el plan de energía ni impide suspender el equipo manualmente.
 
 ## Evaluación
 
-El paquete del lunes va en data/oficial, conservando sus carpetas data, schema y scripts. Las preguntas y respuestas esperadas no entran al índice.
+El paquete oficial va en data/oficial, conservando sus carpetas data, schema y scripts. Las preguntas, respuestas esperadas y fundamentos de referencia no entran al índice. El modelo recibe únicamente la entrada filtrada y los pasajes recuperados.
 
 ```powershell
 .venv\Scripts\python.exe scripts/evaluar_lunes.py --check-only
@@ -106,6 +123,12 @@ El paquete del lunes va en data/oficial, conservando sus carpetas data, schema y
 ```
 
 El primer comando indica qué material oficial falta. Las pruebas locales comprueban el funcionamiento del pipeline.
+
+El notebook 02.1 ejecuta el evaluador sin API para medir 50 puntos. El juez RAGAS es opcional, consume la llave asignada para evaluación y añade los 30 puntos de texto libre. En Colab la llave se guarda en Secretos como `OPENROUTER_API_KEY`.
+
+El esquema publicado describe `respuesta_correcta: null` al abstenerse, pero su enumeración lo rechaza. Se conserva `null` y se registra el conflicto en `validacion_esquema.json` hasta recibir aclaración. No se declara una entrega válida contra el esquema si quedan errores.
+
+Las latencias de la evaluación suman recuperación previamente medida y generación. La latencia integrada de la aplicación y el puntaje final siguen pendientes. La A100 y el computador local se comparan por separado.
 
 ## Interfaz
 

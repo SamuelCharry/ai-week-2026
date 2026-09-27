@@ -9,11 +9,11 @@ import urllib.request
 from pathlib import Path
 
 
-CAMPOS_ENTRADA = ['id', 'formato', 'pregunta', 'opciones', 'area', 'subtarea', 'complejidad']
+CAMPOS_ENTRADA = ['id', 'formato', 'pregunta', 'opciones', 'area', 'sub_tarea', 'tema', 'complejidad']
 CAMPOS_RESERVADOS = {
     'legal_basis', 'respuesta_correcta', 'respuesta_esperada', 'respuestas_esperadas',
     'justificacion', 'referencia_legal', 'ground_truth', 'answer', 'correct_answer',
-    'expected_answer', 'solution', 'solucion', 'respuesta', 'marco_normativo',
+    'expected_answer', 'texto_respuesta_correcta', 'is_correct', 'solution', 'solucion', 'respuesta', 'marco_normativo',
     'analisis', 'jurisprudencia', 'conclusion', 'palabras_clave', 'descarte_opciones',
 }
 CAMPOS_TIEMPO = {
@@ -51,6 +51,8 @@ def comprobar_oficiales(carpeta):
         'fuentes': carpeta / 'data/seed_targets.json',
         'esquema': carpeta / 'schema/submission.schema.json',
         'evaluador': carpeta / 'scripts/evaluate.py',
+        'citas': carpeta / 'scripts/citations.py',
+        'comun': carpeta / 'scripts/common.py',
         'dependencias': carpeta / 'scripts/requirements-evaluador.txt',
     }
     faltantes = [str(ruta) for ruta in rutas.values() if not ruta.is_file()]

@@ -3,6 +3,7 @@ import csv
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import statistics
@@ -194,16 +195,17 @@ def main():
                     "sha256_evaluacion": sha256(RAIZ / "scripts/auxiliares/evaluacion.py"),
                     "sha256_recuperacion": sha256(RAIZ / "scripts/auxiliares/recuperacion.py"),
                     "sha256_ejecutor_notebook": sha256(RAIZ / "scripts/ejecutar_notebook.py"),
-                    "python": sys.version,
+                    "python": sys.version, "plataforma": sys.platform,
                     "sha256_comparador": sha256(Path(__file__))}
     disponibles = {m["nombre"] for m in catalogo["decoders"]}
     if argumentos.modelos and not set(argumentos.modelos) <= disponibles:
         raise ValueError("Hay modelos que no figuran entre los decoders admitidos")
-    ejecutable = RAIZ / catalogo["runtime"]["ruta"] / "llama-server.exe"
-    archivos_runtime = sorted(ejecutable.parent.glob("*.dll")) + [ejecutable]
+    nombre_servidor = "llama-server.exe" if os.name == "nt" else "llama-server"
+    ejecutable = Path(os.environ.get("LLAMA_SERVER") or RAIZ / catalogo["runtime"]["ruta"] / nombre_servidor)
+    archivos_runtime = sorted(ejecutable.parent.glob("*.dll")) + sorted(ejecutable.parent.glob("*.so*")) + [ejecutable]
     configuracion["sha256_runtime"] = {p.name: sha256(p) for p in archivos_runtime if p.is_file()}
     if not ejecutable.is_file():
-        raise FileNotFoundError("Falta llama-server.exe")
+        raise FileNotFoundError(f"Falta {ejecutable}")
     huella = hashlib.sha256(json.dumps(configuracion, sort_keys=True).encode()).hexdigest()
     (carpeta / "configuracion.json").write_text(json.dumps(configuracion, indent=2, ensure_ascii=False), encoding="utf-8")
     estados = []

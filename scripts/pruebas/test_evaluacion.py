@@ -248,5 +248,128 @@ class EvaluacionTest(unittest.TestCase):
         self.assertEqual(comando_evaluador('python', 'evaluate.py', 'entrega.jsonl', ragas=True)[-1], '--ragas')
 
 
+@unittest.skipUnless((RAIZ / 'data/oficial/scripts/citations.py').is_file(), 'Requiere el paquete oficial')
+class OficialTest(unittest.TestCase):
+    def test_muestra_no_filtra_respuestas_al_modelo(self):
+        from scripts.auxiliares.oficial import cargar_muestra
+        preguntas, entradas = cargar_muestra(RAIZ)
+        self.assertEqual(len(entradas), 50)
+        for entrada in entradas:
+            self.assertNotIn('legal_basis', entrada)
+            self.assertNotIn('respuesta_correcta', entrada)
+            self.assertNotIn('respuesta_esperada', entrada)
+            self.assertNotIn('texto_respuesta_correcta', entrada)
+        with self.assertRaises(ValueError):
+            preparar_entrada(preguntas[0], ['id', 'formato', 'pregunta', 'texto_respuesta_correcta'])
+
+    def test_cabecera_literal_y_articulo_conservan_offsets(self):
+        import hashlib
+        from scripts.auxiliares.oficial import Evidencia, guardar_json
+        texto = 'LEY 80 DE 1993\nARTÍCULO 1. Objeto de la contratación.'
+        with tempfile.TemporaryDirectory() as carpeta:
+            carpeta = Path(carpeta)
+            (carpeta / 'norma.txt').write_text(texto, encoding='utf-8')
+            doc = {'doc_id': 'ley80', 'tipo': 'ley', 'numero': '80', 'anio': 1993,
+                   'texto_archivo': 'norma.txt', 'sha256_texto': hashlib.sha256(texto.encode()).hexdigest()}
+            (carpeta / 'documentos.jsonl').write_text(json.dumps(doc) + '\n', encoding='utf-8')
+            unidad = {'doc_id': 'ley80', 'unidad_id': 'art1', 'inicio': 15, 'fin': len(texto),
+                      'texto': texto[15:], 'score': .5}
+            evidencia = Evidencia(RAIZ, carpeta)
+            pasajes, avisos = evidencia.preparar([unidad])
+            self.assertEqual(len(pasajes), 2)
+            self.assertEqual(avisos, [])
+            evidencia.verificar(pasajes)
+            self.assertEqual(pasajes[0]['texto'], 'LEY 80 DE 1993')
+            pasajes[1]['texto'] += ' añadido'
+            with self.assertRaises(ValueError):
+                evidencia.verificar(pasajes)
+
+    def test_cabecera_y_articulo_no_se_separan_por_contexto(self):
+        from scripts.auxiliares.generacion import ajustar_contexto
+        class Cliente:
+            def contar(self, mensajes):
+                datos = json.loads(mensajes[1]['content'])
+                return 100 + sum(len(p['texto']) for p in datos['pasajes_recuperados'])
+        pasajes = [{'doc_id': 'ley80', 'texto': 'LEY 80 DE 1993', 'inicio': 0, 'fin': 14, 'grupo_evidencia': 'art1'},
+                   {'doc_id': 'ley80', 'texto': 'x' * 1000, 'inicio': 15, 'fin': 1015,
+                    'unidad_id': 'art1', 'grupo_evidencia': 'art1'}]
+        usados, omitidos, _ = ajustar_contexto(Cliente(), {'id': 1, 'formato': 'semi_open', 'pregunta': 'Consulta'},
+                                              pasajes, contexto=700, salida=100)
+        self.assertEqual(usados, [])
+        self.assertEqual(len(omitidos), 1)
+
+    def test_evaluador_oficial_reporta_conflicto_sin_inventar_opcion(self):
+        from scripts.auxiliares.oficial import cargar_muestra, evaluar_entrega
+        from scripts.auxiliares.generacion import abstenerse
+        _, entradas = cargar_muestra(RAIZ)
+        respuestas = [{'id': p['id'], 'formato': p['formato'], **abstenerse(p['formato']),
+                       'pasajes_recuperados': []} for p in entradas]
+        with tempfile.TemporaryDirectory() as carpeta:
+            resultado = evaluar_entrega(RAIZ, carpeta, respuestas)
+            self.assertEqual(resultado['validacion']['errores'], 0)
+            self.assertEqual(resultado['errores_esquema'], 15)
+            self.assertEqual(len(resultado['abstencion_cerrada_pendiente_aclaracion']), 15)
+            self.assertTrue(all(r['respuesta_correcta'] is None for r in respuestas if r['formato'] == 'multiple_choice'))
+
+    def test_reanudacion_rechaza_evidencia_distinta(self):
+        from scripts.auxiliares.oficial import abrir_experimento
+        with tempfile.TemporaryDirectory() as carpeta:
+            ruta = abrir_experimento(carpeta, 'control', {'evidencia': 'a'})
+            with self.assertRaises(ValueError):
+                abrir_experimento(carpeta, 'control', {'evidencia': 'b'}, ruta.name)
+
+    def test_paquete_excluye_llave_modelos_y_entorno(self):
+        import zipfile
+        from scripts.auxiliares.entorno import crear_paquete
+        with tempfile.TemporaryDirectory() as carpeta:
+            raiz = Path(carpeta)
+            for nombre in ['scripts/auxiliares/base.py', 'data/oficial/scripts/evaluate.py',
+                           'data/oficial/scripts/.env', '.venv/secreto.py', 'data/modelos/peso.gguf']:
+                ruta = raiz / nombre
+                ruta.parent.mkdir(parents=True, exist_ok=True)
+                ruta.write_text('control')
+            with zipfile.ZipFile(crear_paquete(raiz)) as z:
+                self.assertIn('scripts/auxiliares/base.py', z.namelist())
+                self.assertIn('data/oficial/scripts/evaluate.py', z.namelist())
+                self.assertNotIn('data/oficial/scripts/.env', z.namelist())
+                self.assertNotIn('.venv/secreto.py', z.namelist())
+                self.assertNotIn('data/modelos/peso.gguf', z.namelist())
+
+    def test_notebook_reanuda_sin_repetir_preguntas_guardadas(self):
+        import contextlib
+        import io
+        import time
+        from types import SimpleNamespace
+        from scripts.auxiliares.oficial import guardar_json
+        from scripts.auxiliares.generacion import abstenerse
+        notebook = json.loads((RAIZ / 'notebooks/02.1_comparacion_decoders.ipynb').read_text(encoding='utf-8'))
+        celda = next(''.join(c['source']) for c in notebook['cells']
+                     if c['cell_type'] == 'code' and ''.join(c['source']).startswith('for ficha in fichas:'))
+        class Servidor:
+            def __init__(self, *args, **kwargs):
+                self.comando, self.capas_gpu, self.propiedades = [], None, {}
+                self.proceso, self.cliente = SimpleNamespace(pid=0), None
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+        class Memoria(Servidor):
+            def resultado(self): return {}
+        llamadas = []
+        def generar_control(cliente, entrada, *args, **kwargs):
+            llamadas.append(entrada['id'])
+            return {'id': entrada['id'], 'formato': 'semi_open', **abstenerse('semi_open'),
+                    'pasajes_recuperados': []}, {}
+        with tempfile.TemporaryDirectory() as carpeta:
+            entorno = {'fichas': [{'nombre': 'control', 'ruta': 'control.gguf'}], 'carpeta': Path(carpeta),
+                       'corridas': 2, 'recuperaciones': [{'entrada': {'id': i}, 'pasajes': [], 'recuperacion_s': .1}
+                                                      for i in [1, 2]],
+                       'ServidorLocal': Servidor, 'Medidor': Memoria, 'servidor': Path('control'),
+                       'raiz': RAIZ, 'contexto': 8192, 'max_tokens': 1024, 'evidencia': None,
+                       'guardar_json': guardar_json, 'generar_oficial': generar_control, 'time': time}
+            with contextlib.redirect_stdout(io.StringIO()):
+                exec(compile(celda, 'notebook:generacion', 'exec'), entorno)
+                exec(compile(celda, 'notebook:generacion', 'exec'), entorno)
+            self.assertEqual(llamadas, [1, 2, 1, 2])
+
+
 if __name__ == '__main__':
     unittest.main()
