@@ -1,0 +1,71 @@
+:root {
+  --sc-cyan: #0b9ab8;
+  --sc-orange: #ff993b;
+  --sc-deep: #056072;
+
+  --grad-top: #e7f1f6;
+  --grad-bottom: #ffffff;
+
+  --ink-0: #ffffff;
+  --ink-1: #edf0f2;
+  --ink-2: #ffffff;
+  --tag: #d1dae2;
+
+  --fg: #26292b;
+  --fg-muted: #5b6b73;
+  --fg-on-brand: #ffffff;
+  --fg-on-orange: #26292b;
+  --sc-wash: #e6f4f7;
+  --sc-orange-ink: #c96608;
+  --sc-glow: #0b9ab8;
+
+  --line: #e2e7eb;
+  --line-strong: #cbd4db;
+  --focus: var(--sc-deep);
+
+  --shadow-1: 0 1px 2px rgb(38 41 43 / 5%);
+  --shadow-2: 0 1px 3px rgb(38 41 43 / 7%), 0 8px 24px rgb(38 41 43 / 7%);
+
+  --dark-hi: #3a3f43;
+  --dark-mid: #1a1d1f;
+  --dark-low: #070707;
+  --fg-on-dark: #ffffff;
+  --fg-on-dark-muted: #a8afb6;
+  --line-on-dark: #34383c;
+
+  --ok: #1a7f5a;
+  --warn: #9a5a00;
+
+  --danger-ink: #a52a1a;
+
+  --font-sans: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Menlo", monospace;
+
+  --step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.84rem);
+  --step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
+  --step-1: clamp(1.15rem, 1.05rem + 0.4vw, 1.4rem);
+  --step-2: clamp(1.45rem, 1.25rem + 0.9vw, 2rem);
+  --step-3: clamp(1.9rem, 1.45rem + 2vw, 3.1rem);
+  --step-4: clamp(2.3rem, 1.5rem + 3.2vw, 3.7rem);
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4.5rem;
+  --sp-9: 7rem;
+
+  --radius: 4px;
+  --radius-lg: 8px;
+  --maxw: 1180px;
+
+  --dur-fast: 120ms;
+  --dur-mid: 220ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-arrive: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --marquee-dur: 120s;
+}

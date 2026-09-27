@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Equipo P34K · Asistente de derecho colombiano</title>
+    <meta
+      name="description"
+      content="Interfaz en desarrollo para consultar derecho colombiano y revisar las fuentes de cada respuesta."
+    />
+
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#e7f1f6" />
+
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Equipo P34K · Asistente de derecho colombiano"
+    />
+    <meta
+      property="og:description"
+      content="Consultas de derecho colombiano con respuesta y fuentes. Proyecto en desarrollo."
+    />
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap"
+    />
+
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#question">Saltar al campo de consulta</a>
+
+    <header class="masthead">
+      <div class="wrap masthead__inner">
+        <a class="brand" href="#main">
+
+          <svg
+            class="brand__mark"
+            width="34"
+            height="34"
+            viewBox="0 0 32 32"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M3.5 25.5C6.5 25 7 20.5 10 20.5C12.8 20.5 12.8 23.2 15.5 23.2C19.2 23.2 18.6 6.8 22.8 6.8C25.8 6.8 25.8 17.5 28.5 18.6"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+            />
+            <circle cx="19.1" cy="15.4" r="3" fill="currentColor" />
+          </svg>
+
+          <span class="brand__text">
+            <span class="brand__name">Equipo P34K</span>
+            <span class="brand__sub">Asistente de derecho colombiano</span>
+          </span>
+        </a>
+
+        <p class="sponsor">
+          Hackathon 2026 · AI Week
+          <span class="sponsor__name">Patrocina Software Colombia</span>
+        </p>
+      </div>
+    </header>
+
+    <p class="demo-banner" id="demo-banner" role="status" hidden>
+      Modo demo. Las respuestas son ejemplos fijos, sin conexión al sistema.
+    </p>
+
+    <main id="main">
+
+      <section class="ask">
+
+        <canvas id="field-canvas" class="ask__canvas" aria-hidden="true"></canvas>
+
+        <div class="wrap ask__inner">
+          <h1 class="ask__title">Pregunta de derecho colombiano</h1>
+          <p class="ask__sub">
+            Haz una pregunta y revisa la respuesta junto con sus fuentes.
+          </p>
+
+          <form class="ask__form" id="query-form" novalidate>
+
+            <label class="visually-hidden" for="question">
+              Pregunta jurídica
+            </label>
+
+            <div class="bar">
+              <textarea
+                class="bar__input"
+                id="question"
+                name="question"
+                rows="1"
+                placeholder="¿Qué son los datos sensibles y cómo se protegen?"
+                aria-describedby="ask-hint form-status"
+                maxlength="12000"
+              ></textarea>
+              <button class="btn btn--primary bar__btn" id="submit" type="submit">
+                Consultar
+              </button>
+            </div>
+
+            <div class="ask__controls">
+              <span class="ask__control">
+                <label for="formato">Formato</label>
+                <select id="formato" name="formato">
+                  <option value="semi_open" selected>Semiabierta</option>
+                  <option value="open_ended">Abierta</option>
+                  <option value="multiple_choice">Selección múltiple</option>
+                </select>
+              </span>
+              <span class="ask__hint" id="ask-hint">
+                Enter consulta · Shift + Enter salta de línea
+              </span>
+            </div>
+
+            <p class="ask__status" id="form-status" role="status" aria-live="polite"></p>
+          </form>
+
+          <p class="specline">
+            Interfaz en desarrollo. <a href="?demo=1">Probar la demo</a>
+          </p>
+        </div>
+      </section>
+
+      <section class="section results" id="results" aria-labelledby="results-title" hidden>
+        <div class="wrap">
+          <h2 class="section-label" id="results-title">Respuesta y evidencia</h2>
+          <p class="results__question" id="results-question"></p>
+
+          <div class="results__grid">
+            <article class="card" aria-labelledby="answer-title">
+              <div class="card__head">
+                <h3 class="card__title" id="answer-title">Respuesta</h3>
+                <span class="card__count" id="answer-format"></span>
+              </div>
+              <div id="answer-slot"></div>
+
+              <button
+                class="btn btn--ghost answer__evidence"
+                id="open-evidence"
+                type="button"
+              >
+                Ver evidencia completa
+              </button>
+            </article>
+
+            <article class="card" aria-labelledby="passages-title">
+              <div class="card__head">
+                <h3 class="card__title" id="passages-title">
+                  Pasajes recuperados
+                </h3>
+                <span class="card__count" id="passages-count"></span>
+              </div>
+              <div id="passages-slot"></div>
+            </article>
+          </div>
+
+          <div class="verify">
+            <div class="verify__cards">
+              <article class="card verify__card" aria-labelledby="check-title">
+                <div class="card__head">
+                  <h3 class="card__title" id="check-title">
+                    Revisión de citas
+                  </h3>
+                  <span class="card__count" id="check-count"></span>
+                </div>
+                <div id="check-slot"></div>
+              </article>
+
+              <article class="card verify__card" aria-labelledby="corpus-title">
+                <div class="card__head">
+                  <h3 class="card__title" id="corpus-title">Corpus consultado</h3>
+                  <span class="card__count" id="corpus-count"></span>
+                </div>
+                <div id="corpus-slot"></div>
+              </article>
+            </div>
+
+            <dl class="run" id="run-slot"></dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="team-title">
+        <div class="wrap">
+          <h2 class="section-label" id="team-title">Equipo P34K</h2>
+
+          <ul class="team">
+            <li class="member">
+              <p class="member__name">Samuel Charry Tobar</p>
+              <a
+                class="member__link"
+                href="https://www.linkedin.com/in/samuel-charry-software-engineer/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M3 9h4v12H3zM10 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.75-1.95 4 0 4.4 2.5 4.4 5.8V21h-4v-5.6c0-1.35-.03-3.1-1.9-3.1s-2.2 1.45-2.2 2.99V21h-4z"
+                  />
+                </svg>
+                LinkedIn de Samuel
+              </a>
+            </li>
+
+            <li class="member">
+              <p class="member__name">Shaiel Mateo Jimenez Posada</p>
+              <a
+                class="member__link"
+                href="https://www.linkedin.com/in/shaiel-mateo-jimenez-posada/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M3 9h4v12H3zM10 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.75-1.95 4 0 4.4 2.5 4.4 5.8V21h-4v-5.6c0-1.35-.03-3.1-1.9-3.1s-2.2 1.45-2.2 2.99V21h-4z"
+                  />
+                </svg>
+                LinkedIn de Shaiel
+              </a>
+            </li>
+
+            <li class="member">
+              <p class="member__name">Juan Esteban Trivino Nieves</p>
+              <a
+                class="member__link"
+                href="https://www.linkedin.com/in/juanes-trivi%C3%B1o-a45881252/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M3 9h4v12H3zM10 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.75-1.95 4 0 4.4 2.5 4.4 5.8V21h-4v-5.6c0-1.35-.03-3.1-1.9-3.1s-2.2 1.45-2.2 2.99V21h-4z"
+                  />
+                </svg>
+                LinkedIn de Juan Esteban
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <section class="marquee" aria-labelledby="marquee-title">
+      <h2 class="visually-hidden" id="marquee-title">
+        Universidades y tecnologías del evento
+      </h2>
+
+      <div class="marquee__viewport">
+        <ul class="marquee__track">
+            <li class="marquee__item">
+              <img class="marquee__logo marquee__logo--andes" src="logos/andes.png" width="388" height="60"
+                   alt="Universidad de los Andes · Departamento de Ingeniería de Sistemas y Computación" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item">
+              <img class="marquee__logo marquee__logo--eia" src="logos/eia.png" width="169" height="88"
+                   alt="Universidad EIA" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item">
+              <img class="marquee__logo marquee__logo--nvidia" src="logos/nvidia.png" width="119" height="92"
+                   alt="NVIDIA" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item">
+              <img class="marquee__logo marquee__logo--software-colombia" src="logos/software-colombia.png" width="180" height="80"
+                   alt="Software Colombia" loading="lazy" decoding="async" />
+            </li>
+
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--andes" src="logos/andes.png" width="388" height="60"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--eia" src="logos/eia.png" width="169" height="88"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--nvidia" src="logos/nvidia.png" width="119" height="92"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--software-colombia" src="logos/software-colombia.png" width="180" height="80"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--andes" src="logos/andes.png" width="388" height="60"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--eia" src="logos/eia.png" width="169" height="88"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--nvidia" src="logos/nvidia.png" width="119" height="92"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--software-colombia" src="logos/software-colombia.png" width="180" height="80"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--andes" src="logos/andes.png" width="388" height="60"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--eia" src="logos/eia.png" width="169" height="88"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--nvidia" src="logos/nvidia.png" width="119" height="92"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--software-colombia" src="logos/software-colombia.png" width="180" height="80"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--andes" src="logos/andes.png" width="388" height="60"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--eia" src="logos/eia.png" width="169" height="88"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--nvidia" src="logos/nvidia.png" width="119" height="92"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--software-colombia" src="logos/software-colombia.png" width="180" height="80"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--andes" src="logos/andes.png" width="388" height="60"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--eia" src="logos/eia.png" width="169" height="88"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--nvidia" src="logos/nvidia.png" width="119" height="92"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+            <li class="marquee__item" aria-hidden="true">
+              <img class="marquee__logo marquee__logo--software-colombia" src="logos/software-colombia.png" width="180" height="80"
+                   alt="" loading="lazy" decoding="async" />
+            </li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="wrap">
+        <div class="footer__grid">
+          <div>
+            <h3>Equipo P34K</h3>
+            <p>
+              Sistema de consulta de derecho colombiano.
+              Hackathon 2026, AI Week, Universidad de los Andes.
+            </p>
+          </div>
+
+          <div>
+            <h3>Evento</h3>
+            <ul>
+              <li>Universidad de los Andes</li>
+              <li>Ing. de Sistemas y Computación</li>
+              <li>AI Week 2026</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Patrocina</h3>
+            <ul>
+              <li>
+                <a
+                  href="https://en.software-colombia.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer__link"
+                  >Software Colombia</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer__legal">
+          <p>
+            Proyecto académico del equipo P34K. No es un producto oficial de
+            Software Colombia ni cuenta con su aval. No constituye asesoría jurídica.
+          </p>
+          <p class="footer__stamp">
+            <span id="year">2026</span> · Equipo P34K
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <dialog class="proof" id="evidence-view" aria-labelledby="proof-title">
+      <div class="proof__inner">
+        <div class="proof__head">
+          <div>
+            
+            <h2 class="proof__question" id="proof-title">
+
+            </h2>
+          </div>
+
+          <button class="proof__close" id="close-evidence" type="button">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M3 3 13 13M13 3 3 13"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+            Cerrar
+          </button>
+        </div>
+
+        <div class="proof__body" id="proof-body">
+          
+          <div class="proof__empty">
+            <p>Aún no hay pasajes para mostrar.</p>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <noscript><p class="wrap">Activa JavaScript para usar la interfaz.</p></noscript>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

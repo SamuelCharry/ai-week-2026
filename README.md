@@ -11,6 +11,7 @@ data/
   index/        # Índices de recuperación
 notebooks/      # Exploración y experimentación
 src/            # Implementación en Python
+web/            # Interfaz de consulta
 ```
 
 ## Etapas
@@ -45,3 +46,15 @@ Las salidas se guardan en `data/processed/<modo>/`: textos, metadatos, unidades 
 Las versiones de las bibliotecas de procesamiento corresponden a la ejecución guardada en los notebooks.
 
 La revisión del texto detectó artículos unidos y unidades con cortes por corregir. La segmentación requiere ajustes antes de construir el índice.
+
+## Interfaz
+
+Desde la raíz del repositorio:
+
+```powershell
+python -m http.server 8766 --directory web --bind 127.0.0.1
+```
+
+Abrir [la interfaz](http://127.0.0.1:8766/) o [el modo demo](http://127.0.0.1:8766/?demo=1). No requiere Node ni compilación.
+
+El backend aún no está conectado. La demo usa datos fijos para revisar los formatos y la abstención. El contrato esperado del servicio está en [web/README.md](web/README.md).
