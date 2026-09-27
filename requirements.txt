@@ -1,2 +1,6 @@
 jupyterlab>=4,<5
-pandas>=2.2,<3
+pandas==2.3.3
+beautifulsoup4==4.15.0
+ftfy==6.3.1
+pdfplumber==0.11.10
+matplotlib>=3.8,<4
