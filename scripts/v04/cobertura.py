@@ -41,9 +41,12 @@ def indice_corpus(raiz):
     citas = cargar_citaciones(raiz)
     corpus = raiz / "data/processed/corpus"
     documentos = {d["doc_id"]: d for d in _leer_jsonl(corpus / "documentos.jsonl")}
+    from scripts.v04.evidencia import EvidenciaV04
+    ev = EvidenciaV04(raiz, corpus)
     por_cuerpo = defaultdict(set)
     for doc_id, doc in documentos.items():
-        for cuerpo in identidad(doc, citas):
+        # Identidad ampliada: incluye "Código Civil", "Código Sustantivo del Trabajo", etc.
+        for cuerpo in ev.identidad(doc_id):
             por_cuerpo[cuerpo].add(doc_id)
     articulos = defaultdict(set)
     for unidad in _leer_jsonl(corpus / "unidades.jsonl", ["doc_id", "articulo", "apta_para_busqueda"]):
@@ -57,9 +60,6 @@ def cuerpos_recuperados(pasajes, documentos, citas, limite=10):
     encontrados = set()
     for pasaje in (pasajes or [])[:limite]:
         encontrados |= citas.bodies(citas.extract(str(pasaje.get("texto") or "")))
-        doc = documentos.get(pasaje.get("doc_id"))
-        if doc:
-            encontrados |= identidad(doc, citas)
     return encontrados
 
 

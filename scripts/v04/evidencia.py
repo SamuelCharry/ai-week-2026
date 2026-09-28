@@ -71,6 +71,15 @@ class EvidenciaV04(Evidencia):
                 del_titulo = {c for c in self.citas.bodies(self.citas.extract(titulo)) if c[0] in NOMBRES}
                 if len(del_titulo) == 1:
                     cuerpos |= del_titulo
+            # También si una de las primeras líneas es el nombre del código por sí solo
+            # ("CODIGO SUSTANTIVO DEL TRABAJO" en el Decreto 2663 de 1950).
+            lineas = [l.strip() for l in self.texto(doc_id)[:3000].splitlines() if l.strip()][:8]
+            for linea in lineas:
+                normal = self.citas.norm(linea).strip(' ."')
+                if len(normal) <= 60 and normal.startswith(("codigo", "estatuto")):
+                    de_linea = {c for c in self.citas.bodies(self.citas.extract(normal)) if c[0] in NOMBRES}
+                    if len(de_linea) == 1:
+                        cuerpos |= de_linea
             self._identidades[doc_id] = cuerpos
         return self._identidades[doc_id]
 
