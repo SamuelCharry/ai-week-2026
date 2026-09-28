@@ -101,7 +101,7 @@ def ajustar_contexto(cliente, entrada, pasajes, contexto=4096, salida=512):
     for numero, pasaje in enumerate(pasajes[:10]):
         clave = pasaje.get("grupo_evidencia", f"individual_{numero}")
         grupos.setdefault(clave, []).append(pasaje)
-    for grupo in grupos.values():
+    for puesto, grupo in enumerate(grupos.values(), start=1):
         for pasaje in grupo:
             if not pasaje.get("texto") or len(pasaje["texto"]) != pasaje["fin"] - pasaje["inicio"]:
                 raise ValueError("El pasaje no conserva sus offsets")
@@ -115,8 +115,13 @@ def ajustar_contexto(cliente, entrada, pasajes, contexto=4096, salida=512):
         if cantidad <= limite:
             elegidos, tokens = candidato, cantidad
         else:
+            sola = cliente.contar(mensajes(entrada, grupo))
             omitidos.append({"unidad_id": grupo[-1].get("unidad_id"), "motivo": "unidad_completa_no_cabe",
-                             "tokens_con_unidad": cantidad})
+                             "doc_id": grupo[-1].get("doc_id"), "articulo": grupo[-1].get("articulo"),
+                             "puesto_recuperacion": puesto, "tokens_limite": limite,
+                             "tokens_contexto_antes": tokens, "tokens_con_unidad": cantidad,
+                             "tokens_unidad_sola_con_pregunta": sola,
+                             "causa": "unidad_excede_presupuesto" if sola > limite else "contexto_ocupado"})
     return elegidos, omitidos, tokens
 
 

@@ -1,0 +1,29 @@
+{
+  "encoder": "bge-m3",
+  "decoder": "salamandra-7b-instruct",
+  "tamano_tokens": 320,
+  "solapamiento_tokens": 32,
+  "precision": "float16",
+  "contexto": 8192,
+  "max_tokens": 1024,
+  "max_unidades": 5,
+  "temperatura": 0,
+  "semilla": 0,
+  "variantes": [
+    {"nombre": "densa", "hibrido": false, "candidatos": 5, "max_unidades": 5, "reranker": false},
+    {"nombre": "hibrida", "hibrido": true, "candidatos": 5, "max_unidades": 5, "reranker": false},
+    {"nombre": "densa_reranker", "hibrido": false, "candidatos": 20, "max_unidades": 5, "reranker": true}
+  ],
+  "reranker": {
+    "repo_id": "BAAI/bge-reranker-v2-m3",
+    "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "licencia": "apache-2.0",
+    "parametros": 567755777,
+    "max_length": 1024,
+    "batch_size": 2,
+    "precision": "float16",
+    "semilla": 0,
+    "normalizar": false,
+    "fuente": "https://huggingface.co/BAAI/bge-reranker-v2-m3"
+  }
+}

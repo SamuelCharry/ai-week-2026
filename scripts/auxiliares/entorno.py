@@ -16,8 +16,10 @@ def sha256_archivo(ruta):
     return digest.hexdigest()
 
 
-def crear_paquete(raiz):
+def crear_paquete(raiz, nombre='ai-week-colab.zip'):
     raiz = Path(raiz).resolve()
+    if Path(nombre).name != nombre or not nombre.endswith('.zip'):
+        raise ValueError('El paquete debe tener un nombre ZIP sin carpetas')
     carpetas = ['notebooks', 'scripts', 'configs', 'data/raw', 'data/processed/corpus', 'data/oficial']
     rutas = []
     for carpeta in carpetas:
@@ -29,12 +31,12 @@ def crear_paquete(raiz):
             if p.suffix.lower() not in {'.py', '.ipynb', '.json', '.jsonl', '.txt', '.csv', '.md', '.pdf', '.html', '.htm'}:
                 continue
             rutas.append(p)
-    for nombre in ['README.md', 'CORPUS.md', 'corpus_manifest.json', 'requirements.txt',
-                   'requirements-experimentos.txt', 'requirements-colab.txt', 'reports/a_muestra.csv']:
-        p = raiz / nombre
+    for archivo_raiz in ['README.md', 'CORPUS.md', 'corpus_manifest.json', 'requirements.txt',
+                         'requirements-experimentos.txt', 'requirements-colab.txt', 'reports/a_muestra.csv']:
+        p = raiz / archivo_raiz
         if p.is_file():
             rutas.append(p)
-    destino = raiz / 'data/colab/ai-week-colab.zip'
+    destino = raiz / 'data/colab' / nombre
     destino.parent.mkdir(parents=True, exist_ok=True)
     temporal = destino.with_suffix('.zip.part')
     hashes = {}
@@ -47,6 +49,50 @@ def crear_paquete(raiz):
         paquete.writestr('paquete.json', json.dumps({'sha256_archivos': hashes}, indent=2))
     temporal.replace(destino)
     return destino
+
+
+def preparar_decoder_persistente(raiz, modelo, catalogo, servidor, fuente=None, cache=None):
+    raiz = Path(raiz).resolve()
+    destino = raiz / modelo['ruta']
+    registro = destino.with_name('conversion.json')
+    carpeta_cache = None
+    if cache is not None and modelo['nombre'] == 'salamandra-7b-instruct':
+        carpeta_cache = (Path(cache) / modelo['nombre'] / modelo['revision'] /
+                         catalogo['runtime']['commit'] / 'Q4_K_M')
+        pesos_cache = carpeta_cache / destino.name
+        registro_cache = carpeta_cache / 'conversion.json'
+        if not destino.exists() and pesos_cache.is_file() and registro_cache.is_file():
+            info = json.loads(registro_cache.read_text(encoding='utf-8'))
+            coincide = (info.get('revision_modelo') == modelo['revision'] and
+                        info.get('revision_runtime') == catalogo['runtime']['commit'] and
+                        info.get('cuantizacion') == 'Q4_K_M' and
+                        info.get('sha256') == sha256_archivo(pesos_cache))
+            if not coincide:
+                raise ValueError('La copia de Salamandra en Drive no coincide con su registro')
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            temporal = destino.with_name(destino.name + '.part')
+            print('Restaurando Salamandra desde la copia guardada', flush=True)
+            shutil.copy2(pesos_cache, temporal)
+            if sha256_archivo(temporal) != info['sha256']:
+                raise ValueError('La copia local de Salamandra quedó incompleta')
+            temporal.replace(destino)
+            shutil.copy2(registro_cache, registro)
+    preparado = preparar_decoder(raiz, modelo, catalogo, servidor, fuente)
+    if carpeta_cache is not None:
+        carpeta_cache.mkdir(parents=True, exist_ok=True)
+        info = json.loads(registro.read_text(encoding='utf-8'))
+        pesos_cache = carpeta_cache / destino.name
+        if not pesos_cache.is_file() or sha256_archivo(pesos_cache) != info['sha256']:
+            print('Guardando Salamandra para la siguiente sesión', flush=True)
+            temporal = pesos_cache.with_name(pesos_cache.name + '.part')
+            shutil.copy2(preparado, temporal)
+            if sha256_archivo(temporal) != info['sha256']:
+                raise ValueError('La copia persistente de Salamandra quedó incompleta')
+            temporal.replace(pesos_cache)
+        temporal = carpeta_cache / 'conversion.json.tmp'
+        shutil.copy2(registro, temporal)
+        temporal.replace(carpeta_cache / 'conversion.json')
+    return preparado
 
 
 def hardware():

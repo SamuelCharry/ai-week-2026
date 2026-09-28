@@ -342,7 +342,7 @@ class OficialTest(unittest.TestCase):
         from types import SimpleNamespace
         from scripts.auxiliares.oficial import guardar_json
         from scripts.auxiliares.generacion import abstenerse
-        notebook = json.loads((RAIZ / 'notebooks/02.1_comparacion_decoders.ipynb').read_text(encoding='utf-8'))
+        notebook = json.loads((RAIZ / 'notebooks/02_1_comparacion_decoders.ipynb').read_text(encoding='utf-8'))
         celda = next(''.join(c['source']) for c in notebook['cells']
                      if c['cell_type'] == 'code' and ''.join(c['source']).startswith('for ficha in fichas:'))
         class Servidor:
@@ -364,7 +364,8 @@ class OficialTest(unittest.TestCase):
                                                       for i in [1, 2]],
                        'ServidorLocal': Servidor, 'Medidor': Memoria, 'servidor': Path('control'),
                        'raiz': RAIZ, 'contexto': 8192, 'max_tokens': 1024, 'evidencia': None,
-                       'guardar_json': guardar_json, 'generar_oficial': generar_control, 'time': time}
+                       'guardar_json': guardar_json, 'generar_oficial': generar_control, 'time': time,
+                       'subprocess': SimpleNamespace(run=lambda *a, **k: SimpleNamespace(stdout=''))}
             with contextlib.redirect_stdout(io.StringIO()):
                 exec(compile(celda, 'notebook:generacion', 'exec'), entorno)
                 exec(compile(celda, 'notebook:generacion', 'exec'), entorno)

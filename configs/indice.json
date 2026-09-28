@@ -1,20 +1,21 @@
 {
   "encoder": {
-    "nombre": "multilingual-e5-large",
-    "repo_id": "intfloat/multilingual-e5-large",
-    "revision": "3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3",
-    "parametros": 559890432,
-    "parametros_tipo": "safetensors_sin_buffers_enteros",
+    "nombre": "bge-m3",
+    "repo_id": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "parametros": 567754752,
+    "parametros_tipo": "conteo_real_del_encoder_denso",
     "licencia": "mit",
     "recomendado": true,
-    "prioridad": 1,
-    "contexto_tokens": 512,
+    "prioridad": 2,
+    "contexto_tokens": 8192,
     "dimensiones": 1024,
-    "prefijo_consulta": "query: ",
-    "prefijo_pasaje": "passage: ",
+    "prefijo_consulta": "",
+    "prefijo_pasaje": "",
     "trust_remote_code": false,
     "ruta": "cache_huggingface",
-    "fuente": "https://huggingface.co/intfloat/multilingual-e5-large"
+    "fuente": "https://huggingface.co/BAAI/bge-m3",
+    "parametros_publicados_modelo_completo": 569000000
   },
   "corpus": "data/processed/corpus",
   "tamano_tokens": 320,
@@ -22,6 +23,6 @@
   "device": "cuda",
   "precision": "float16",
   "batch_size": 16,
-  "hibrido": true,
+  "hibrido": false,
   "salida": "data/index/corpus"
 }
