@@ -1,0 +1,26 @@
+[
+ {
+  "fecha": "2026-09-27",
+  "experimento": "03",
+  "documentos": 282,
+  "fragmentos": 71402,
+  "cerradas": null,
+  "citas": null,
+  "abstencion": null,
+  "total": 11.0,
+  "variante": "densa",
+  "cambio": "Corpus inicial. Abstención decidida por el modelo."
+ },
+ {
+  "fecha": "2026-09-27",
+  "experimento": "04",
+  "documentos": 282,
+  "fragmentos": 71402,
+  "cerradas": null,
+  "citas": null,
+  "abstencion": null,
+  "total": 30.0,
+  "variante": "densa",
+  "cambio": "Mismo corpus. Letra obligatoria en cerradas, abstención por regla, reparación de JSON, saneo de citas sin respaldo, fundamento desde la evidencia e identidad de los códigos corregida."
+ }
+]

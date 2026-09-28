@@ -21,26 +21,33 @@ La siguiente comparación mantiene los modelos y cambia la recuperación: densa,
 
 ```text
 notebooks/
-  00_eda.ipynb
-  01_ingesta_normalizacion.ipynb
-  01.1_comparacion_encoders.ipynb
-  02_indexacion_vectorial.ipynb
-  02_1_comparacion_decoders.ipynb
-  03_experimentos.ipynb
+  basicos/       00_eda, 01_ingesta_normalizacion, 02_indexacion
+  experimentos/  e01_encoders, e02_decoders, e03, e04, e05
 scripts/
-  auxiliares/
+  corpus/        ingesta, ampliar, fuentes_csj, constitucion_senado, cobertura, auditar, manifiesto
+  indice/        recuperacion, reordenamiento, sondas, construir, verificar, comparar_encoders
+  generacion/    cliente, politica, evidencia, responder, comparar_decoders
+  evaluacion/    oficial, entrega, comparar, diagnostico
+  entorno/       runtime, modelos, encoders, paquete, ejecutar_notebook
+  experimentos/  orquestador, experimentar, v04, v05
   pruebas/
 configs/
 data/
 web/
 ```
 
-Los notebooks anteriores conservan las exploraciones y ejecuciones. El trabajo nuevo se sigue desde `03_experimentos.ipynb`. La lógica reutilizable está en `scripts/auxiliares`.
+Los notebooks de `basicos/` recorren el pipeline: exploración, ingesta e índice. Los de
+`experimentos/` comparan una cosa a la vez y conservan sus salidas. El trabajo nuevo se
+sigue desde `experimentos/e05.ipynb`.
+
+Cada carpeta de `scripts/` es un paquete importable como `scripts.<carpeta>.<modulo>`, y
+los ejecutables se corren con `python -m`. `configs/evolucion.json` guarda el puntaje de
+cada corrida evaluada y alimenta la tabla de `CORPUS.md`.
 
 ## Colab
 
-1. Subir `data/colab/ai-week-experimentos.zip` a `Mi unidad/AIWEEK`, sin descomprimir.
-2. Abrir `notebooks/03_experimentos.ipynb` en Colab y seleccionar L4 o A100.
+1. Subir `data/colab/ai-week.zip` a `Mi unidad/AIWEEK`, sin descomprimir.
+2. Abrir `notebooks/experimentos/e05.ipynb` en Colab y seleccionar L4 o A100.
 3. Ejecutar las celdas en orden. Si la instalación pide reiniciar, reiniciar la sesión y empezar desde la primera celda.
 
 El notebook busca el índice BGE en `AIWEEK/resultados`, donde quedaron las comparaciones anteriores. Comprueba sus archivos, modelo, segmentación y corpus antes de reutilizarlo. Si no encuentra uno compatible, informa el motivo. `permitir_construir = True` habilita la construcción de un índice nuevo.
@@ -63,13 +70,16 @@ python -m venv .venv
 .venv\Scripts\python.exe -m jupyter lab
 ```
 
-Abrir `03_experimentos.ipynb` con el kernel AI Week. El entorno se detecta automáticamente. Los resultados quedan en `data/experimentos_sistema`.
+Abrir `notebooks/experimentos/e05.ipynb` con el kernel AI Week. El entorno se detecta automáticamente. Los resultados quedan en `data/experimentos_sistema`.
 
 Para actualizar el paquete de Colab:
 
 ```powershell
-.venv\Scripts\python.exe -c "from pathlib import Path; from scripts.auxiliares.entorno import crear_paquete; print(crear_paquete(Path.cwd(), 'ai-week-experimentos.zip'))"
+.venv\Scripts\python.exe -m scripts.entorno.paquete
 ```
+
+Deja `data/colab/ai-week.zip`. Los paquetes anteriores (`ai-week-colab.zip`,
+`ai-week-experimentos.zip`, `ai-week-v04.zip`) se conservan pero ya no se regeneran.
 
 ## Resultados y evaluación
 
@@ -85,7 +95,7 @@ Las respuestas esperadas se usan únicamente para evaluación. No entran al índ
 
 ## Corpus e índice
 
-El corpus actual contiene 282 documentos. Los originales están en `data/raw` y los derivados en `data/processed/corpus`. Los datos, índices, modelos y resultados quedan fuera de Git.
+El corpus actual contiene 386 documentos. Los originales están en `data/raw` y los derivados en `data/processed/corpus`. Los datos, índices, modelos y resultados quedan fuera de Git.
 
 La revisión de vigencia, el enriquecimiento documentado y el enlace público del corpus e índice están pendientes. El paquete final debe incluir licencia, manifiesto, corpus procesado e índice serializado.
 

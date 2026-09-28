@@ -9,13 +9,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 
-RAIZ = Path(__file__).resolve().parents[2]
+RAIZ = next(p for p in Path(__file__).resolve().parents if (p / "configs/experimentos.json").is_file())
 sys.path.insert(0, str(RAIZ))
-from scripts.auxiliares.evaluacion import (
+from scripts.evaluacion.comparar import comparar_corridas  # noqa: E402
+from scripts.evaluacion.entrega import (
     auditar_citas,
     cargar_jsonl,
     comando_evaluador,
-    comparar_corridas,
     comprobar_oficiales,
     generar,
     preparar_entrada,
@@ -233,7 +233,7 @@ class EvaluacionTest(unittest.TestCase):
         self.assertTrue(resultado['revision_manual'])
 
     def test_control_produccion_conserva_alias_respaldado(self):
-        from scripts.auxiliares.generacion import controlar_citas
+        from scripts.generacion.cliente import controlar_citas
 
         respuesta = {'id': 1, 'formato': 'semiabierta', 'abstencion': False, 'referencia_legal': 'Artículo 42 del Decreto Ley 2591 de 1991', 'pasajes_recuperados': [{'doc_id': DECRETO['doc_id'], 'texto': 'ARTÍCULO 42.'}]}
         salida, registro = controlar_citas(respuesta, [DECRETO])
@@ -251,7 +251,7 @@ class EvaluacionTest(unittest.TestCase):
 @unittest.skipUnless((RAIZ / 'data/oficial/scripts/citations.py').is_file(), 'Requiere el paquete oficial')
 class OficialTest(unittest.TestCase):
     def test_muestra_no_filtra_respuestas_al_modelo(self):
-        from scripts.auxiliares.oficial import cargar_muestra
+        from scripts.evaluacion.oficial import cargar_muestra
         preguntas, entradas = cargar_muestra(RAIZ)
         self.assertEqual(len(entradas), 50)
         for entrada in entradas:
@@ -264,7 +264,7 @@ class OficialTest(unittest.TestCase):
 
     def test_cabecera_literal_y_articulo_conservan_offsets(self):
         import hashlib
-        from scripts.auxiliares.oficial import Evidencia, guardar_json
+        from scripts.evaluacion.oficial import Evidencia, guardar_json
         texto = 'LEY 80 DE 1993\nARTÍCULO 1. Objeto de la contratación.'
         with tempfile.TemporaryDirectory() as carpeta:
             carpeta = Path(carpeta)
@@ -285,7 +285,7 @@ class OficialTest(unittest.TestCase):
                 evidencia.verificar(pasajes)
 
     def test_cabecera_y_articulo_no_se_separan_por_contexto(self):
-        from scripts.auxiliares.generacion import ajustar_contexto
+        from scripts.generacion.cliente import ajustar_contexto
         class Cliente:
             def contar(self, mensajes):
                 datos = json.loads(mensajes[1]['content'])
@@ -299,8 +299,8 @@ class OficialTest(unittest.TestCase):
         self.assertEqual(len(omitidos), 1)
 
     def test_evaluador_oficial_reporta_conflicto_sin_inventar_opcion(self):
-        from scripts.auxiliares.oficial import cargar_muestra, evaluar_entrega
-        from scripts.auxiliares.generacion import abstenerse
+        from scripts.evaluacion.oficial import cargar_muestra, evaluar_entrega
+        from scripts.generacion.cliente import abstenerse
         _, entradas = cargar_muestra(RAIZ)
         respuestas = [{'id': p['id'], 'formato': p['formato'], **abstenerse(p['formato']),
                        'pasajes_recuperados': []} for p in entradas]
@@ -312,7 +312,7 @@ class OficialTest(unittest.TestCase):
             self.assertTrue(all(r['respuesta_correcta'] is None for r in respuestas if r['formato'] == 'multiple_choice'))
 
     def test_reanudacion_rechaza_evidencia_distinta(self):
-        from scripts.auxiliares.oficial import abrir_experimento
+        from scripts.evaluacion.oficial import abrir_experimento
         with tempfile.TemporaryDirectory() as carpeta:
             ruta = abrir_experimento(carpeta, 'control', {'evidencia': 'a'})
             with self.assertRaises(ValueError):
@@ -320,7 +320,7 @@ class OficialTest(unittest.TestCase):
 
     def test_paquete_excluye_llave_modelos_y_entorno(self):
         import zipfile
-        from scripts.auxiliares.entorno import crear_paquete
+        from scripts.entorno.runtime import crear_paquete
         with tempfile.TemporaryDirectory() as carpeta:
             raiz = Path(carpeta)
             for nombre in ['scripts/auxiliares/base.py', 'data/oficial/scripts/evaluate.py',
@@ -340,9 +340,9 @@ class OficialTest(unittest.TestCase):
         import io
         import time
         from types import SimpleNamespace
-        from scripts.auxiliares.oficial import guardar_json
-        from scripts.auxiliares.generacion import abstenerse
-        notebook = json.loads((RAIZ / 'notebooks/02_1_comparacion_decoders.ipynb').read_text(encoding='utf-8'))
+        from scripts.evaluacion.oficial import guardar_json
+        from scripts.generacion.cliente import abstenerse
+        notebook = json.loads((RAIZ / 'notebooks/experimentos/e02_decoders.ipynb').read_text(encoding='utf-8'))
         celda = next(''.join(c['source']) for c in notebook['cells']
                      if c['cell_type'] == 'code' and ''.join(c['source']).startswith('for ficha in fichas:'))
         class Servidor:

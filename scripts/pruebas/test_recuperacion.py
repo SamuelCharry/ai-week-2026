@@ -4,14 +4,18 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 from pathlib import Path
 
 import faiss
 import numpy as np
 
-from scripts.auxiliares.recuperacion import BM25, Recuperador, crear_ventanas, hash_json, cargar_indice, construir_indice
-from scripts.auxiliares.sondas import crear_sondas, evaluar_sondas
+from scripts.indice.recuperacion import (
+    BM25, Recuperador, crear_ventanas, hash_json, cargar_indice, construir_indice,
+    metadatos_busqueda, VERSION_TEXTO_BUSQUEDA,
+)
+from scripts.indice.sondas import crear_sondas, evaluar_sondas
 
 
 class Tokenizador:
@@ -24,8 +28,11 @@ class EncoderMecanico:
     limite = 512
     prefijos = {"passage": "", "query": ""}
     tokenizer = Tokenizador()
+    device = "cpu"
+    parametros = 0
+    precision_real = ["float32"]
 
-    def encode(self, textos, tarea="passage"):
+    def encode(self, textos, tarea="passage", batch_size=4):
         return np.array([[1, 0] for _ in textos], dtype="float32")
 
 
@@ -49,6 +56,35 @@ class RecuperacionTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             crear_ventanas([self.unidad], EncoderMecanico(), 100, 100)
 
+    def test_metadatos_sin_seccion_conservan_formato(self):
+        esperado = "Prueba mecánica\nArtículo 24\n"
+        self.assertEqual(metadatos_busqueda(self.unidad), esperado)
+        for seccion in (None, ""):
+            with self.subTest(seccion=seccion):
+                self.assertEqual(metadatos_busqueda({**self.unidad, "seccion": seccion}), esperado)
+
+    def test_seccion_llega_a_encoder_y_bm25_sin_cambiar_evidencia(self):
+        unidad = {**self.unidad, "seccion": "CAPÍTULO II. Competencia territorial"}
+        encoder = EncoderMecanico()
+        anteriores = crear_ventanas([self.unidad], encoder, 120, 20)
+        with tempfile.TemporaryDirectory() as temporal:
+            config = {"salida": temporal, "corpus": "corpus_prueba", "tamano_tokens": 120,
+                      "solapamiento_tokens": 20, "hibrido": True}
+            with patch("scripts.indice.recuperacion.cargar_corpus", return_value=([unidad], {})), \
+                    patch.object(encoder, "encode", wraps=encoder.encode) as encode:
+                manifiesto, recuperador = construir_indice(config, encoder=encoder)
+            self.assertEqual(manifiesto["version_texto_busqueda"], VERSION_TEXTO_BUSQUEDA)
+            textos = encode.call_args.args[0]
+            self.assertTrue(all("CAPÍTULO II. Competencia territorial\nArtículo 24\n" in t for t in textos))
+            self.assertTrue(np.all(recuperador.bm25.buscar("territorial") > 0))
+            self.assertEqual(len(anteriores), len(recuperador.ventanas))
+            for anterior, ventana in zip(anteriores, recuperador.ventanas):
+                for campo in ("texto", "inicio", "fin", "unidad_inicio", "unidad_fin", "fragmento_id"):
+                    self.assertEqual(ventana[campo], anterior[campo])
+            evidencia = recuperador.buscar("territorial")[0]
+            self.assertEqual(evidencia["texto"], self.unidad["texto"])
+            self.assertEqual((evidencia["inicio"], evidencia["fin"]), (10, 510))
+
     def test_recupera_padre_sin_repetir(self):
         ventanas = crear_ventanas([self.unidad], EncoderMecanico(), 120, 20)
         indice = faiss.IndexFlatIP(2)
@@ -69,7 +105,7 @@ class RecuperacionTest(unittest.TestCase):
 
     def test_bm25_no_depende_de_semilla_hash(self):
         codigo = (
-            "from scripts.auxiliares.recuperacion import BM25\n"
+            "from scripts.indice.recuperacion import BM25\n"
             "textos = [' '.join('termino' + str(j) for j in range(i, i + 30)) for i in range(50)]\n"
             "consulta = ' '.join('termino' + str(j) for j in range(70))\n"
             "print(BM25(textos).buscar(consulta).tobytes().hex())"
@@ -130,6 +166,43 @@ class RecuperacionTest(unittest.TestCase):
             Path(temporal, "CONGELADO.json").write_text("{}", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "congelado"):
                 construir_indice({"salida": temporal})
+
+    def test_indice_sin_version_actual_se_rechaza_antes_de_cargar_modelo(self):
+        for version in (None, VERSION_TEXTO_BUSQUEDA - 1, VERSION_TEXTO_BUSQUEDA + 1):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as temporal:
+                manifiesto = {"configuracion": {}, "sha256_archivos": {},
+                              "sha256_configuracion": hash_json({})}
+                if version is not None:
+                    manifiesto["version_texto_busqueda"] = version
+                Path(temporal, "manifest.json").write_text(json.dumps(manifiesto), encoding="utf-8")
+                with patch("scripts.indice.recuperacion.Encoder") as encoder:
+                    with self.assertRaisesRegex(ValueError, "Reconstruir el índice"):
+                        cargar_indice(temporal)
+                    encoder.assert_not_called()
+
+    def test_experimento_omite_indices_con_texto_busqueda_anterior(self):
+        from scripts.experimentos.orquestador import _buscar_indice, _compatible
+
+        ficha = {"repo_id": "prueba", "revision": "revision_prueba"}
+        config = {"tamano_tokens": 120, "solapamiento_tokens": 20, "precision": "float32"}
+        base = {"configuracion": {**config, "encoder": ficha}, "sha256_corpus": "corpus_prueba"}
+        actual = {**base, "version_texto_busqueda": VERSION_TEXTO_BUSQUEDA}
+        self.assertTrue(_compatible(actual, ficha, "corpus_prueba", config))
+        for version in (None, VERSION_TEXTO_BUSQUEDA - 1, VERSION_TEXTO_BUSQUEDA + 1):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as temporal:
+                manifiesto = dict(base)
+                if version is not None:
+                    manifiesto["version_texto_busqueda"] = version
+                self.assertFalse(_compatible(manifiesto, ficha, "corpus_prueba", config))
+                contenido = json.dumps(manifiesto)
+                carpeta = Path(temporal)
+                (carpeta / "manifest.json").write_text(contenido, encoding="utf-8")
+                with zipfile.ZipFile(carpeta / "indice.zip", "w") as archivo:
+                    archivo.writestr("indice/manifest.json", contenido)
+                with patch("scripts.experimentos.orquestador._verificar_indice") as verificar:
+                    self.assertEqual(_buscar_indice(carpeta, [carpeta], ficha, "corpus_prueba", config),
+                                     (None, None))
+                    verificar.assert_not_called()
 
 
 if __name__ == "__main__":

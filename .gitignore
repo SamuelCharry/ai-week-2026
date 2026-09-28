@@ -15,3 +15,4 @@ htmlcov/
 .env
 .env.*
 !.env.example
+_por_borrar/

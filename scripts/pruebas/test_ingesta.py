@@ -5,13 +5,13 @@ import re
 from pathlib import Path
 import unittest
 
-from scripts.auxiliares.ingesta import (
+from scripts.corpus.ingesta import (
     candidatos_articulo, segmentar_documento, unidades_de_fragmentos,
     extraer_pdf, extraer_html, evaluar_fuente, MAX_BLOQUE_JUDICIAL, _MARCADOR_PAGINA,
 )
 
 
-RAIZ = Path(__file__).resolve().parents[2]
+RAIZ = next(p for p in Path(__file__).resolve().parents if (p / "configs/experimentos.json").is_file())
 SALIDA = RAIZ / "data/processed/corpus"
 
 
@@ -131,6 +131,99 @@ class SegmentacionReal(unittest.TestCase):
     def test_resultado_determinista(self):
         texto, fs, us = self.segmentar("co_decreto_306_1992")
         self.assertEqual(fs, segmentar_documento(self.documentos["co_decreto_306_1992"], texto))
+
+
+class TablasHTML(unittest.TestCase):
+    def extraer(self, html):
+        paginas, info = extraer_html(html.encode("utf-8"), {})
+        return paginas[0]["texto"], info
+
+    def test_tabla_simple_conserva_columnas_y_encabezado(self):
+        texto, info = self.extraer(
+            "<table><tr><th>Nombre</th><th>Valor</th></tr>"
+            "<tr><td>uno</td><td>5</td></tr><tr><td>dos</td><td>10</td></tr></table>"
+        )
+        self.assertEqual(texto, "| Nombre | Valor |\n| --- | --- |\n| uno | 5 |\n| dos | 10 |")
+        self.assertEqual(info["tablas_estructuradas"], 1)
+        self.assertEqual(info["tablas_en_texto"], 0)
+
+    def test_datos_no_se_convierten_en_encabezado(self):
+        texto, _ = self.extraer(
+            "<table><tr><td>uno</td><td>5</td></tr>"
+            "<tr><td>dos</td><td>10</td></tr></table>"
+        )
+        self.assertNotIn("---", texto)
+        self.assertEqual(texto.splitlines(), ["| uno | 5 |", "| dos | 10 |"])
+
+    def test_bloques_y_tachados_no_se_pierden(self):
+        texto, _ = self.extraer(
+            '<table><tr><td><p>uno</p><p>dos</p></td><td>5<br>10</td></tr>'
+            '<tr style="text-decoration: line-through"><td><s>viejo</s></td>'
+            '<td>a|b<!-- oculto --></td></tr></table>'
+        )
+        self.assertIn("| uno dos | 5 10 |", texto)
+        self.assertIn("[TEXTO TACHADO EN LA FUENTE: viejo]", texto)
+        self.assertIn("[TEXTO TACHADO EN LA FUENTE: a\\|b]", texto)
+        self.assertNotIn("oculto", texto)
+
+    def test_tachado_de_tabla_completa_se_conserva(self):
+        texto, _ = self.extraer(
+            '<table style="text-decoration:line-through"><tr><td>uno</td><td>5</td></tr>'
+            '<tr><td>dos</td><td>10</td></tr></table>'
+        )
+        self.assertTrue(texto.startswith("[TEXTO TACHADO EN LA FUENTE:"))
+        self.assertTrue(texto.endswith("]"))
+
+    def test_celdas_combinadas_conservan_recorrido_original(self):
+        texto, info = self.extraer(
+            '<table><tr><th colspan="2">Rango</th><th rowspan="2">Valor</th></tr>'
+            '<tr><th>Desde</th><th>Hasta</th></tr>'
+            '<tr><td>0</td><td>5</td><td>10</td></tr></table>'
+        )
+        self.assertEqual(info["tablas_estructuradas"], 0)
+        self.assertEqual(info["tablas_en_texto"], 1)
+        self.assertEqual(texto, "Rango | Valor |\nDesde | Hasta |\n0 | 5 | 10 |")
+
+    def test_anidadas_y_maquetacion_conservan_texto_una_vez(self):
+        for html in [
+            '<table><tr><td><p>inicio</p><table><tr><td>interior</td></tr></table>'
+            '<p>final</p></td></tr></table>',
+            '<table role="presentation"><tr><td><p>inicio</p><p>interior</p></td><td>x</td></tr>'
+            '<tr><td>final</td><td>y</td></tr></table>',
+        ]:
+            with self.subTest(html=html):
+                texto, info = self.extraer(html)
+                self.assertEqual(info["tablas_estructuradas"], 0)
+                for palabra in ("inicio", "interior", "final"):
+                    self.assertEqual(texto.count(palabra), 1)
+                self.assertLess(texto.index("inicio"), texto.index("interior"))
+                self.assertLess(texto.index("interior"), texto.index("final"))
+
+    def test_articulos_en_tabla_siguen_segmentandose(self):
+        texto, info = self.extraer(
+            '<table><tr><td><p>ARTÍCULO 1. xxx</p>'
+            '<p>(Ver Ley 388 de 1997; Art. 1.; Art. 6.)</p></td><td>a</td></tr>'
+            '<tr><td><p>ARTÍCULO 2. yyy</p></td><td>b</td></tr></table>'
+        )
+        self.assertEqual(info["tablas_estructuradas"], 0)
+        self.assertEqual([c["numero"] for c in candidatos_articulo(texto)], ["1", "2"])
+
+    def test_articulos_con_ordinales_conservan_cabeceras(self):
+        texto, info = self.extraer(
+            '<table><tr><td>ARTÍCULO PRIMERO. xxx</td><td>a</td></tr>'
+            '<tr><td>ARTÍCULO SEGUNDO. yyy</td><td>b</td></tr></table>'
+        )
+        self.assertEqual(info["tablas_estructuradas"], 0)
+        self.assertTrue(texto.startswith("ARTÍCULO PRIMERO."))
+        self.assertIn("\nARTÍCULO SEGUNDO.", texto)
+
+    def test_celdas_fuera_de_fila_no_se_pierden(self):
+        texto, info = self.extraer(
+            '<table><td>fuera</td><tr><td>a</td><td>b</td></tr>'
+            '<tr><td>c</td><td>d</td></tr></table>'
+        )
+        self.assertEqual(info["tablas_estructuradas"], 0)
+        self.assertEqual(texto.count("fuera"), 1)
 
 
 class MecanicaOffsets(unittest.TestCase):
