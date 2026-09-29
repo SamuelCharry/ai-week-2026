@@ -3,6 +3,33 @@
 BM25 + BGE-M3 con RRF, reranker BGE-v2-m3 y Qwen2.5-7B-Instruct. Todo se ejecuta desde la raíz
 del repositorio. Los comandos están para Linux; al final hay equivalentes para Windows.
 
+## Atajo: un solo archivo
+
+Después de instalar el entorno (paso 1), `src/main.py` hace los pasos 2 a 4: encuentra los datos
+dentro de la carpeta donde se descomprimieron, los enlaza, construye el índice si falta, responde y
+evalúa.
+
+```bash
+python3 src/main.py --datos datos --solo-preparar   # revisa entorno, datos e índice
+python3 src/main.py --datos datos --prueba          # 3 preguntas
+python3 src/main.py --datos datos                   # las 50 de muestra + evaluador oficial
+python3 src/main.py --datos datos --split test      # las 992 del sábado
+```
+
+### Desde `data/raw` (sin el paquete del Drive)
+
+Si solo están los originales en `data/raw`, `--desde-raw` prepara los textos, arma el inventario
+`data/releases/corpus_eval_v1` y construye el índice. La preparación y el BM25 no necesitan GPU:
+
+```bash
+python3 src/main.py --desde-raw --solo-corpus    # sin GPU: textos canónicos, inventario y BM25
+python3 src/main.py --desde-raw --prueba         # con GPU: índice BGE-M3 (si falta) y 3 respuestas
+python3 src/main.py --desde-raw                  # las 50 de muestra + evaluador oficial
+```
+
+Si la preparación se hace en otro equipo, copiar a la máquina con GPU `data/processed/corpus_preparado/`,
+`data/releases/corpus_eval_v1/` y `data/experimentos/corpus_definitivo/`.
+
 ## 0. Requisitos
 
 | Recurso | Mínimo | Por qué |
