@@ -31,7 +31,8 @@ class MainTest(unittest.TestCase):
                 self.assertTrue((repo / "data/processed/corpus_preparado/textos/ley_1_2000.txt").is_file())
                 self.assertTrue((repo / "data/releases/corpus_eval_v1/corpus_manifest.json").is_file())
                 self.assertTrue((repo / "reports/reporte_evaluacion/modelos_verificados.json").is_file())
-                self.assertTrue((repo / "data/experimentos/corpus_definitivo/chunks.sqlite").is_file())
+                # R03 construye su propio índice: el de E06 (otras ventanas) no se enlaza.
+                self.assertFalse((repo / "data/experimentos/r03/chunks.sqlite").exists())
                 self.assertEqual(main.enlazar(datos / "data/releases/corpus_eval_v1",
                                               "data/releases/corpus_eval_v1"), "ya estaba")
 

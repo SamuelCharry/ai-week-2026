@@ -1,6 +1,9 @@
-"""Opción A de punta a punta, en un solo comando.
+"""R03 del reporte de punta a punta, en un solo comando (rama r03-reporte).
 
-BM25 + BGE-M3 con RRF, reranker BGE-v2-m3 y Qwen2.5-7B-Instruct.
+BM25 + BGE-M3 con RRF, reranker BGE-v2-m3 y Qwen2.5-7B-Instruct, con ventanas de 384 tokens
+(solapamiento 64) vinculadas al artículo o sección íntegros.
+
+    python3 src/main.py --desde-raw --solo-recuperacion  # R03 sin decoder: respaldo de citas vs E06
 
     python3 src/main.py --datos datos --prueba          # 3 preguntas, para medir y revisar
     python3 src/main.py --datos datos                   # las 50 de muestra + evaluador oficial
@@ -121,7 +124,8 @@ def preparar_datos(datos, config):
         "textos": buscar(datos, lambda c, a: c.name == "textos" and c.parent.name == "corpus_preparado"),
         "release": buscar(datos, lambda c, a: c.name == "corpus_eval_v1" and "corpus_manifest.json" in a),
         "catalogo": buscar(datos, lambda c, a: "modelos_verificados.json" in a),
-        "ejecucion": buscar(datos, lambda c, a: "chunks.sqlite" in a),
+        # El índice de E06 (ventanas de 1.500 caracteres) no sirve para R03, que construye el suyo.
+        "ejecucion": None if "segmentacion" in rec else buscar(datos, lambda c, a: "chunks.sqlite" in a),
     }
     if encontrados["textos"] is None and not (RAIZ / rec["textos"]).is_dir():
         salir("No encontré corpus_preparado/textos dentro de la carpeta de datos.")
@@ -225,18 +229,25 @@ def estado_indice(rec):
 def preparar_indice(config, solo_lexico=False):
     paso(3, "Índice (BM25 en SQLite + BGE-M3 en FAISS)")
     rec = config["recuperacion"]
+    from legalrag.experimentos import corpus_definitivo as e06
+
+    def lexico():
+        if "segmentacion" in rec:
+            from legalrag.indexing import r03
+            print("  Segmentación R03 (ventanas por tokens) y BM25, sin GPU...", flush=True)
+            e06.RUNS = (RAIZ / rec["fragmentos"]).parent
+            return r03.construir(RAIZ, rec)
+        return e06.build_lexical()
+
     if solo_lexico:
-        from legalrag.experimentos import corpus_definitivo as e06
-        print("  Segmentación y BM25 (sin GPU)...", flush=True)
-        print("  ", e06.build_lexical())
+        print("  ", lexico())
         return
     if not estado_indice(rec):
         if not (RAIZ / "reports/reporte_evaluacion/modelos_verificados.json").is_file():
             salir("Para construir el índice falta modelos_verificados.json (viene en el paquete del corpus).")
-        from legalrag.experimentos import corpus_definitivo as e06
-        print("No está el índice: se construye con el código de E06.")
-        print("  Segmentación y BM25 (unos minutos)...", flush=True)
-        print("  ", e06.build_lexical())
+        print("No está el índice: se construye.")
+        print("  ", lexico())
+        e06.RUNS = (RAIZ / rec["fragmentos"]).parent
         print("  Vectores BGE-M3 de todos los fragmentos (puede tardar horas; se reanuda si se corta)...", flush=True)
         print("  ", e06.build_dense(rec["encoder"]["repo_id"]))
     import faiss
@@ -273,6 +284,26 @@ def responder(config, split, ids):
     return salida, resumen
 
 
+def medir_recuperacion(config):
+    from legalrag.evaluation.entrega import cargar_jsonl
+    from legalrag.evaluation.oficial import cargar_citaciones, guardar_json
+    from legalrag.evaluation.recuperacion import evaluar as evaluar_recuperacion
+    from legalrag.retrieval.hibrido import RecuperadorHibrido
+
+    paso(4, "Recuperación R03 sin decoder (50 preguntas de muestra)")
+    recuperador = RecuperadorHibrido(RAIZ, config["recuperacion"])
+    recuperador.abrir()
+    try:
+        preguntas = cargar_jsonl(RAIZ / config["entradas"]["sample"])
+        resultado = evaluar_recuperacion(recuperador, preguntas, cargar_citaciones(RAIZ))
+    finally:
+        recuperador.cerrar()
+    ruta = RAIZ / "data/reproduccion/recuperacion_r03.json"
+    guardar_json(ruta, resultado)
+    print(json.dumps({k: v for k, v in resultado.items() if k != "detalle"}, ensure_ascii=False, indent=2))
+    print("Detalle por pregunta:", ruta)
+
+
 def evaluar(salida, ragas):
     paso(5, "Evaluador oficial")
     reporte = salida.with_name(salida.stem + "_reporte.json")
@@ -292,6 +323,7 @@ def main():
     ap.add_argument("--prueba", action="store_true", help=f"solo las preguntas {PRUEBA}")
     ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas")
     ap.add_argument("--solo-preparar", action="store_true", help="revisa entorno, datos e índice y termina")
+    ap.add_argument("--solo-recuperacion", action="store_true", help="mide R03 sin decoder y termina")
     ap.add_argument("--ragas", action="store_true", help="evalúa también texto libre (OPENROUTER_API_KEY)")
     args = ap.parse_args()
 
@@ -312,6 +344,9 @@ def main():
         return
     if args.solo_preparar:
         print("\nListo para responder.")
+        return
+    if args.solo_recuperacion:
+        medir_recuperacion(config)
         return
     ids = args.ids or (PRUEBA if args.prueba else None)
     salida, resumen = responder(config, args.split, ids)

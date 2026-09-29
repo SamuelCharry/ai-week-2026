@@ -30,6 +30,21 @@ python3 src/main.py --desde-raw                  # las 50 de muestra + evaluador
 Si la preparación se hace en otro equipo, copiar a la máquina con GPU `data/processed/corpus_preparado/`,
 `data/releases/corpus_eval_v1/` y `data/experimentos/corpus_definitivo/`.
 
+### Rama `r03-reporte`: R03 del reporte
+
+Misma recuperación (BM25 100 + BGE-M3 100, RRF 60, reranker BGE sobre 50, hasta 10 pasajes), pero con la
+segmentación del reporte: ventanas de 384 tokens BGE-M3 con solapamiento 64 y cabecera literal dentro del
+presupuesto, y evidencia = artículo o sección íntegros (hasta 6.000 caracteres). Construye su propio índice
+en `data/experimentos/r03/` (la segmentación completa tarda del orden de 1,5–2 h en CPU).
+
+```bash
+git checkout r03-reporte
+python3 src/main.py --desde-raw --solo-recuperacion   # R03 sin decoder; compara con E06 (0,854 / 0,546)
+python3 src/main.py --desde-raw                        # 50 de muestra con Qwen2.5-7B + evaluador oficial
+```
+
+El resultado de `--solo-recuperacion` queda en `data/reproduccion/recuperacion_r03.json`.
+
 ## 0. Requisitos
 
 | Recurso | Mínimo | Por qué |
