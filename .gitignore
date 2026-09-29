@@ -8,6 +8,8 @@
 .venv-e06/
 .venv-profiling/
 __pycache__/
+*.egg-info/
+build/
 *.py[cod]
 .ipynb_checkpoints/
 .pytest_cache/

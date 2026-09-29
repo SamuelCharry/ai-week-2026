@@ -2,9 +2,10 @@
 # Requiere GPU NVIDIA y NVIDIA Container Toolkit. Uso: ./reproducir.sh
 FROM nvidia/cuda:12.6.3-devel-ubuntu24.04
 
-ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PATH=/opt/venv/bin:$PATH
+ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PATH=/opt/venv/bin:$PATH \
+    PYTHONPATH=/app/src
 
-# git, cmake y el compilador construyen llama.cpp con CUDA (scripts/entorno/runtime.py).
+# git, cmake y el compilador construyen llama.cpp con CUDA (src/legalrag/generation/runtime.py).
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-venv git cmake build-essential ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
@@ -16,4 +17,4 @@ RUN pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124 
     && pip install -r /tmp/requisitos/requirements.txt -r /tmp/requisitos/requirements-evaluador.txt
 
 COPY . .
-ENTRYPOINT ["python", "-m", "scripts.sistema.reproducir"]
+ENTRYPOINT ["python", "-m", "legalrag", "run"]

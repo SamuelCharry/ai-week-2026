@@ -1,6 +1,6 @@
 {
-  "notas": "Configuración del sistema entregado. `recuperacion` y `generacion` quedan pendientes: los completa quien implemente scripts/sistema/componentes.py.",
-  "implementacion": "scripts.sistema.componentes:Sistema",
+  "notas": "Configuración del sistema entregado. `recuperacion` y `generacion` quedan pendientes: los completa quien implemente src/legalrag/agent/componentes.py.",
+  "implementacion": "legalrag.agent.componentes:Sistema",
   "entradas": {
     "sample": "data/oficial/data/sample_50.jsonl",
     "test": "data/oficial/data/test_992.jsonl"

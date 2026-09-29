@@ -1,7 +1,7 @@
 # Corpus colombiano para AI Week 2026
 
 Versión documental para experimentos: **corpus_eval_v1**, fijada el 29 de septiembre de 2026.
-El [reporte de estructura y experimentos](REPORTE_CORPUS_Y_EXPERIMENTOS.md) desarrolla las decisiones.
+El [reporte de estructura y experimentos](docs/REPORTE_CORPUS_Y_EXPERIMENTOS.md) desarrolla las decisiones.
 
 ## 1. Inventario
 
@@ -54,19 +54,19 @@ prueba cobertura de vigencia, excepciones, conflictos, precedentes o decisión j
 La ingesta verifica originales y derivados, extrae HTML/PDF/Word, conserva notas,
 retira patrones de navegación comprobados y produce canónico con procedencia y
 offsets. Los cambios verificables de metadatos y los respaldos están en
-[CORPUS_PREPARACION.md](CORPUS_PREPARACION.md). No se infiere texto legal faltante.
+[docs/CORPUS_PREPARACION.md](docs/CORPUS_PREPARACION.md). No se infiere texto legal faltante.
 
 ```powershell
 # Desde los originales disponibles localmente:
-.venv\Scripts\python.exe -m scripts.corpus.preparar_corpus --raw data/data/raw --output data/processed/corpus_preparado --workers 6
-.venv\Scripts\python.exe -m scripts.corpus.auditar_preparacion
+.venv\Scripts\python.exe -m legalrag.preprocessing.preparar_corpus --raw data/data/raw --output data/processed/corpus_preparado --workers 6
+.venv\Scripts\python.exe -m legalrag.preprocessing.auditar_preparacion
 
 # Antes de cada lote de evaluación, comprobar la versión ya fijada:
-.venv\Scripts\python.exe -m scripts.corpus.fijar_corpus_evaluacion --version corpus_eval_v1 --verificar
+.venv\Scripts\python.exe -m legalrag.ingestion.fijar_corpus_evaluacion --version corpus_eval_v1 --verificar
 
 # Perfiles reproducibles, en entorno separado:
-.venv-profiling\Scripts\python.exe -m scripts.corpus.perfil_preparado
-.venv-profiling\Scripts\python.exe -m scripts.corpus.perfil_estructura
+.venv-profiling\Scripts\python.exe -m legalrag.preprocessing.perfil_preparado
+.venv-profiling\Scripts\python.exe -m legalrag.preprocessing.perfil_estructura
 ```
 
 El snapshot referencia los textos locales por rutas relativas a la raíz del
