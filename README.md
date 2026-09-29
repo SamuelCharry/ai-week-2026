@@ -61,25 +61,31 @@ pregunta ─► retrieval/  denso, BM25, RRF y reranker
 | 4. Citas y abstención | `citations/`, `generation/politica.py`, `evaluation/entrega.py` (`auditar_citas`) |
 | 5. Enriquecimiento del corpus | `CORPUS.md`, `corpus_manifest.json`, `ingestion/` |
 
+El sistema entregado es la **opción A** del [reporte de experimentos](docs/REPORTE_CORPUS_Y_EXPERIMENTOS.md):
+
 | Componente | Configuración |
 |---|---|
-| Encoder | BAAI/bge-m3, 1.024 dimensiones |
-| Índice | FAISS `IndexFlatIP`, vectores normalizados, ventanas de 320 tokens con solapamiento de 32 |
-| Decoder | BSC-LT/salamandra-7b-instruct, Q4_K_M, 7.768.117.248 parámetros, llama.cpp |
-| Generación | temperatura 0, semilla 0, contexto de 8.192 tokens |
-| Recuperación y generación finales | pendientes en `configs/sistema.json` |
+| Segmentación | Artículo para normas y bloques para providencias; ventanas de 1.500 caracteres con 200 de solapamiento (1.304.984 fragmentos de 13.962 documentos) |
+| Recuperación | BM25 (SQLite FTS5) top 100 + BAAI/bge-m3 denso top 100 (FAISS `IndexFlatIP`), fusión RRF con k = 60 |
+| Reordenamiento | BAAI/bge-reranker-v2-m3 sobre los 50 primeros; hasta 10 pasajes literales, con la cabecera de la norma cuando falta |
+| Decoder | Qwen/Qwen2.5-7B-Instruct, 7.615.616.512 parámetros, bfloat16, transformers |
+| Generación | greedy (temperatura 0), contexto de 6.144 tokens, hasta 600 tokens de salida |
+| Citas y abstención | JSON validado por formato; si una cita no está en la evidencia o el JSON falla, abstención con los pasajes conservados |
+
+En la muestra, el reranker sube el respaldo literal de citas en el top 10 de 0,756 (híbrido) a 0,854
+(E06, R03). Es un indicador aproximado; el puntaje oficial con el decoder está pendiente.
 
 La configuración congelada está en `configs/sistema.json` y se lee con `legalrag.config`.
 Revisiones, licencias y conteos de parámetros en `configs/modelos.json`. No se usa ningún modelo
 cerrado en el sistema. El juez de OpenRouter solo interviene en la autoevaluación.
 
-### Dónde se conecta la versión final
+### Dónde está el sistema
 
 `src/legalrag/agent/componentes.py` define la clase `Sistema` con cuatro métodos: `abrir`,
-`recuperar`, `responder` y `cerrar`. El pipeline, el servicio de la interfaz y la reproducción solo
-dependen de esa clase. Su docstring lista las piezas ya disponibles: índice, BM25, reranker,
-evidencia, política de generación y servidor local. También lista los requisitos del enunciado que
-dependen de ella. Sus parámetros van en `recuperacion` y `generacion` de `configs/sistema.json`.
+`recuperar`, `responder` y `cerrar`. Usa `retrieval/hibrido.py`, `generation/decoder.py` y
+`citations/verificacion.py`. El pipeline, el servicio de la interfaz y la reproducción solo dependen
+de esa clase. Sus parámetros van en `recuperacion` y `generacion` de `configs/sistema.json`; los
+artefactos de recuperación (`chunks.sqlite` e índice FAISS) son los que construye E06.
 
 ## Ejecución
 

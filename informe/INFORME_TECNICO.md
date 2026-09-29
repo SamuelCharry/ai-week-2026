@@ -16,17 +16,18 @@ pregunta ─► recuperación ─► evidencia ─► decoder ─► verificaci�
 ```
 
 - **Corpus:** derecho colombiano de fuentes públicas oficiales. Inventario, criterio y método en `CORPUS.md`.
-- **Índice:** encoder BGE-M3, `IndexFlatIP` con vectores normalizados, segmentación por artículo con ventanas
-  de 320 tokens y solapamiento de 32. Se reconstruye con `python -m legalrag index --config configs/indice.json --congelar`.
-- **Decoder:** servido con llama.cpp, temperatura 0 y semilla 0.
-- **Recuperación y generación finales:** **Pendiente** (variante elegida, k, reranker, política de citas y abstención).
+- **Segmentación e índice:** artículo para normas y bloques para providencias, ventanas de 1.500 caracteres con
+  200 de solapamiento (1.304.984 fragmentos). BM25 en SQLite FTS5 y BGE-M3 en FAISS `IndexFlatIP`.
+- **Recuperación (opción A):** BM25 top 100 + denso top 100, RRF (k = 60), reranker BGE-v2-m3 sobre 50, hasta 10 pasajes.
+- **Decoder:** Qwen2.5-7B-Instruct en bfloat16, greedy (temperatura 0), contexto de 6.144 tokens.
+- **Citas y abstención:** JSON validado; abstención si una cita no está en la evidencia o el JSON no es válido.
 
 ## 2. Selección de encoder y decoder
 
 | Componente | Elegido | Alternativas medidas | Evidencia |
 |---|---|---|---|
-| Encoder | BAAI/bge-m3 (568 M, MIT) | multilingual-e5-large, jina-embeddings-v3, multilingual-e5-base | `notebooks/experimentos/e01_encoders.ipynb` |
-| Decoder | BSC-LT/salamandra-7b-instruct, Q4_K_M (7.768 M ≤ 8.000 M) | Qwen2.5-1.5B-Instruct, Qwen2.5-7B-Instruct | `notebooks/experimentos/e02_decoders.ipynb` |
+| Encoder | BAAI/bge-m3 (568 M, MIT) + reranker bge-reranker-v2-m3 | multilingual-e5-large, jina-embeddings-v3, multilingual-e5-base, Qwen3-Embedding-0.6B | `e01_encoders.ipynb`, `e06_corpus_definitivo.ipynb` (R00–R05) |
+| Decoder | Qwen/Qwen2.5-7B-Instruct, bfloat16 (7.616 M ≤ 8.000 M) | Salamandra-7B-Instruct, Qwen3-4B-Instruct-2507, Qwen2.5-1.5B | `notebooks/experimentos/e02_decoders.ipynb`, `e06_corpus_definitivo.ipynb` |
 
 Revisiones, licencias y conteos de parámetros en `configs/modelos.json`. **Pendiente:** resumir en dos o tres
 frases por qué ganó cada uno (métrica y margen).

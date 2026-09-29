@@ -1,19 +1,16 @@
-"""Recuperación y generación del sistema entregado.
+"""Sistema entregado (opción A): BM25 + BGE-M3 con RRF, reranker BGE y Qwen2.5-7B-Instruct.
 
 El pipeline por lotes, el servicio de la interfaz y la reproducción solo hablan con
-esta clase. Para conectar la versión final hay que implementar `abrir`, `recuperar`
-y `responder`. Si se prefiere otra clase, se declara en `configs/sistema.json`
+esta clase. Otra implementación se declara en `configs/sistema.json`
 (`implementacion: "modulo:Clase"`) con los mismos métodos.
 
-Piezas disponibles en el repositorio:
+Recorrido de una pregunta:
 
-    legalrag.indexing.indice     cargar_indice, Recuperador.buscar, BM25
-    legalrag.retrieval.reordenamiento   Reordenador (bge-reranker-v2-m3)
-    legalrag.citations.evidencia    EvidenciaV04: artículos completos y cabeceras literales
-    legalrag.generation.politica     generar y postprocesar: prompt, JSON, citas y abstención
-    legalrag.generation.cliente      ServidorLocal: llama.cpp con temperatura 0 y semilla 0
-    legalrag.generation.runtime         runtime, preparar_decoder_persistente
-    legalrag.experimentos.v04        ejecutar(): el mismo flujo completo sobre la muestra
+    recuperar  legalrag.retrieval.hibrido     BM25 top 100 + BGE-M3 top 100 -> RRF -> reranker top 50
+                                              -> hasta 10 unidades literales, con cabecera de la norma
+    responder  legalrag.generation.decoder    pasajes que caben en el contexto -> Qwen2.5-7B greedy
+               legalrag.citations.verificacion JSON por formato, citas respaldadas, esquema oficial;
+                                              si algo falla, abstención con la evidencia conservada
 
 Requisitos del enunciado que dependen de esta clase:
 
@@ -24,40 +21,53 @@ Requisitos del enunciado que dependen de esta clase:
     - Unos 22 segundos por pregunta en promedio (992 preguntas en seis horas).
 """
 import importlib
-
-PENDIENTE = ("Sistema.{} está pendiente. Implementarlo en src/legalrag/agent/componentes.py "
-             "o declarar otra clase en configs/sistema.json (implementacion).")
+import json
+from pathlib import Path
 
 
 class Sistema:
     def __init__(self, raiz, config):
-        self.raiz = raiz
+        from legalrag.generation.decoder import DecoderTransformers
+        from legalrag.retrieval.hibrido import RecuperadorHibrido
+
+        self.raiz = Path(raiz)
         self.config = config
+        self.recuperador = RecuperadorHibrido(self.raiz, config["recuperacion"])
+        self.decoder = DecoderTransformers(config["generacion"])
+        self.manifiesto = self.validador = None
+        self.ultimo_problema = None
 
     def abrir(self):
         """Carga índice, encoder, reranker y decoder. Se llama una vez antes de responder."""
-        raise NotImplementedError(PENDIENTE.format("abrir"))
+        import jsonschema
+
+        ruta = self.raiz / self.config["recuperacion"]["manifiesto"]
+        self.manifiesto = json.loads(ruta.read_text(encoding="utf-8"))
+        esquema = json.loads((self.raiz / self.config["oficial"] / "schema/submission.schema.json")
+                             .read_text(encoding="utf-8"))
+        self.validador = jsonschema.validators.validator_for(esquema)(esquema)
+        self.recuperador.abrir()
+        self.decoder.abrir()
 
     def cerrar(self):
-        """Libera GPU y detiene el servidor del decoder."""
+        self.decoder.cerrar()
+        self.recuperador.cerrar()
 
     def recuperar(self, entrada):
-        """Devuelve los pasajes de la pregunta, ordenados por pertinencia.
-
-        entrada: pregunta sin campos de evaluación (id, formato, pregunta, opciones,
-        area, sub_tarea, tema, complejidad).
-        """
-        raise NotImplementedError(PENDIENTE.format("recuperar"))
+        """Pasajes de la pregunta, ordenados por el reranker."""
+        return self.recuperador.buscar(entrada)
 
     def responder(self, entrada, pasajes):
-        """Devuelve el objeto de entrega de la pregunta, con el mismo id y formato.
+        """Objeto de entrega con el mismo id y formato. `ultimo_problema` dice por qué se abstuvo."""
+        from legalrag.citations.verificacion import abstencion, respuesta_final
 
-        Debe incluir `abstencion` y `pasajes_recuperados`, además de las claves del
-        formato: multiple_choice (respuesta_correcta, justificacion, descarte_opciones),
-        semi_open (respuesta, palabras_clave, referencia_legal) u open_ended
-        (marco_normativo, analisis, jurisprudencia, conclusion).
-        """
-        raise NotImplementedError(PENDIENTE.format("responder"))
+        usados = self.decoder.seleccionar(entrada, pasajes)
+        if not usados:
+            self.ultimo_problema = "sin_evidencia_en_contexto"
+            return abstencion(entrada, pasajes)
+        crudo = self.decoder.generar(entrada, usados)
+        respuesta, self.ultimo_problema = respuesta_final(entrada, crudo, usados, self.manifiesto, self.validador)
+        return respuesta
 
     def __enter__(self):
         self.abrir()

@@ -1,5 +1,5 @@
 {
-  "notas": "Configuración del sistema entregado. `recuperacion` y `generacion` quedan pendientes: los completa quien implemente src/legalrag/agent/componentes.py.",
+  "notas": "Opción A: BM25 + BGE-M3 con RRF, reranker BGE-v2-m3 y Qwen2.5-7B-Instruct. Los artefactos de recuperación son los que construye E06 (legalrag.experimentos.corpus_definitivo); contexto y salida fijos para que el resultado no dependa de la GPU.",
   "implementacion": "legalrag.agent.componentes:Sistema",
   "entradas": {
     "sample": "data/oficial/data/sample_50.jsonl",
@@ -16,8 +16,47 @@
     "sha256": null,
     "archivo": "data/descargas/corpus_indice.zip",
     "extraer_en": "data",
-    "requeridos": ["data/processed/corpus", "data/index/corpus"]
+    "requeridos": [
+      "data/experimentos/corpus_definitivo/chunks.sqlite",
+      "data/experimentos/corpus_definitivo/indices/BAAI__bge-m3/index.faiss",
+      "data/processed/corpus_preparado/textos",
+      "data/releases/corpus_eval_v1/corpus_manifest.json"
+    ]
   },
-  "recuperacion": null,
-  "generacion": null
+  "recuperacion": {
+    "fragmentos": "data/experimentos/corpus_definitivo/chunks.sqlite",
+    "indice_denso": "data/experimentos/corpus_definitivo/indices/BAAI__bge-m3/index.faiss",
+    "indice_meta": "data/experimentos/corpus_definitivo/indices/BAAI__bge-m3/complete.json",
+    "textos": "data/processed/corpus_preparado/textos",
+    "manifiesto": "data/releases/corpus_eval_v1/corpus_manifest.json",
+    "encoder": {
+      "repo_id": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+    },
+    "reranker": {
+      "repo_id": "BAAI/bge-reranker-v2-m3",
+      "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "dtype": "bfloat16",
+    "max_tokens_encoder": 1024,
+    "max_tokens_reranker": 1024,
+    "lote_reranker": 6,
+    "bm25_top": 100,
+    "denso_top": 100,
+    "rrf_k": 60,
+    "rerank_top": 50,
+    "max_pasajes": 10,
+    "max_caracteres_pasaje": 2400
+  },
+  "generacion": {
+    "decoder": {
+      "repo_id": "Qwen/Qwen2.5-7B-Instruct",
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "parametros": 7615616512,
+      "licencia": "apache-2.0"
+    },
+    "dtype": "bfloat16",
+    "contexto": 6144,
+    "max_nuevos_tokens": 600
+  }
 }

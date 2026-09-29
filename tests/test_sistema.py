@@ -24,9 +24,10 @@ PREGUNTAS = [
 ]
 
 
-class Falso(Sistema):
+class Falso:
+    """Misma interfaz que Sistema, sin modelos."""
+
     def __init__(self, raiz=None, config=None, fallar=()):
-        super().__init__(raiz, config)
         self.vistas, self.fallar, self.abierto = [], set(fallar), False
 
     def abrir(self):
@@ -60,11 +61,12 @@ class SistemaTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_config_versionada_carga_el_hueco(self):
-        sistema = cargar(RAIZ, leer_config())
+    def test_config_versionada_carga_la_opcion_a(self):
+        config = leer_config()
+        sistema = cargar(RAIZ, config)
         self.assertIs(type(sistema), Sistema)
-        with self.assertRaises(NotImplementedError):
-            sistema.abrir()
+        self.assertEqual(config["generacion"]["decoder"]["repo_id"], "Qwen/Qwen2.5-7B-Instruct")
+        self.assertLessEqual(config["generacion"]["decoder"]["parametros"], 8_000_000_000)
 
     def test_lote_escribe_en_orden_sin_filtrar_respuestas(self):
         sistema = Falso()
@@ -102,7 +104,7 @@ class SistemaTest(unittest.TestCase):
     def test_hueco_pendiente_detiene_la_tanda(self):
         class Incompleto(Falso):
             def responder(self, entrada, pasajes):
-                return Sistema.responder(self, entrada, pasajes)
+                raise NotImplementedError("pendiente")
         with self.assertRaises(NotImplementedError):
             responder_lote(RAIZ, self.entrada, self.salida, self.config, sistema=Incompleto())
 

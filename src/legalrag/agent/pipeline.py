@@ -71,7 +71,8 @@ def responder_lote(raiz, entrada, salida, config, sistema=None, reanudar=True):
                 print(f"{n}/{len(entradas)} id={pregunta['id']}: {type(error).__name__}: {error}", flush=True)
                 continue
             segundos = time.perf_counter() - inicio
-            guardar_json(destino, {"firma": firma, "respuesta": respuesta, "segundos": segundos})
+            guardar_json(destino, {"firma": firma, "respuesta": respuesta, "segundos": segundos,
+                                   "problema": getattr(sistema, "ultimo_problema", None)})
             respuestas.append(respuesta)
             latencias.append(segundos)
             print(f"{n}/{len(entradas)} id={pregunta['id']} {segundos:.1f} s", flush=True)
