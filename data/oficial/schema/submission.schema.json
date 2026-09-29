@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "submission.schema.json",
+  "title": "Entrega de la Hackathon 2026 - Derecho colombiano",
+  "description": "Una linea JSON por item del test. Los nombres de campo replican las llaves de los prompts oficiales de la hackathon y son obligatorios: sobre ellos opera el evaluador.",
+  "type": "object",
+  "required": ["id", "formato", "abstencion", "pasajes_recuperados"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Identificador del item, tal como viene en test_992.jsonl."
+    },
+    "formato": {
+      "enum": ["multiple_choice", "semi_open", "open_ended"]
+    },
+    "abstencion": {
+      "type": "boolean",
+      "description": "true si el sistema declara no tener fundamento suficiente en su corpus. Se puntua: abstenerse bien suma, abstenerse donde el corpus si daba fundamento resta."
+    },
+    "pasajes_recuperados": {
+      "type": "array",
+      "description": "Evidencia recuperada que sustenta la respuesta. Vacio solo si abstencion es true. Debe permitir reconstruir la respuesta en la verificacion en vivo del sabado.",
+      "items": {
+        "type": "object",
+        "required": ["doc_id", "texto"],
+        "properties": {
+          "doc_id": {
+            "type": "string",
+            "description": "Identificador del documento en el corpus del equipo (debe existir en corpus_manifest.json)."
+          },
+          "inicio": {"type": "integer", "minimum": 0, "description": "Offset de caracter donde inicia el pasaje en el documento."},
+          "fin": {"type": "integer", "minimum": 0},
+          "texto": {"type": "string", "minLength": 1, "description": "Texto literal del pasaje recuperado."},
+          "score": {"type": "number", "description": "Puntaje de similitud del recuperador."}
+        }
+      }
+    },
+    "latencia_ms": {"type": "integer", "minimum": 0, "description": "Opcional. Tiempo de la consulta de punta a punta."}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"formato": {"const": "multiple_choice"}}, "required": ["formato"]},
+      "then": {
+        "required": ["respuesta_correcta", "justificacion", "descarte_opciones"],
+        "properties": {
+          "respuesta_correcta": {"enum": ["A", "B", "C", "D"], "description": "Etiqueta de la opcion elegida. Con abstencion true se admite null."},
+          "justificacion": {"type": "string", "description": "Debe citar la norma, articulo, ley o jurisprudencia aplicable: de aqui se extraen las citas que se puntuan."},
+          "descarte_opciones": {"type": "object", "description": "Letras de las opciones incorrectas como llaves, razon breve como valor."}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"formato": {"const": "semi_open"}}, "required": ["formato"]},
+      "then": {
+        "required": ["respuesta", "palabras_clave", "referencia_legal"],
+        "properties": {
+          "respuesta": {"type": "string", "description": "De 3 a 5 oraciones, maximo 150 palabras."},
+          "palabras_clave": {"type": "array", "items": {"type": "string"}},
+          "referencia_legal": {"type": "string", "description": "Norma o articulo citado."}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"formato": {"const": "open_ended"}}, "required": ["formato"]},
+      "then": {
+        "required": ["marco_normativo", "analisis", "jurisprudencia", "conclusion"],
+        "properties": {
+          "marco_normativo": {"type": "string"},
+          "analisis": {"type": "string", "description": "De 5 a 8 oraciones."},
+          "jurisprudencia": {"type": "string"},
+          "conclusion": {"type": "string"}
+        }
+      }
+    }
+  ]
+}

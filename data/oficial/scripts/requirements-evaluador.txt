@@ -1,0 +1,11 @@
+# Dependencias del juez de texto libre (evaluate.py --ragas).
+# El resto del evaluador es determinista y no necesita nada de esto.
+ragas>=0.4.3,<0.5
+datasets>=2.20
+langchain-openai>=0.2
+langchain-huggingface>=0.1
+sentence-transformers>=3.0
+
+# ragas 0.4.x importa langchain_community.chat_models.vertexai, modulo que
+# langchain-community 0.4 elimino. Sin este tope, el import de ragas falla.
+langchain-community<0.4

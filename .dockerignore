@@ -1,0 +1,9 @@
+.git
+.venv
+**/__pycache__
+**/.ipynb_checkpoints
+reports
+notebooks
+data/*
+!data/oficial
+submissions_respuestas

@@ -1,0 +1,23 @@
+{
+  "notas": "Configuración del sistema entregado. `recuperacion` y `generacion` quedan pendientes: los completa quien implemente scripts/sistema/componentes.py.",
+  "implementacion": "scripts.sistema.componentes:Sistema",
+  "entradas": {
+    "sample": "data/oficial/data/sample_50.jsonl",
+    "test": "data/oficial/data/test_992.jsonl"
+  },
+  "salidas": {
+    "sample": "data/reproduccion/submissions_sample.jsonl",
+    "test": "submissions.jsonl"
+  },
+  "oficial": "data/oficial",
+  "presupuesto_segundos": 22,
+  "corpus_indice": {
+    "url": null,
+    "sha256": null,
+    "archivo": "data/descargas/corpus_indice.zip",
+    "extraer_en": "data",
+    "requeridos": ["data/processed/corpus", "data/index/corpus"]
+  },
+  "recuperacion": null,
+  "generacion": null
+}

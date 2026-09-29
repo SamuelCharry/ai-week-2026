@@ -1,6 +1,8 @@
 /data/**
 !/data/**/
 !/data/**/.gitkeep
+# Material oficial: la reproducción en contenedor limpio lo necesita.
+!/data/oficial/**
 /reports/
 .venv/
 .venv-e06/
@@ -18,3 +20,6 @@ htmlcov/
 .env.*
 !.env.example
 _por_borrar/
+submissions_respuestas/
+/configs/corpus_ronda5.json
+/configs/corpus_objetivos.json

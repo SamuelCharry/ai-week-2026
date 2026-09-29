@@ -36,7 +36,7 @@ sondas = crear_sondas(unidades)
 escribir_jsonl(reportes / "sondas.jsonl", sondas)
 estado = {"estado": "en_ejecucion", "reportes": reportes.as_posix(), "datos": carpeta.as_posix(),
           "sha256_corpus": hash_json(unidades), "sha256_catalogo": sha256("configs/modelos.json"),
-          "sha256_codigo": {p: sha256(p) for p in ["scripts/indice/comparar_encoders.py", "scripts/indice/recuperacion.py", "scripts/indice/sondas.py"]},
+          "sha256_codigo": {p: sha256(p) for p in ["scripts/experimentos/comparar_encoders.py", "scripts/indice/recuperacion.py", "scripts/indice/sondas.py"]},
           "modelos": args.modelos or [f["nombre"] for f in catalogo["encoders"]], "tamanos": args.tamanos}
 Path("reports/f_encoders_ultima.json").write_text(json.dumps(estado, indent=2), encoding="utf-8")
 

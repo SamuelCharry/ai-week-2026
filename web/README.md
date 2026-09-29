@@ -1,6 +1,6 @@
 # Interfaz
 
-Interfaz del equipo P34K para consultar derecho colombiano y mostrar respuestas con sus pasajes. El backend aún no está conectado.
+Interfaz del equipo P34K para consultar derecho colombiano y mostrar respuestas con sus pasajes. El backend es `scripts/sistema/servicio.py`.
 
 ## Ejecutar
 
@@ -27,15 +27,23 @@ En modo normal, las consultas se envían al servicio. Si no está disponible, se
 
 ## Conexión con el backend
 
+En otra terminal, desde la raíz:
+
+```bash
+python -m scripts.sistema.servicio --puerto 8000
+```
+
+El servicio responde con el `Sistema` de `scripts/sistema/componentes.py`. Mientras sus métodos sigan pendientes, cada consulta devuelve error 500 con el motivo. `GET /salud` comprueba que el servicio está arriba.
+
 La interfaz espera `POST http://127.0.0.1:8000/preguntar` con este cuerpo:
 
 ```json
 {"pregunta": "Texto de la consulta", "formato": "semi_open"}
 ```
 
-Los formatos admitidos son `semi_open`, `open_ended` y `multiple_choice`.
+Los formatos admitidos son `semi_open`, `open_ended` y `multiple_choice`. En `multiple_choice` se puede añadir `opciones` (`{"A": "..."}`).
 
-Este contrato es provisional. La respuesta esperada es un objeto con `respuesta` y, opcionalmente, `traza`. También se admite el objeto de respuesta sin envoltorio.
+El servicio devuelve un objeto con `respuesta` y `traza` (`segundos`, `k`). También se admite el objeto de respuesta sin envoltorio.
 
 | Objeto | Campos |
 |---|---|
@@ -57,4 +65,4 @@ Para cambiar la dirección del servicio, definir esto en `index.html` antes de c
 <script>window.P34K_API = "http://127.0.0.1:8000"</script>
 ```
 
-Si la interfaz y el backend usan puertos distintos, el servicio debe permitir el origen de la interfaz mediante CORS. La integración se debe comprobar cuando exista el endpoint.
+El servicio permite cualquier origen mediante CORS, así que la interfaz y el backend pueden usar puertos distintos.

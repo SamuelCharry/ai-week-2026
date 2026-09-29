@@ -1,0 +1,1545 @@
+{
+ "descripcion": "Genera configs/corpus_exclusiones.json: lo que el grafo pide y no entra, con evidencia.",
+ "exclusiones": [
+  {
+   "clave": "acto_legislativo_1_1936",
+   "norma": "Acto legislativo 1 de 1936",
+   "documentos_que_citan": 62,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/acto_legislativo_01_1936.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/acto_legislativo_0001_1936.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/acto_legislativo_0001_1936.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/acto_legislativo_0001_1936.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/acto_legislativo_0001_1936.htm -> HTTP 404. Cita: sentencia_cc_c001_2018: «Acto Legislativo 01 de 1936 dispuso: “El trabajo es una obligación social y gozará de la especial»"
+  },
+  {
+   "clave": "acto_legislativo_1_1979",
+   "norma": "Acto legislativo 1 de 1979",
+   "documentos_que_citan": 46,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/acto_legislativo_01_1979.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/acto_legislativo_0001_1979.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/acto_legislativo_0001_1979.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/acto_legislativo_0001_1979.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/acto_legislativo_0001_1979.htm -> HTTP 404. Cita: sentencia_cc_c027_2020: «Acto Legislativo 01 de 1979 previó por primera vez»"
+  },
+  {
+   "clave": "acto_legislativo_1_2011",
+   "norma": "Acto legislativo 1 de 2011",
+   "documentos_que_citan": 17,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/acto_legislativo_01_2011.html -> no nombra la norma o texto corto; https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=42968 -> no nombra la norma o texto corto; https://www.funcionpublica.gov.co/eva/gestornormativo/norma_pdf.php?i=42968 -> no nombra la norma o texto corto; https://www.cancilleria.gov.co/normograma/compilacion/docs/acto_legislativo_0001_2011.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/acto_legislativo_0001_2011.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/acto_legislativo_0001_2011.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/acto_legislativo_0001_2011.htm -> HTTP 404. Cita: co_constitucion_1_1991: «Acto Legislativo 1 de 2011 INEXEQUIBLE, Sentencia C-1056-12>»"
+  },
+  {
+   "clave": "acto_legislativo_2_2016",
+   "norma": "Acto legislativo 2 de 2016",
+   "documentos_que_citan": 11,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "proyecto_de_ley",
+   "evidencia": "Numeración del trámite en el Congreso: 'Acto Legislativo número 002 de 2016 Cámara, acumulado con el 003 de 2016 Cámara, 002 de 2017 Senado'. Cita: sentencia_cc_c073_2018: «Acto Legislativo 02 de 2016 es amplia y no lo sustrae de su uso para ciertos temas, como el de»"
+  },
+  {
+   "clave": "acto_legislativo_3_1910",
+   "norma": "Acto legislativo 3 de 1910",
+   "documentos_que_citan": 107,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/acto_legislativo_03_1910.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/acto_legislativo_0003_1910.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/acto_legislativo_0003_1910.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/acto_legislativo_0003_1910.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/acto_legislativo_0003_1910.htm -> HTTP 404. Cita: ley_105_1931: «Acto legislativo número 3 de 1910.»"
+  },
+  {
+   "clave": "acto_legislativo_3_2003",
+   "norma": "Acto legislativo 3 de 2003",
+   "documentos_que_citan": 23,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "acto_legislativo_3_2002",
+   "evidencia": "sistema penal acusatorio; el Acto Legislativo 03 es de 2002. Cita: decreto_1066_2014: «Acto Legislativo número 03 de 2003.»"
+  },
+  {
+   "clave": "csj_compendio_spa_aceptacion_modalidad_de_preacuerdo_edf226",
+   "norma": "csj_compendio_spa_aceptacion_modalidad_de_preacuerdo_edf226",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/ACEPTACI%C3%93N%20MODALIDAD%20DE%20PREACUERDO.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_audiencia_de_formulacion_de_acusacion_numero_de_apoderados_daee9c",
+   "norma": "csj_compendio_spa_audiencia_de_formulacion_de_acusacion_numero_de_apoderados_daee9c",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/AUDIENCIA%20DE%20FORMULACI%C3%93N%20DE%20ACUSACI%C3%93N%20NUMERO%20DE%20APODERADOS.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_ausencia_de_intervencion_da4378",
+   "norma": "csj_compendio_spa_ausencia_de_intervencion_da4378",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/AUSENCIA%20DE%20INTERVENCI%C3%93N.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_como_tema_y_medio_de_prueba_e7606d",
+   "norma": "csj_compendio_spa_como_tema_y_medio_de_prueba_e7606d",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/COMO%20TEMA%20Y%20MEDIO%20DE%20PRUEBA.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_derechos_de_la_victima_25f60a",
+   "norma": "csj_compendio_spa_derechos_de_la_victima_25f60a",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/DERECHOS%20DE%20LA%20V%C3%8DCTIMA.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_derechos_de_las_victimas_4f8192",
+   "norma": "csj_compendio_spa_derechos_de_las_victimas_4f8192",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/DERECHOS%20DE%20LAS%20V%C3%8DCTIMAS.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_diferencia_entre_prueba_sobreviniente_y_de_refutacion_2051ee",
+   "norma": "csj_compendio_spa_diferencia_entre_prueba_sobreviniente_y_de_refutacion_2051ee",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/DIFERENCIA%20ENTRE%20PRUEBA%20SOBREVINIENTE%20Y%20DE%20REFUTACI%C3%93N.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_diferencia_entre_testigo_perito_y_testigo_tecnico_2217dc",
+   "norma": "csj_compendio_spa_diferencia_entre_testigo_perito_y_testigo_tecnico_2217dc",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/DIFERENCIA%20ENTRE%20TESTIGO%20PERITO%20Y%20TESTIGO%20T%C3%89CNICO.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_documentos_con_presuncion_de_autenticidad_870273",
+   "norma": "csj_compendio_spa_documentos_con_presuncion_de_autenticidad_870273",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/DOCUMENTOS%20CON%20PRESUNCI%C3%93N%20DE%20AUTENTICIDAD.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_facultad_de_la_fiscalia_para_retirar_el_preacuerdo_0fb366",
+   "norma": "csj_compendio_spa_facultad_de_la_fiscalia_para_retirar_el_preacuerdo_0fb366",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/FACULTAD%20DE%20LA%20FISCAL%C3%8DA%20PARA%20RETIRAR%20EL%20PREACUERDO.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_facultad_de_las_victimas_84b3c9",
+   "norma": "csj_compendio_spa_facultad_de_las_victimas_84b3c9",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/FACULTAD%20DE%20LAS%20V%C3%8DCTIMAS.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_facultad_del_ministerio_publico_en_materia_probatoria_061b6f",
+   "norma": "csj_compendio_spa_facultad_del_ministerio_publico_en_materia_probatoria_061b6f",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/FACULTAD%20DEL%20MINISTERIO%20P%C3%9ABLICO%20EN%20MATERIA%20PROBATORIA.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_identificacion_diferente_al_senalamiento_en_juicio_e4c069",
+   "norma": "csj_compendio_spa_identificacion_diferente_al_senalamiento_en_juicio_e4c069",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/IDENTIFICACION%20DIFERENTE%20AL%20SE%C3%91ALAMIENTO%20EN%20JUICIO.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_incidencia_en_la_contabilizacion_de_terminos_1a368c",
+   "norma": "csj_compendio_spa_incidencia_en_la_contabilizacion_de_terminos_1a368c",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INCIDENCIA%20EN%20LA%20CONTABILIZACI%C3%93N%20DE%20T%C3%89RMINOS.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_incorporacion_de_la_entrevista_forense_del_nino_2ae1df",
+   "norma": "csj_compendio_spa_incorporacion_de_la_entrevista_forense_del_nino_2ae1df",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INCORPORACI%C3%93N%20DE%20LA%20ENTREVISTA%20FORENSE%20DEL%20NI%C3%91O.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_indemnizacion_integral_b86b92",
+   "norma": "csj_compendio_spa_indemnizacion_integral_b86b92",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INDEMNIZACI%C3%93N%20INTEGRAL.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_justificacion_de_las_limitaciones_del_contrainterrogatorio_c2daa3",
+   "norma": "csj_compendio_spa_justificacion_de_las_limitaciones_del_contrainterrogatorio_c2daa3",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/JUSTIFICACI%C3%93N%20DE%20LAS%20LIMITACIONES%20DEL%20CONTRAINTERROGATORIO.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_prescripcion_de_la_accion_penal_681c12",
+   "norma": "csj_compendio_spa_prescripcion_de_la_accion_penal_681c12",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/PRESCRIPCI%C3%93N%20DE%20LA%20ACCI%C3%93N%20PENAL.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_principio_de_no_retractacion_982db4",
+   "norma": "csj_compendio_spa_principio_de_no_retractacion_982db4",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/PRINCIPIO%20DE%20NO%20RETRACTACI%C3%93N.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_procedencia_del_retiro_del_escrito_de_acusacion_1c457a",
+   "norma": "csj_compendio_spa_procedencia_del_retiro_del_escrito_de_acusacion_1c457a",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/PROCEDENCIA%20DEL%20RETIRO%20DEL%20ESCRITO%20DE%20ACUSACI%C3%93N.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_prueba_comun_cada_parte_debe_acreditar_la_pertinencia_874858",
+   "norma": "csj_compendio_spa_prueba_comun_cada_parte_debe_acreditar_la_pertinencia_874858",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/PRUEBA%20COM%C3%9AN%20CADA%20PARTE%20DEBE%20ACREDITAR%20LA%20PERTINENCIA.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_reconocimiento_medico_legal_es_prueba_pericial_104f5b",
+   "norma": "csj_compendio_spa_reconocimiento_medico_legal_es_prueba_pericial_104f5b",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECONOCIMIENTO%20M%C3%89DICO%20LEGAL%20ES%20PRUEBA%20PERICIAL.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_recusacion_de_quien_resuelve_otra_recusacion_d4d46b",
+   "norma": "csj_compendio_spa_recusacion_de_quien_resuelve_otra_recusacion_d4d46b",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECUSACI%C3%93N%20DE%20QUIEN%20RESUELVE%20OTRA%20RECUSACION.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_representacion_y_vinculacion_tercero_civil_610af0",
+   "norma": "csj_compendio_spa_representacion_y_vinculacion_tercero_civil_610af0",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/REPRESENTACION%20Y%20VINCULACION%20TERCERO%20CIVIL.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_requerido_en_extradicion_ea8937",
+   "norma": "csj_compendio_spa_requerido_en_extradicion_ea8937",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/REQUERIDO%20EN%20EXTRADICI%C3%93N.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "csj_compendio_spa_vencimiento_del_termino_para_acusar_96767e",
+   "norma": "csj_compendio_spa_vencimiento_del_termino_para_acusar_96767e",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_compendio) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/VENCIMIENTO%20DEL%20T%C3%89RMINO%20PARA%20ACUSAR.pdf -> HTTP 404. Las providencias completas de ese tema, enlazadas en la misma página, sí están en el corpus (origen csj_spa_providencia)."
+  },
+  {
+   "clave": "decreto_100_1989",
+   "norma": "Decreto 100 de 1989",
+   "documentos_que_citan": 14,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0100_1989.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0100_1989.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0100_1989.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0100_1989.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0100_1989.htm -> HTTP 404. Cita: decreto_2010_1992: «Decreto - ley 100 de 1989, el artículo 78 del Decreto - ley 1213 de 1990, y las disposiciones que le sean contrarias, y su vigencia se extenderá por el tiempo de la »"
+  },
+  {
+   "clave": "decreto_1118_1970",
+   "norma": "Decreto 1118 de 1970",
+   "documentos_que_citan": 10,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1118_1970.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1118_1970.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1118_1970.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1118_1970.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1118_1970.htm -> HTTP 404. Cita: decreto_1260_1970: «Decreto - Ley 1118 de 1970.»"
+  },
+  {
+   "clave": "decreto_1194_1989",
+   "norma": "Decreto 1194 de 1989",
+   "documentos_que_citan": 8,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1194_1989.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1194_1989.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1194_1989.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1194_1989.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1194_1989.htm -> HTTP 404. Cita: ley_365_1997: «Decreto 1194 de 1989 adoptado como legislación permanente por el artículo 6o. del Decreto 2266 de 1991, el artículo 5o. de la Ley 40 de 1993 y el inciso 4o. del»"
+  },
+  {
+   "clave": "decreto_1266_1994",
+   "norma": "Decreto 1266 de 1994",
+   "documentos_que_citan": 45,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1266_1994.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1266_1994.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1266_1994.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1266_1994.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1266_1994.htm -> HTTP 404. Cita: decreto_1280_1994: «Decreto 1266 de 1994, en ejercicio de las facultades extraordinarias conferidas por el numeral 3o. del artículo 98 de la Ley 101 de 1993, y oído el concepto fav»"
+  },
+  {
+   "clave": "decreto_1302_1964",
+   "norma": "Decreto 1302 de 1964",
+   "documentos_que_citan": 11,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1302_1964.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1302_1964.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1302_1964.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1302_1964.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1302_1964.htm -> HTTP 404. Cita: decreto_1074_2015: «Decreto 1302 de 1964, art. 1)»"
+  },
+  {
+   "clave": "decreto_1358_1964",
+   "norma": "Decreto 1358 de 1964",
+   "documentos_que_citan": 6,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1358_1964.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1358_1964.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1358_1964.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1358_1964.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1358_1964.htm -> HTTP 404. Cita: ley_16_1968: «Decreto 1358 de 1964, quedará así:»"
+  },
+  {
+   "clave": "decreto_1465_1953",
+   "norma": "Decreto 1465 de 1953",
+   "documentos_que_citan": 4,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1465_1953.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1465_1953.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1465_1953.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1465_1953.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1465_1953.htm -> HTTP 404. Cita: decreto_1333_1986: «Decreto 1465 de 1953 y demás disposiciones concordantes, podrán ser destinadas por los Municipios para realizar programas conjuntos con el Instituto de Crédito »"
+  },
+  {
+   "clave": "decreto_1597_1988",
+   "norma": "Decreto 1597 de 1988",
+   "documentos_que_citan": 5,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1597_1988.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1597_1988.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1597_1988.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1597_1988.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1597_1988.htm -> HTTP 404. Cita: decreto_1070_2015: «Decreto 1597 de 1988 artículo 1°)»"
+  },
+  {
+   "clave": "decreto_180_1988",
+   "norma": "Decreto 180 de 1988",
+   "documentos_que_citan": 31,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0180_1988.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0180_1988.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0180_1988.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0180_1988.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0180_1988.htm -> HTTP 404. Cita: decreto_1590_1995: «Decreto 180 de 1988 adoptado como legislación permanente por el Decreto 2266 de 1991, y de la aplicación de las demás sanciones a que haya lugar.»"
+  },
+  {
+   "clave": "decreto_1856_1989",
+   "norma": "Decreto 1856 de 1989",
+   "documentos_que_citan": 15,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1856_1989.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1856_1989.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1856_1989.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1856_1989.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1856_1989.htm -> HTTP 404. Cita: decreto_2150_1995: «Decreto 1856 de 1989, que reposen en los respectivos archivos en relación con las personas solicitantes, así como la práctica de la visita dispuesta para el con»"
+  },
+  {
+   "clave": "decreto_1874_1979",
+   "norma": "Decreto 1874 de 1979",
+   "documentos_que_citan": 7,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1874_1979.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1874_1979.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1874_1979.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1874_1979.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1874_1979.htm -> HTTP 404. Cita: decreto_1073_2015: «Decreto 1874 de 1979, o las normas que lo modifiquen, adicionen o deroguen.»"
+  },
+  {
+   "clave": "decreto_1888_1989",
+   "norma": "Decreto 1888 de 1989",
+   "documentos_que_citan": 26,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1888_1989.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1888_1989.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1888_1989.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1888_1989.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1888_1989.htm -> HTTP 404. Cita: doctrina_fp_concepto_marco_3_2014: «Decreto 1888 de 1989, deberá estar precedido de la observancia del debido proceso a través del cual el inculpado previamente tendrá derecho como ocurre en los p»"
+  },
+  {
+   "clave": "decreto_1938_1994",
+   "norma": "Decreto 1938 de 1994",
+   "documentos_que_citan": 19,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1938_1994.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1938_1994.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1938_1994.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1938_1994.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1938_1994.htm -> HTTP 404. Cita: ley_1384_2010: «Decreto 1938 de 1994: “Es el conjunto de actividades y procedimientos más indicados en el abordaje de la promoción y fomento de la salud, la prevención, el diag»"
+  },
+  {
+   "clave": "decreto_1975_2000",
+   "norma": "Decreto 1975 de 2000",
+   "documentos_que_citan": 7,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1975_2000.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1975_2000.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1975_2000.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1975_2000.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1975_2000.htm -> HTTP 404. Cita: sentencia_cc_c029_2009: «Decreto 1975 de 2000.»"
+  },
+  {
+   "clave": "decreto_1979_1974",
+   "norma": "Decreto 1979 de 1974",
+   "documentos_que_citan": 11,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_1979_1974.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_1979_1974.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_1979_1974.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_1979_1974.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_1979_1974.htm -> HTTP 404. Cita: decreto_2053_1974: «Decreto 1979 de 1974.»"
+  },
+  {
+   "clave": "decreto_2007_2001",
+   "norma": "Decreto 2007 de 2001",
+   "documentos_que_citan": 17,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2007_2001.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2007_2001.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2007_2001.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2007_2001.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2007_2001.htm -> HTTP 404. Cita: co_decreto_1069_2015: «Decreto 2007 de 2001 o la norma que lo compile, modifique adicione o complemente, el Magistrado ordenará oficiar al Comité de Justicia Transicional Departamenta»"
+  },
+  {
+   "clave": "decreto_2067_1992",
+   "norma": "Decreto 2067 de 1992",
+   "documentos_que_citan": 49,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "decreto_2067_1991",
+   "evidencia": "régimen procedimental ante la Corte Constitucional; es de 1991. Cita: sentencia_cc_c005_2017: «Decreto 2067 de 1992, precisó que no obstante el principio pro»"
+  },
+  {
+   "clave": "decreto_215_2026",
+   "norma": "decreto_215_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0215_2026.html -> no nombra la norma o texto corto; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0215_2026.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0215_2026.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0215_2026.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0215_2026.htm -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "decreto_2266_1991",
+   "norma": "Decreto 2266 de 1991",
+   "documentos_que_citan": 48,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2266_1991.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2266_1991.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2266_1991.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2266_1991.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2266_1991.htm -> HTTP 404. Cita: decreto_100_1980: «Decreto 2266 de 1991, Art. 8o.Los que mediante empleo de las armas pretendan derrocar al Gobierno Nacional, o suprimir o modificar el régimen constitucional o l»"
+  },
+  {
+   "clave": "decreto_2271_1991",
+   "norma": "Decreto 2271 de 1991",
+   "documentos_que_citan": 41,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2271_1991.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2271_1991.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2271_1991.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2271_1991.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2271_1991.htm -> HTTP 404. Cita: decreto_1723_1995: «Decreto 2271 de 1991;»"
+  },
+  {
+   "clave": "decreto_2272_1974",
+   "norma": "Decreto 2272 de 1974",
+   "documentos_que_citan": 8,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2272_1974.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2272_1974.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2272_1974.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2272_1974.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2272_1974.htm -> HTTP 404. Cita: decreto_624_1989: «Decreto 2272 de 1974, Derogado por el Art. 285 de la Ley 223 de 1995)»"
+  },
+  {
+   "clave": "decreto_2349_1965",
+   "norma": "Decreto 2349 de 1965",
+   "documentos_que_citan": 7,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2349_1965.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2349_1965.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2349_1965.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2349_1965.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2349_1965.htm -> HTTP 404. Cita: decreto_1730_1991: «Decreto 2349 de 1965, y no hubiera albacea nombrado o administrador de los bienes de la sucesión, el establecimiento bancario puede, a su juicio, pagar el saldo»"
+  },
+  {
+   "clave": "decreto_2490_1988",
+   "norma": "Decreto 2490 de 1988",
+   "documentos_que_citan": 6,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2490_1988.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2490_1988.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2490_1988.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2490_1988.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2490_1988.htm -> HTTP 404. Cita: sentencia_cc_c127_1993: «Decreto legislativo 2490 de 1988:»"
+  },
+  {
+   "clave": "decreto_250_1970",
+   "norma": "Decreto 250 de 1970",
+   "documentos_que_citan": 40,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0250_1970.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0250_1970.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0250_1970.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0250_1970.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0250_1970.htm -> HTTP 404. Cita: decreto_196_1971: «Decreto 250 de 1970.»"
+  },
+  {
+   "clave": "decreto_2550_1988",
+   "norma": "Decreto 2550 de 1988",
+   "documentos_que_citan": 51,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2550_1988.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2550_1988.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2550_1988.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2550_1988.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2550_1988.htm -> HTTP 404. Cita: ley_522_1999: «Decreto 2550 de 1988 y las disposiciones que sean contrarias a la presente ley.»"
+  },
+  {
+   "clave": "decreto_2591_1992",
+   "norma": "Decreto 2591 de 1992",
+   "documentos_que_citan": 6,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2591_1992.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2591_1992.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2591_1992.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2591_1992.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2591_1992.htm -> HTTP 404. Cita: sentencia_cc_c543_1992: «Decreto 2591 de 1992\".»"
+  },
+  {
+   "clave": "decreto_266_1993",
+   "norma": "Decreto 266 de 1993",
+   "documentos_que_citan": 9,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0266_1993.html -> no nombra la norma o texto corto; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0266_1993.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0266_1993.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0266_1993.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0266_1993.htm -> HTTP 404. Cita: decreto_423_1993: «decreto 266 de 1993.»"
+  },
+  {
+   "clave": "decreto_2700_1991",
+   "norma": "Decreto 2700 de 1991",
+   "documentos_que_citan": 489,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2700_1991.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2700_1991.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2700_1991.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2700_1991.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2700_1991.htm -> HTTP 404. Cita: csj_compendio_spa_legitimidad_para_recurrir_cd8e37: «Decreto 2700 de 1991.»"
+  },
+  {
+   "clave": "decreto_2790_1990",
+   "norma": "Decreto 2790 de 1990",
+   "documentos_que_citan": 36,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_2790_1990.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_2790_1990.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_2790_1990.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_2790_1990.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_2790_1990.htm -> HTTP 404. Cita: decreto_1156_1992: «Decreto 2790 de 1990, modificado por el Decreto 99 de 1991 y adoptado como legislación permanente en virtud del Decreto 2271 del mismo año, sólo podrá hacerse e»"
+  },
+  {
+   "clave": "decreto_2920_1982",
+   "norma": "Decreto 2920 de 1982",
+   "documentos_que_citan": 30,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "compilada",
+   "norma_real": "decreto_1068_2015",
+   "evidencia": "la definición de captación masiva y habitual está compilada en el art. 2.18.2.1 del Decreto 1068 de 2015 (Superfinanciera, 'Normas de captación ilegal'). Cita: decreto_1068_2015: «Decreto 2920 de 1982, se entiende que una persona natural o jurídica capta dineros del público en forma masiva y habitual en uno cualquiera de los siguientes ca»"
+  },
+  {
+   "clave": "decreto_294_1973",
+   "norma": "Decreto 294 de 1973",
+   "documentos_que_citan": 22,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0294_1973.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0294_1973.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0294_1973.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0294_1973.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0294_1973.htm -> HTTP 404. Cita: decreto_1222_1986: «Decreto 294 de 1973, conforme a la reglamentación que expida el Gobierno Nacional.»"
+  },
+  {
+   "clave": "decreto_3075_2002",
+   "norma": "Decreto 3075 de 2002",
+   "documentos_que_citan": 7,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_3075_2002.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_3075_2002.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_3075_2002.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_3075_2002.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_3075_2002.htm -> HTTP 404. Cita: sentencia_cc_c1147_2003: «Decreto 3075 de 2002, en el cual se incluyó el proyecto objeto de análisis, incluido el»"
+  },
+  {
+   "clave": "decreto_3288_1963",
+   "norma": "Decreto 3288 de 1963",
+   "documentos_que_citan": 10,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_3288_1963.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_3288_1963.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_3288_1963.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_3288_1963.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_3288_1963.htm -> HTTP 404. Cita: ley_33_1968: «Decreto Ley 3288 de 1963, y modificado por el Decreto»"
+  },
+  {
+   "clave": "decreto_3664_1986",
+   "norma": "Decreto 3664 de 1986",
+   "documentos_que_citan": 6,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_3664_1986.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_3664_1986.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_3664_1986.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_3664_1986.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_3664_1986.htm -> HTTP 404. Cita: decreto_6_1993: «Decreto 3664 de 1986, adoptado como legislación permanente por el artículo 1o. del Decreto 2266 de 1991.»"
+  },
+  {
+   "clave": "decreto_390_1991",
+   "norma": "Decreto 390 de 1991",
+   "documentos_que_citan": 9,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0390_1991.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0390_1991.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0390_1991.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0390_1991.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0390_1991.htm -> HTTP 404. Cita: sentencia_cc_c040_1997: «decreto 390 de 1991, adoptado como»"
+  },
+  {
+   "clave": "decreto_432_1969",
+   "norma": "Decreto 432 de 1969",
+   "documentos_que_citan": 72,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0432_1969.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0432_1969.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0432_1969.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0432_1969.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0432_1969.htm -> HTTP 404. Cita: co_constitucion_1_1991: «decreto 432 de 1969.»"
+  },
+  {
+   "clave": "decreto_57_1969",
+   "norma": "Decreto 57 de 1969",
+   "documentos_que_citan": 6,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0057_1969.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0057_1969.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0057_1969.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0057_1969.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0057_1969.htm -> HTTP 404. Cita: decreto_1625_2016: «Decreto 57 de 1969)»"
+  },
+  {
+   "clave": "decreto_81_1976",
+   "norma": "Decreto 81 de 1976",
+   "documentos_que_citan": 20,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0081_1976.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0081_1976.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0081_1976.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0081_1976.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0081_1976.htm -> HTTP 404. Cita: ley_91_1989: «Decreto 081 de 1976 y será compatible con la pensión ordinaria de jubilación, aún en el evento de estar ésta a cargo total o parcial de la Nación. Texto subray»"
+  },
+  {
+   "clave": "decreto_828_1993",
+   "norma": "Decreto 828 de 1993",
+   "documentos_que_citan": 1,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0828_1993.html -> no nombra la norma o texto corto; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0828_1993.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0828_1993.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0828_1993.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0828_1993.htm -> HTTP 404. Cita: sentencia_cc_c271_1993: «Decreto Legislativo 828 del 6 de mayo de 1993, \"Por»"
+  },
+  {
+   "clave": "decreto_85_1989",
+   "norma": "Decreto 85 de 1989",
+   "documentos_que_citan": 14,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0085_1989.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0085_1989.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0085_1989.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0085_1989.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0085_1989.htm -> HTTP 404. Cita: sentencia_cc_c014_2004: «Decreto 85 de 1989, que consagraba el régimen»"
+  },
+  {
+   "clave": "decreto_939_1966",
+   "norma": "Decreto 939 de 1966",
+   "documentos_que_citan": 5,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0939_1966.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0939_1966.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0939_1966.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0939_1966.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0939_1966.htm -> HTTP 404. Cita: decreto_2158_1948: «Decreto 939 de 1966, con las modificaciones y adiciones adoptadas por el artículo 3º de la Ley 48 de 1968.»"
+  },
+  {
+   "clave": "decreto_99_1991",
+   "norma": "Decreto 99 de 1991",
+   "documentos_que_citan": 32,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/decreto_0099_1991.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/decreto_0099_1991.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/decreto_0099_1991.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/decreto_0099_1991.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/decreto_0099_1991.htm -> HTTP 404. Cita: decreto_1156_1992: «Decreto 99 de 1991 y adoptado como legislación permanente en virtud del Decreto 2271 del mismo año, sólo podrá hacerse efectiva cuando esté en firme la provid»"
+  },
+  {
+   "clave": "ley_100_1944",
+   "norma": "Ley 100 de 1944",
+   "documentos_que_citan": 15,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0100_1944.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0100_1944.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0100_1944.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0100_1944.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0100_1944.htm -> HTTP 404. Cita: decreto_2303_1989: «Ley 100 de 1944.»"
+  },
+  {
+   "clave": "ley_100_1980",
+   "norma": "Ley 100 de 1980",
+   "documentos_que_citan": 17,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "decreto_100_1980",
+   "evidencia": "el Código Penal de 1980 es el Decreto 100, no una ley. Cita: decreto_545_1997: «ley 100 de 1980 (Código Penal), relativo a los delitos contra la»"
+  },
+  {
+   "clave": "ley_100_1991",
+   "norma": "Ley 100 de 1991",
+   "documentos_que_citan": 11,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "ley_100_1993",
+   "evidencia": "la fuente misma anota '<sic, la Ley 100 referida corresponde al año 1993>'. Cita: ley_418_1997: «Ley 100 de 1991 <sic, la Ley 100 referida corresponde al año 1993>, mientras no se afilien al régimen contributivo en virtud de relación de contrato de tra»"
+  },
+  {
+   "clave": "ley_111_2006",
+   "norma": "Ley 111 de 2006",
+   "documentos_que_citan": 5,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "proyecto_de_ley",
+   "evidencia": "Numeración del trámite en el Congreso: 'ley número 111 de 2006 Senado, 144 de 2005 Cámara, por la cual se expide el Código Penal Militar' (hoy Ley 1407 de 2010). Cita: sentencia_cc_c1021_2012: «Ley 111 de 2006 y Ley»"
+  },
+  {
+   "clave": "ley_128_1941",
+   "norma": "Ley 128 de 1941",
+   "documentos_que_citan": 10,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0128_1941.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0128_1941.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0128_1941.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0128_1941.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0128_1941.htm -> HTTP 404. Cita: ley_223_1995: «Ley 128 de 1941, artículos 4, 5 y 8 de la Ley 24 de 1963, los artículos 7 ,8 ,9 ,10,11, 12,13 y 14 de la Ley 60 de 1968; el Decreto 2272 de 1974; literal d»"
+  },
+  {
+   "clave": "ley_12_1932",
+   "norma": "Ley 12 de 1932",
+   "documentos_que_citan": 18,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0012_1932.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0012_1932.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0012_1932.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0012_1932.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0012_1932.htm -> HTTP 404. Cita: decreto_1333_1986: «Ley 12 de 1932 y demás disposiciones complementarias.»"
+  },
+  {
+   "clave": "ley_130_1913",
+   "norma": "Ley 130 de 1913",
+   "documentos_que_citan": 16,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0130_1913.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0130_1913.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0130_1913.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0130_1913.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0130_1913.htm -> HTTP 404. Cita: ley_4_1913: «Ley 130 de 1913>»"
+  },
+  {
+   "clave": "ley_130_1985",
+   "norma": "Ley 130 de 1985",
+   "documentos_que_citan": 5,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0130_1985.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0130_1985.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0130_1985.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0130_1985.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0130_1985.htm -> HTTP 404. Cita: decreto_1333_1986: «Ley 130 de 1985, está derogado el inciso 4o. del artículo 1o. de la Ley 61 de 1936 y demás disposiciones que le sean contrarias.»"
+  },
+  {
+   "clave": "ley_13_1974",
+   "norma": "Ley 13 de 1974",
+   "documentos_que_citan": 5,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0013_1974.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0013_1974.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0013_1974.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0013_1974.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0013_1974.htm -> HTTP 404. Cita: decreto_1070_2015: «Ley 13 del 29 de noviembre de 1974; que se encuentren incorporadas en las listas I, II, III y IV del Convenio de las Naciones Unidas sobre sustancias sicotrópicas, aprobado p»"
+  },
+  {
+   "clave": "ley_142_1993",
+   "norma": "Ley 142 de 1993",
+   "documentos_que_citan": 17,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "ley_142_1994",
+   "evidencia": "servicios públicos domiciliarios; la Ley 142 es de 1994. Cita: decreto_1068_2015: «Ley 142 de 1993.»"
+  },
+  {
+   "clave": "ley_1437_2010",
+   "norma": "Ley 1437 de 2010",
+   "documentos_que_citan": 7,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_1437_2010.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_1437_2010.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_1437_2010.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_1437_2010.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_1437_2010.htm -> HTTP 404. Cita: co_ley_1564_2012: «Ley 1437 de 2010 <sic, 2011>, la cual quedará así:»"
+  },
+  {
+   "clave": "ley_147_1888",
+   "norma": "Ley 147 de 1888",
+   "documentos_que_citan": 4,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0147_1888.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0147_1888.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0147_1888.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0147_1888.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0147_1888.htm -> HTTP 404. Cita: ley_100_1892: «Ley 147 de 1888):»"
+  },
+  {
+   "clave": "ley_153_1987",
+   "norma": "Ley 153 de 1987",
+   "documentos_que_citan": 7,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0153_1987.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0153_1987.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0153_1987.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0153_1987.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0153_1987.htm -> HTTP 404. Cita: sentencia_cc_c486_1993: «Ley 153 de 1987, norma que ha resistido airosa el transcurso del tiempo y que resuelve»"
+  },
+  {
+   "clave": "ley_169_2003",
+   "norma": "ley_169_2003",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "proyecto_de_ley",
+   "evidencia": "Numeración del trámite en el Congreso: 'Ley 169 de 2003 Cámara'. Cita: "
+  },
+  {
+   "clave": "ley_184_2010",
+   "norma": "ley_184_2010",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "proyecto_de_ley",
+   "evidencia": "Numeración del trámite en el Congreso: 'ley Estatutaria número 184 de 2010 Senado, 046 de 2010 Cámara' (hoy Ley 1581 de 2012). Cita: "
+  },
+  {
+   "clave": "ley_19_1976",
+   "norma": "Ley 19 de 1976",
+   "documentos_que_citan": 5,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0019_1976.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0019_1976.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0019_1976.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0019_1976.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0019_1976.htm -> HTTP 404. Cita: decreto_2503_1987: «Ley 19 de 1976; los artículos 8o, 9o, 14, 16, 18, 21 inciso 2o, 25, 38, 39, 45, 50, 52, 53, 54, 60, 61, 62, 63, 65, 69, 70, 72, 78, 79 y 81 de la Ley 52 d»"
+  },
+  {
+   "clave": "ley_1_2003",
+   "norma": "Ley 1 de 2003",
+   "documentos_que_citan": 2,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "proyecto_de_ley",
+   "evidencia": "Numeración del trámite en el Congreso: 'ley 001 de 2003 Cámara, por la cual se expide el Código de Procedimiento Penal' (hoy Ley 906 de 2004). Cita: sentencia_cc_c025_2010: «Ley Estatutaria 01 de 2003 que pasaría a convertirse en la Ley 906 de 2004,»"
+  },
+  {
+   "clave": "ley_22_1967",
+   "norma": "Ley 22 de 1967",
+   "documentos_que_citan": 35,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0022_1967.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0022_1967.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0022_1967.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0022_1967.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0022_1967.htm -> HTTP 404. Cita: sentencia_cc_c028_2019: «Ley 22 de 1967. Este Convenio se funda en la»"
+  },
+  {
+   "clave": "ley_2587_2026",
+   "norma": "ley_2587_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_2587_2026.html -> no nombra la norma o texto corto; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_2587_2026.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_2587_2026.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_2587_2026.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_2587_2026.htm -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "ley_2622_2026",
+   "norma": "ley_2622_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_2622_2026.html -> no nombra la norma o texto corto; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_2622_2026.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_2622_2026.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_2622_2026.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_2622_2026.htm -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "ley_2623_2026",
+   "norma": "ley_2623_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_2623_2026.html -> no nombra la norma o texto corto; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_2623_2026.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_2623_2026.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_2623_2026.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_2623_2026.htm -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "ley_26994_2014",
+   "norma": "Ley 26994 de 2014",
+   "documentos_que_citan": 4,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_26994_2014.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_26994_2014.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_26994_2014.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_26994_2014.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_26994_2014.htm -> HTTP 404. Cita: sentencia_cc_c104_2016: «Ley 26994 de 2014) en el que se establece que»"
+  },
+  {
+   "clave": "ley_26_1987",
+   "norma": "Ley 26 de 1987",
+   "documentos_que_citan": 9,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0026_1987.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0026_1987.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0026_1987.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0026_1987.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0026_1987.htm -> HTTP 404. Cita: decreto_2378_2012: «Ley 26 de 1987), y la Convención Internacional sobre la eliminación de todas las formas de discriminación racial (Ley 22 de 1981), entre otras”.»"
+  },
+  {
+   "clave": "ley_26_1989",
+   "norma": "Ley 26 de 1989",
+   "documentos_que_citan": 15,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0026_1989.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0026_1989.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0026_1989.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0026_1989.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0026_1989.htm -> HTTP 404. Cita: decreto_1073_2015: «Ley 26 de 1989.»"
+  },
+  {
+   "clave": "ley_30_1987",
+   "norma": "Ley 30 de 1987",
+   "documentos_que_citan": 99,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0030_1987.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0030_1987.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0030_1987.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0030_1987.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0030_1987.htm -> HTTP 404. Cita: decreto_2272_1989: «Ley 30 de 1987, y oída la Comisión Asesora por ella establecida,»"
+  },
+  {
+   "clave": "ley_32_1979",
+   "norma": "Ley 32 de 1979",
+   "documentos_que_citan": 23,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0032_1979.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0032_1979.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0032_1979.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0032_1979.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0032_1979.htm -> HTTP 404. Cita: decreto_1172_1980: «Ley 32 de 1979, y oído el concepto de la Comisión Asesora integrada para tal efecto,»"
+  },
+  {
+   "clave": "ley_33_1987",
+   "norma": "Ley 33 de 1987",
+   "documentos_que_citan": 24,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0033_1987.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0033_1987.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0033_1987.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0033_1987.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0033_1987.htm -> HTTP 404. Cita: sentencia_cc_c035_2015: «Ley 33 de 1987, a»"
+  },
+  {
+   "clave": "ley_35_1989",
+   "norma": "Ley 35 de 1989",
+   "documentos_que_citan": 18,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0035_1989.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0035_1989.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0035_1989.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0035_1989.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0035_1989.htm -> HTTP 404. Cita: decreto_131_2010: «Ley 35 de 1989, con el siguiente literal:»"
+  },
+  {
+   "clave": "ley_37_1931",
+   "norma": "Ley 37 de 1931",
+   "documentos_que_citan": 11,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0037_1931.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0037_1931.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0037_1931.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0037_1931.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0037_1931.htm -> HTTP 404. Cita: decreto_1056_1953: «Leyes 37 de 1931, 160 de 1936 y del presente Código, quedan exentos de todo impuesto de exportación durante los primeros treinta años de la respectiva explo»"
+  },
+  {
+   "clave": "ley_38_1969",
+   "norma": "Ley 38 de 1969",
+   "documentos_que_citan": 13,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0038_1969.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0038_1969.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0038_1969.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0038_1969.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0038_1969.htm -> HTTP 404. Cita: decreto_2053_1974: «Ley 38 de 1969.»"
+  },
+  {
+   "clave": "ley_40_1990",
+   "norma": "Ley 40 de 1990",
+   "documentos_que_citan": 29,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0040_1990.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0040_1990.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0040_1990.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0040_1990.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0040_1990.htm -> HTTP 404. Cita: decreto_1071_2015: «Ley 40 de 1990, entiéndese por procesadores quienes sin ser cultivadores de caña la adquieren, le extraen el jugo y elaboran panela o miel sin exceder su »"
+  },
+  {
+   "clave": "ley_43_1987",
+   "norma": "Ley 43 de 1987",
+   "documentos_que_citan": 63,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0043_1987.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0043_1987.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0043_1987.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0043_1987.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0043_1987.htm -> HTTP 404. Cita: decreto_624_1989: «Ley 43 de 1987, y oída la Comisión Asesora de la Sala de Consulta y Servicio Civil del Consejo de Estado,»"
+  },
+  {
+   "clave": "ley_47_1968",
+   "norma": "Ley 47 de 1968",
+   "documentos_que_citan": 8,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0047_1968.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0047_1968.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0047_1968.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0047_1968.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0047_1968.htm -> HTTP 404. Cita: ley_14_1983: «Ley 47 de 1968 y todas las normas relacionadas con el impuesto a las cervezas, excepto la prohibición de gravar la industria y el comercio cerveceros con »"
+  },
+  {
+   "clave": "ley_488_1999",
+   "norma": "Ley 488 de 1999",
+   "documentos_que_citan": 11,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0488_1999.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0488_1999.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0488_1999.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0488_1999.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0488_1999.htm -> HTTP 404. Cita: sentencia_cc_c1066_2001: «Ley 488 de 1999. Luego de una breve»"
+  },
+  {
+   "clave": "ley_49_1967",
+   "norma": "Ley 49 de 1967",
+   "documentos_que_citan": 7,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0049_1967.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0049_1967.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0049_1967.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0049_1967.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0049_1967.htm -> HTTP 404. Cita: decreto_1222_1986: «Ley 49 de 1967, la Ley 36 de 1969, y las demás normas contrarias a los artículos anteriores.»"
+  },
+  {
+   "clave": "ley_50_1984",
+   "norma": "Ley 50 de 1984",
+   "documentos_que_citan": 16,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0050_1984.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0050_1984.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0050_1984.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0050_1984.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0050_1984.htm -> HTTP 404. Cita: decreto_3541_1983: «Ley 50 de 1984> Los siguientes bienes están exentos del impuesto a las ventas; para el efecto se utiliza la nomenclatura arancelaria.»"
+  },
+  {
+   "clave": "ley_52_1975",
+   "norma": "Ley 52 de 1975",
+   "documentos_que_citan": 11,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0052_1975.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0052_1975.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0052_1975.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0052_1975.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0052_1975.htm -> HTTP 404. Cita: decreto_1072_2015: «ley 52 de 1975.»"
+  },
+  {
+   "clave": "ley_52_1977",
+   "norma": "Ley 52 de 1977",
+   "documentos_que_citan": 8,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0052_1977.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0052_1977.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0052_1977.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0052_1977.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0052_1977.htm -> HTTP 404. Cita: decreto_1625_2016: «Ley 52 de 1977 (hoy artículo 372 del Estatuto Tributario), el patrimonio neto está constituido por el activo menos el pasivo externo, que está compuesto p»"
+  },
+  {
+   "clave": "ley_54_1977",
+   "norma": "Ley 54 de 1977",
+   "documentos_que_citan": 4,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0054_1977.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0054_1977.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0054_1977.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0054_1977.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0054_1977.htm -> HTTP 404. Cita: ley_20_1979: «Ley 54 de 1977.»"
+  },
+  {
+   "clave": "ley_57_2002",
+   "norma": "ley_57_2002",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "proyecto_de_ley",
+   "evidencia": "Numeración del trámite en el Congreso: 'Ley 57 de 2002 Senado'. Cita: "
+  },
+  {
+   "clave": "ley_58_1985",
+   "norma": "Ley 58 de 1985",
+   "documentos_que_citan": 11,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0058_1985.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0058_1985.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0058_1985.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0058_1985.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0058_1985.htm -> HTTP 404. Cita: ley_75_1986: «Ley 58 de 1985; el artículo 22 del Decreto 469 de 1986; los artículos 21, 22, 23, 24 y 28 del Decreto 470 de 1986; y las demás normas que le sean contrari»"
+  },
+  {
+   "clave": "ley_5_1960",
+   "norma": "Ley 5 de 1960",
+   "documentos_que_citan": 17,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0005_1960.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0005_1960.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0005_1960.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0005_1960.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0005_1960.htm -> no nombra la norma o texto corto. Cita: sentencia_cc_c007_2026: «Ley 5 de 1960.»"
+  },
+  {
+   "clave": "ley_617_2001",
+   "norma": "Ley 617 de 2001",
+   "documentos_que_citan": 15,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "ley_617_2000",
+   "evidencia": "saneamiento fiscal territorial; la Ley 617 es de 2000. Cita: sentencia_cc_c015_2004: «Ley 617 de 2001, el artículo 179 de la Constitución, entre»"
+  },
+  {
+   "clave": "ley_69_1896",
+   "norma": "Ley 69 de 1896",
+   "documentos_que_citan": 9,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0069_1896.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0069_1896.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0069_1896.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0069_1896.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0069_1896.htm -> HTTP 404. Cita: sentencia_cc_c037_1996: «ley 69 de 1896, para erigirla en pauta meramente optativa para ilustrar, en ciertos»"
+  },
+  {
+   "clave": "ley_69_1946",
+   "norma": "Ley 69 de 1946",
+   "documentos_que_citan": 12,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0069_1946.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0069_1946.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0069_1946.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0069_1946.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0069_1946.htm -> HTTP 404. Cita: decreto_1333_1986: «Ley 69 de 1946, y disposiciones complementarias, que se cause en sus respectivas jurisdicciones.»"
+  },
+  {
+   "clave": "ley_72_2000",
+   "norma": "Ley 72 de 2000",
+   "documentos_que_citan": 1,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "proyecto_de_ley",
+   "evidencia": "Numeración del trámite en el Congreso: 'ley No. 072 de 2000 Cámara'. Cita: sentencia_cc_c809_2001: «ley número 72 de 2000 Cámara, 126 de 2000 (Senado) “por el cual se expiden normas en materia»"
+  },
+  {
+   "clave": "ley_734_2000",
+   "norma": "Ley 734 de 2000",
+   "documentos_que_citan": 14,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0734_2000.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0734_2000.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0734_2000.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0734_2000.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0734_2000.htm -> HTTP 404. Cita: ley_1474_2011: «Ley 734 de 2000 <sic, es 2002> quedará así:»"
+  },
+  {
+   "clave": "ley_76_1986",
+   "norma": "Ley 76 de 1986",
+   "documentos_que_citan": 8,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0076_1986.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0076_1986.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0076_1986.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0076_1986.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0076_1986.htm -> HTTP 404. Cita: decreto_2378_2012: «Ley 76 de 1986), la Convención sobre la represión y castigo del Apartheid (Ley 26 de 1987), y la Convención Internacional sobre la eliminación de todas la»"
+  },
+  {
+   "clave": "ley_788_2003",
+   "norma": "Ley 788 de 2003",
+   "documentos_que_citan": 8,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "ley_788_2002",
+   "evidencia": "reforma tributaria; la Ley 788 es de 2002. Cita: doctrina_concepto_tributario_dian_0000001_2003: «Ley 788 de 2003 en los artículos 49 a 54.»"
+  },
+  {
+   "clave": "ley_789_2003",
+   "norma": "Ley 789 de 2003",
+   "documentos_que_citan": 48,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "ley_789_2002",
+   "evidencia": "reforma laboral y de aportes; la Ley 789 es de 2002. Cita: decreto_129_2010: «Ley 789 de 2003 <sic> sobre aportes a la seguridad social será sancionable a Título de inexactitud, en los términos del presente Estatuto Tributario”.»"
+  },
+  {
+   "clave": "ley_78_1988",
+   "norma": "Ley 78 de 1988",
+   "documentos_que_citan": 6,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0078_1988.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0078_1988.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0078_1988.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0078_1988.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0078_1988.htm -> HTTP 404. Cita: decreto_1730_1991: «Ley 78 de 1988, será administrado por la Corporación Financiera Popular S. A., de acuerdo con la reglamentación que expida el Gobierno Nacional a través d»"
+  },
+  {
+   "clave": "ley_790_2003",
+   "norma": "Ley 790 de 2003",
+   "documentos_que_citan": 26,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0790_2003.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0790_2003.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0790_2003.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0790_2003.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0790_2003.htm -> HTTP 404. Cita: decreto_2012_2012: «Ley 790 de 2003 <sic, es 2002>, en su artículo 20 dispuso que en desarrollo del Programa de Renovación de la Administración Pública no se suprimiría, entre»"
+  },
+  {
+   "clave": "ley_80_2002",
+   "norma": "ley_80_2002",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "proyecto_de_ley",
+   "evidencia": "Numeración del trámite en el Congreso: 'ley No. 80 de 2002-Cámara'. Cita: "
+  },
+  {
+   "clave": "ley_81_1987",
+   "norma": "Ley 81 de 1987",
+   "documentos_que_citan": 5,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0081_1987.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0081_1987.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0081_1987.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0081_1987.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0081_1987.htm -> HTTP 404. Cita: decreto_1298_1994: «Ley 81 de 1987, estará a cargo de la Comisión Nacional de Precios de los Medicamentos.»"
+  },
+  {
+   "clave": "ley_84_1915",
+   "norma": "Ley 84 de 1915",
+   "documentos_que_citan": 21,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0084_1915.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0084_1915.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0084_1915.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0084_1915.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0084_1915.htm -> HTTP 404. Cita: decreto_1333_1986: «Ley 84 de 1915 se liquidará y cobrará a todas las actividades comerciales, industriales y de servicios como complemento del impuesto de industria y comerc»"
+  },
+  {
+   "clave": "ley_906_2005",
+   "norma": "Ley 906 de 2005",
+   "documentos_que_citan": 24,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "ley_906_2004",
+   "evidencia": "Código de Procedimiento Penal; la Ley 906 es de 2004. Cita: csj_compendio_spa_registro_personal_c9f06f: «Ley 906 de 2005, cuando en la Sentencia C-822 de 10 de agosto de 2005, expresó:»"
+  },
+  {
+   "clave": "ley_975_2006",
+   "norma": "Ley 975 de 2006",
+   "documentos_que_citan": 9,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/ley_0975_2006.html -> HTTP 404; https://www.cancilleria.gov.co/normograma/compilacion/docs/ley_0975_2006.htm -> no nombra la norma o texto corto; https://normograma.dian.gov.co/dian/compilacion/docs/ley_0975_2006.htm -> HTTP 404; https://normativa.colpensiones.gov.co/colpens/docs/ley_0975_2006.htm -> HTTP 404; https://www.cancilleria.gov.co/sites/default/files/Normograma/docs/ley_0975_2006.htm -> HTTP 404. Cita: ley_1152_2007: «Ley 975 de 2006 para efectos del Programa Nacional de Reparación.»"
+  },
+  {
+   "clave": "sentencia_cc_c013_2021",
+   "norma": "Sentencia C-013 de 2021",
+   "documentos_que_citan": 17,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-013_2021.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2021/c-013-21.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/c-13_2021.html -> HTTP 404. Cita: sentencia_cc_c135_2022: «C-13/2021»"
+  },
+  {
+   "clave": "sentencia_cc_c067_2026",
+   "norma": "sentencia_cc_c067_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-067_2026.html -> no nombra la norma o texto corto; https://www.corteconstitucional.gov.co/relatoria/2026/c-067-26.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/c-67_2026.html -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c073_2026",
+   "norma": "Sentencia C-073 de 2026",
+   "documentos_que_citan": 1,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-073_2026.html -> no nombra la norma o texto corto; https://www.corteconstitucional.gov.co/relatoria/2026/c-073-26.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/c-73_2026.html -> HTTP 404. Cita: sentencia_cc_c210_2026: «C-073 de 2026, la Sala dejó atrás ese argumento, para establecer que una sola sentencia de unificación de la JEP puede constituir derecho viviente por su»"
+  },
+  {
+   "clave": "sentencia_cc_c167_2017",
+   "norma": "sentencia_cc_c167_2017",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-167_2017.html -> no nombra la norma o texto corto; https://www.corteconstitucional.gov.co/relatoria/2017/c-167-17.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c193_2011",
+   "norma": "Sentencia C-193 de 2011",
+   "documentos_que_citan": 35,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-193_2011.html -> no nombra la norma o texto corto; https://www.corteconstitucional.gov.co/relatoria/2011/c-193-11.htm -> no nombra la norma o texto corto. Cita: sentencia_cc_c010_2018: «C-193 de 2011 MP Mauricio González y C-898 de 2009 MP Luis Ernesto Vargas.»"
+  },
+  {
+   "clave": "sentencia_cc_c194_2026",
+   "norma": "sentencia_cc_c194_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-194_2026.html -> no nombra la norma o texto corto; https://www.corteconstitucional.gov.co/relatoria/2026/c-194-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c217_2026",
+   "norma": "sentencia_cc_c217_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-217_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-217-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c218_2026",
+   "norma": "sentencia_cc_c218_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-218_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-218-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c219_2026",
+   "norma": "sentencia_cc_c219_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-219_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-219-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c220_2026",
+   "norma": "sentencia_cc_c220_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-220_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-220-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c221_2026",
+   "norma": "Sentencia C-221 de 2026",
+   "documentos_que_citan": 1,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-221_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-221-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c251_2026",
+   "norma": "sentencia_cc_c251_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-251_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-251-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c252_2026",
+   "norma": "Sentencia C-252 de 2026",
+   "documentos_que_citan": 9,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-252_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-252-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c255_2026",
+   "norma": "sentencia_cc_c255_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-255_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-255-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c257_2026",
+   "norma": "sentencia_cc_c257_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-257_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-257-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c259_2026",
+   "norma": "sentencia_cc_c259_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-259_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-259-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c262_2026",
+   "norma": "sentencia_cc_c262_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-262_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-262-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c265_2026",
+   "norma": "sentencia_cc_c265_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-265_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-265-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c266_2026",
+   "norma": "sentencia_cc_c266_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-266_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-266-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c267_2026",
+   "norma": "sentencia_cc_c267_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-267_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-267-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c269_2026",
+   "norma": "Sentencia C-269 de 2026",
+   "documentos_que_citan": 1,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-269_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-269-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c270_2026",
+   "norma": "sentencia_cc_c270_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-270_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-270-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c271_2026",
+   "norma": "sentencia_cc_c271_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-271_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-271-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c272_2026",
+   "norma": "sentencia_cc_c272_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-272_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-272-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c273_2026",
+   "norma": "sentencia_cc_c273_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-273_2026.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/2026/c-273-26.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c287_1997",
+   "norma": "Sentencia C-287 de 1997",
+   "documentos_que_citan": 12,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-287_1997.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/1997/c-287-97.htm -> no nombra la norma o texto corto. Cita: sentencia_cc_c047_2006: «C-287 de 1997, C-337 de 1993.»"
+  },
+  {
+   "clave": "sentencia_cc_c517_1998",
+   "norma": "Sentencia C-517 de 1998",
+   "documentos_que_citan": 13,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "sentencia_cc_c517_1999",
+   "evidencia": "la relatoría no tiene C-517/98; la C-517 es de 1999. Cita: co_ley_1712_2014: «C-517 de 1998, concepto reiterado en la Sentencia C-692 de 2003”. |»"
+  },
+  {
+   "clave": "sentencia_cc_c550_1997",
+   "norma": "sentencia_cc_c550_1997",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-550_1997.html -> no nombra la norma o texto corto; https://www.corteconstitucional.gov.co/relatoria/1997/c-550-97.htm -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_c599_1999",
+   "norma": "Sentencia C-599 de 1999",
+   "documentos_que_citan": 36,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-599_1999.html -> HTTP 404; https://www.corteconstitucional.gov.co/relatoria/1999/c-599-99.htm -> no nombra la norma o texto corto. Cita: sentencia_cc_c014_2023: «C-599 de 1999, citada en las sentencias»"
+  },
+  {
+   "clave": "sentencia_cc_c824_2013",
+   "norma": "Sentencia C-824 de 2013",
+   "documentos_que_citan": 8,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: http://www.secretariasenado.gov.co/senado/basedoc/c-824_2013.html -> no nombra la norma o texto corto; https://www.corteconstitucional.gov.co/relatoria/2013/c-824-13.htm -> no nombra la norma o texto corto. Cita: sentencia_cc_c034_2015: «C-824 de 2013 y C-288 de 2014, entre otras.»"
+  },
+  {
+   "clave": "sentencia_cc_su101_2026",
+   "norma": "sentencia_cc_su101_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://www.corteconstitucional.gov.co/relatoria/2026/su101-26.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/su-101_2026.html -> HTTP 404; http://www.secretariasenado.gov.co/senado/basedoc/su-101_2026.html -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_su120_2026",
+   "norma": "sentencia_cc_su120_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://www.corteconstitucional.gov.co/relatoria/2026/su120-26.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/su-120_2026.html -> HTTP 404; http://www.secretariasenado.gov.co/senado/basedoc/su-120_2026.html -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_su142_2026",
+   "norma": "sentencia_cc_su142_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://www.corteconstitucional.gov.co/relatoria/2026/su142-26.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/su-142_2026.html -> HTTP 404; http://www.secretariasenado.gov.co/senado/basedoc/su-142_2026.html -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_su159_2000",
+   "norma": "Sentencia SU-159 de 2000",
+   "documentos_que_citan": 54,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "cita_errada",
+   "norma_real": "sentencia_cc_su159_2002",
+   "evidencia": "la relatoría no tiene SU-159/00; la SU-159 es de 2002. Cita: sentencia_cc_c590_2005: «SU-159/2000»"
+  },
+  {
+   "clave": "sentencia_cc_su163_2023",
+   "norma": "Sentencia SU-163 de 2023",
+   "documentos_que_citan": 2,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://www.corteconstitucional.gov.co/relatoria/2023/su163-23.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/su-163_2023.html -> HTTP 404; http://www.secretariasenado.gov.co/senado/basedoc/su-163_2023.html -> HTTP 404. Cita: sentencia_cc_su088_2025: «SU-163 de 2023. En»"
+  },
+  {
+   "clave": "sentencia_cc_su253_2026",
+   "norma": "sentencia_cc_su253_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://www.corteconstitucional.gov.co/relatoria/2026/su253-26.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/su-253_2026.html -> HTTP 404; http://www.secretariasenado.gov.co/senado/basedoc/su-253_2026.html -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_su254_2026",
+   "norma": "sentencia_cc_su254_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://www.corteconstitucional.gov.co/relatoria/2026/su254-26.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/su-254_2026.html -> HTTP 404; http://www.secretariasenado.gov.co/senado/basedoc/su-254_2026.html -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_su261_2026",
+   "norma": "sentencia_cc_su261_2026",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://www.corteconstitucional.gov.co/relatoria/2026/su261-26.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/su-261_2026.html -> HTTP 404; http://www.secretariasenado.gov.co/senado/basedoc/su-261_2026.html -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "sentencia_cc_t248_2025",
+   "norma": "sentencia_cc_t248_2025",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://www.corteconstitucional.gov.co/relatoria/2025/t-248-25.htm -> no nombra la norma o texto corto; http://www.secretariasenado.gov.co/senado/basedoc/t-248_2025.html -> HTTP 404; http://www.secretariasenado.gov.co/senado/basedoc/t-248_2025.html -> HTTP 404. Cita: "
+  },
+  {
+   "clave": "sentencia_ce_suj_2007492_2011",
+   "norma": "sentencia_ce_suj_2007492_2011",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (ce_unificacion) lo enlaza pero el servidor responde 404 o un archivo vacío: https://servicios.consejodeestado.gov.co/WebRelatoria/FileReferenceServlet?corp=ce&ext=doc&file=2007492 -> HTTP 200."
+  },
+  {
+   "clave": "sentencia_ce_suj_2077590_2016",
+   "norma": "sentencia_ce_suj_2077590_2016",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (ce_unificacion) lo enlaza pero el servidor responde 404 o un archivo vacío: https://servicios.consejodeestado.gov.co/WebRelatoria/FileReferenceServlet?corp=ce&ext=doc&file=2077590 -> HTTP 200."
+  },
+  {
+   "clave": "sentencia_csj_ap1181_2014",
+   "norma": "sentencia_csj_ap1181_2014",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/AP1181-2014(43365).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_ap1641_2017",
+   "norma": "Sentencia AP1641-2017",
+   "documentos_que_citan": 1,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/AP1641-2017(49896).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_ap209_2016",
+   "norma": "sentencia_csj_ap209_2016",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/IMPEDIMENTOS%20Y%20RECUSACIONES/CAUSALES/HABER%20INADMITIDO%20DEMANDA%20DE%20CASACION/AP209-2016(46433).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_ap2118_2015",
+   "norma": "sentencia_csj_ap2118_2015",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/AP2118-2015(45841).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_ap291_2017",
+   "norma": "sentencia_csj_ap291_2017",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/AP291-2017(49568).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_ap4771_2016",
+   "norma": "Sentencia AP4771-2016",
+   "documentos_que_citan": 1,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "sin_texto_oficial",
+   "evidencia": "Ninguna de las fuentes oficiales consultadas publica el texto: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/PRUEBA/TESTIMONIO%20DE%20MENORES/DIFERENCIA%20CON%20LAS%20ENTREVISTAS%20FORENSES/AP4771-2016(48198).docx -> no nombra la norma o texto corto. Cita: "
+  },
+  {
+   "clave": "sentencia_csj_ap998_2016",
+   "norma": "sentencia_csj_ap998_2016",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/AP998-2016(47580).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad26276_2007",
+   "norma": "sentencia_csj_rad26276_2007",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INDAGACION%20E%20INVESTIGACION/METODOS%20DE%20IDENTIFICACION/METODOS%20DIFERENTES%20AL%20SE%C2%A5ALAMIENTO%20EN%20JUICIO/26276(29-08-07).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad27612_2007",
+   "norma": "sentencia_csj_rad27612_2007",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/27612(13-06-07).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad28935_2009",
+   "norma": "sentencia_csj_rad28935_2009",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INDAGACION%20E%20INVESTIGACION/METODOS%20DE%20IDENTIFICACION/METODOS%20DIFERENTES%20AL%20SE%C2%A5ALAMIENTO%20EN%20JUICIO/28935(01-07-09).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad29644_2008",
+   "norma": "sentencia_csj_rad29644_2008",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/29644(30-04-08).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad32103_2009",
+   "norma": "sentencia_csj_rad32103_2009",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INCIDENTE%20DE%20REPARACION%20INTEGRAL/OFICIOSO%20EN%20CASO%20DE%20VICTIMAS%20MENORES%20DE%20EDAD/32103(09-11-09).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad33796_2010",
+   "norma": "sentencia_csj_rad33796_2010",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/33796(23-03-10).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad37008_2011",
+   "norma": "sentencia_csj_rad37008_2011",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INDAGACION%20E%20INVESTIGACION/METODOS%20DE%20IDENTIFICACION/METODOS%20DIFERENTES%20AL%20SE%C2%A5ALAMIENTO%20EN%20JUICIO/37008(28-09-11).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad37795_2012",
+   "norma": "sentencia_csj_rad37795_2012",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INDAGACION%20E%20INVESTIGACION/REGISTRO%20Y%20ALLANAMIENTO/CONCEPTO%20DE%20DOMICILIO%20Y%20ESPECTATIVA%20DE%20INTIMIDAD/37795(27-02-12).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad40804_2013",
+   "norma": "sentencia_csj_rad40804_2013",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/RECURSOS/APELACION/COMPETENCIA%20EN%20SEGUNDA%20INSTANCIA%20DEL%20JUEZ%20DE%20EJECUCI%C3%A0N%20DE%20PENAS/40804(28-02-13).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad41505_2013",
+   "norma": "sentencia_csj_rad41505_2013",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/FISCALIA%20GENERAL%20DE%20LA%20NACION/CARGA%20DE%20LA%20PRUEBA/41505(11-09-13).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_rad41938_2013",
+   "norma": "sentencia_csj_rad41938_2013",
+   "documentos_que_citan": 0,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/IMPEDIMENTOS%20Y%20RECUSACIONES/RECUSACI%C3%A0N%20DE%20QUIEN%20RESUELVE%20OTRA%20RECUSACION/41938(06-08-13).doc -> HTTP 404."
+  },
+  {
+   "clave": "sentencia_csj_sp5192_2014",
+   "norma": "Sentencia SP5192-2014",
+   "documentos_que_citan": 2,
+   "fecha_verificacion": "2026-09-29",
+   "motivo": "enlace_roto_en_fuente",
+   "evidencia": "El índice oficial (csj_spa_providencia) lo enlaza pero el servidor responde 404 o un archivo vacío: https://cortesuprema.gov.co/corte/wp-content/uploads/relatorias/pe/spa/INDAGACION%20E%20INVESTIGACION/METODOS%20DE%20IDENTIFICACION/METODOS%20DIFERENTES%20AL%20SE%C2%A5ALAMIENTO%20EN%20JUICIO/SP5192-2014(37391).doc -> HTTP 404."
+  }
+ ]
+}

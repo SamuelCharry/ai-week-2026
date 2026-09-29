@@ -123,7 +123,7 @@ class PruebasGeneracion(unittest.TestCase):
         self.assertFalse(registro["abstencion_por_citas"])
 
     def test_resumen_separa_indeterminadas(self):
-        from scripts.generacion.comparar_decoders import resumen
+        from scripts.experimentos.comparar_decoders import resumen
 
         fila = {"modelo": "prueba", "gramatica": True, "corrida": 1, "con_contexto": True,
                 "citas_detectadas": 2, "citas_respaldadas": 1, "citas_sin_respaldo": 0,
@@ -133,7 +133,7 @@ class PruebasGeneracion(unittest.TestCase):
         self.assertEqual(resultado["citas_indeterminadas"], 1)
 
     def test_error_no_mejora_proporcion_de_citas(self):
-        from scripts.generacion.comparar_decoders import resumen
+        from scripts.experimentos.comparar_decoders import resumen
 
         fila = {"modelo": "prueba", "gramatica": True, "corrida": 1, "con_contexto": True,
                 "citas_detectadas": 1, "citas_respaldadas": 1, "auditoria_disponible": True}

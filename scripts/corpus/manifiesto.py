@@ -160,12 +160,63 @@ def tabla_evolucion():
     return "\n".join(lineas)
 
 
+ORIGENES = {
+    "reconstruccion_v06": "Corpus de la v05, vuelto a descargar de la fuente más completa",
+    "seed_targets": "Normas de `seed_targets.json` que faltaban",
+    "norma_troncal": "Normas troncales de las diez áreas que el seed no lista",
+    "hito_jurisprudencial": "Sentencias de la Corte Constitucional que fijan precedente",
+    "grafo_normativo": "Citadas por el propio corpus y ausentes (grafo normativo)",
+    "cita_corregida": "Norma real de una cita errada del corpus (ver exclusiones)",
+    "ce_unificacion": "Sentencias de unificación del Consejo de Estado",
+    "csj_compendio": "Compendios y esquemas jurisprudenciales de la Corte Suprema",
+    "csj_spa_providencia": "Providencias de la Sala Penal del esquema del sistema penal acusatorio",
+    "doctrina_dian": "Conceptos generales unificados de la DIAN",
+    "doctrina_fp": "Conceptos marco de Función Pública",
+}
+
+
+def tabla_origenes():
+    """Por qué entró cada documento, contado desde data/raw/manifest.json."""
+    raw = json.loads((RAIZ / "data/raw/manifest.json").read_text(encoding="utf-8"))
+    objetivos = json.loads((RAIZ / "configs/corpus_objetivos.json").read_text(encoding="utf-8"))
+    iteracion = {d["doc_id"]: (d.get("iteracion"), d.get("umbral")) for d in objetivos["documentos"]}
+    conteo = Counter()
+    for d in raw:
+        origen = d.get("origen_ampliacion") or "reconstruccion_v06"
+        if origen == "grafo_normativo":
+            it, umbral = iteracion.get(d["doc_id"], (None, None))
+            tipo = "sentencias" if d.get("tipo") in ("sentencia", "auto") else "normas"
+            origen = f"grafo_normativo|iteración {it}, {tipo} citadas por ≥ {umbral} documentos"
+        conteo[origen] += 1
+    filas = ["| Origen | Documentos |", "|---|---:|"]
+    for origen, n in sorted(conteo.items()):
+        base, _, detalle = origen.partition("|")
+        filas.append(f"| {ORIGENES.get(base, base)}{' — ' + detalle if detalle else ''} | {n} |")
+    descartes = "\n".join(f"  - {x}" for x in objetivos.get("descartados_identificador_inexistente", []))
+    # Pendientes reales: lo que el inventario pide y no quedó descargado, con el último
+    # motivo registrado por la descarga, más lo que no tiene URL posible.
+    import csv
+    motivos = {}
+    ruta_informe = RAIZ / "data/raw/reconstruccion.csv"
+    if ruta_informe.is_file():
+        with ruta_informe.open(encoding="utf-8-sig") as f:
+            for fila in csv.DictReader(f):
+                motivos[fila["doc_id"]] = fila["estado"]
+    descargados = {d["doc_id"] for d in raw}
+    faltan = [f"  - {d['titulo']} (`{d['doc_id']}`): {motivos.get(d['doc_id'], 'sin descargar')}"
+              for d in objetivos["documentos"] if d["doc_id"] not in descargados]
+    faltan += [f"  - {x['norma']}: {x['motivo']}" for x in objetivos.get("pendientes_manuales", [])]
+    pendientes = "\n".join(faltan) or "  - ninguno"
+    return "\n".join(filas), descartes, pendientes
+
+
 def escribir_corpus_md(fichas_docs, resumen, cobertura, encoder):
     total, cubierto, normas, normas_ok = cobertura
     fuentes = Counter(f["fuente"] or "sin declarar" for f in fichas_docs)
     tipos = Counter()
     for f in fichas_docs:
         tipos["con artículos" if f["n_articulos"] else "sin artículos"] += 1
+    origenes, descartes, pendientes = tabla_origenes()
     texto = f"""# Bitácora del corpus
 
 Corpus de derecho colombiano construido para el reto. Un registro por documento,
@@ -205,32 +256,46 @@ solo sirvió para saber qué texto oficial buscar. Ni las preguntas, ni las opci
 las respuestas esperadas, ni el propio `legal_basis` entran al corpus, al índice o al
 contexto del modelo.
 
+Además del seed, el corpus se amplió con dos señales que no tocan el banco:
+
+- **Normas troncales** de cada área (sección 4.2 del enunciado) que el seed no lista.
+- **Grafo normativo** (`scripts/corpus/grafo.py`): se extraen las citas a leyes,
+  decretos, actos legislativos y sentencias que aparecen dentro de los propios textos
+  oficiales del corpus, y se incorpora lo que citan varios documentos y no está. Las
+  sentencias citan decenas de sentencias y el grafo no converge con un umbral fijo,
+  así que la jurisprudencia se incorporó en dos rondas y se detuvo; las normas se
+  siguen hasta converger. Se incluyen las leyes que aprueban tratados citadas por el
+  corpus, por el bloque de constitucionalidad (art. 93 de la Constitución).
+
+{origenes}
+
 Quedaron fuera, con su motivo:
 
-- Normas que la Secretaría del Senado no publica en su base documental. Se
-  registran en `data/raw/ampliacion_v05.csv` con el código HTTP recibido.
-- Providencias de la Corte Suprema que la relatoría solo publica dentro del
-  boletín del mes y no como archivo propio.
-- Entradas del banco cuyo identificador no corresponde a una norma existente
-  (por ejemplo "Ley 11500 de 2007" o "Ley 116 de 2006"). No se sustituyen por la
-  norma que parecen querer decir: el evaluador compara el identificador literal.
-- Tres originales con defectos de texto confirmados, que se conservan sin indexar:
-  {", ".join(resumen.get('documentos_fuente_restringida') or []) or "ninguno"}.
+- Identificadores del seed que no corresponden a una norma existente. No se
+  sustituyen por la norma que parecen querer decir, porque el evaluador compara el
+  identificador literal:
+{descartes}
+- Pendientes que ninguna fuente oficial publica como archivo propio y legible:
+{pendientes}
 
 ## 3. Método de ingesta y limpieza
 
-1. **Descarga.** Todos los originales vienen de publicadores oficiales del Estado
-   colombiano, sin intermediarios ni recopilaciones privadas. La lista completa, con
-   cuántos documentos aporta cada uno, está al final del inventario. La ampliación de
-   esta semana usó la relatoría de la Corte Constitucional, la relatoría de la Corte
-   Suprema y la base documental de la Secretaría General del Senado; el corpus inicial
-   se había armado además con el Gestor Normativo de la Función Pública y con las
-   compilaciones de DIAN, SIC, Consejo de Estado y varios ministerios.
-   Cada descarga se valida contra el identificador esperado, para no guardar una página
-   de error que responde 200. Las normas que Senado parte en varias páginas se siguen
-   por la cadena `_prNNN`.
-2. **Extracción de texto.** Parser HTML propio y extracción de PDF con pdfplumber.
-   Se conserva la marca de página de los PDF.
+1. **Descarga** (`scripts/corpus/reconstruir.py`). Solo publicadores oficiales del
+   Estado colombiano. Para cada documento se descargan las fuentes candidatas y se
+   conserva la más completa: primero la Secretaría del Senado, que publica las normas
+   largas completas en páginas enlazadas `_prNNN` (el Código Civil son 84 tramos);
+   luego la URL declarada, el Gestor Normativo de la Función Pública y, si ninguna
+   sirve, las compilaciones jurídicas de la Cancillería y la DIAN. La jurisprudencia
+   viene de las relatorías de la Corte Constitucional y la Corte Suprema. Cada
+   candidata se valida contra el identificador esperado, para no guardar una página
+   de error que responde 200, y se mide: artículos distintos, huecos en la
+   numeración y, en providencias, la parte resolutiva. `data/raw/reconstruccion.csv`
+   guarda las métricas de todas las candidatas y cuál se eligió.
+2. **Extracción de texto y OCR.** Parser HTML propio y extracción de PDF con
+   pdfplumber, con la marca de página. Las providencias escaneadas, cuya capa de
+   texto es ilegible, pasan por OCR (Tesseract, español, 300 ppp, un hilo para que
+   sea determinista); el texto queda junto al original como `NNN.ocr.txt`, con su
+   hash y el método en el manifiesto, y la ingesta lo lee en lugar de la capa dañada.
 3. **Normalización.** Reparación de codificación y de entidades HTML; retiro de la
    cabecera editorial repetida, con rastro por página. No se reescribe el texto.
 4. **Segmentación.** Las normas se cortan por artículo; la jurisprudencia por
@@ -243,7 +308,19 @@ Quedaron fuera, con su motivo:
 6. **Indexación.** {encoder.get('nombre')} ({encoder.get('dimensiones')} dimensiones),
    FAISS IndexFlatIP con vectores normalizados.
 
+7. **Auditoría** (`scripts/corpus/auditoria.py`). Antes de congelar el índice se
+   comprueba de punta a punta: campos del manifiesto, fuentes oficiales, ausencia de
+   preguntas o respuestas del banco en el corpus, hashes de los originales, duplicados,
+   completitud de cada documento, legibilidad, cobertura del seed y del grafo, y que
+   la ingesta esté al día con los originales. Sale con error si hay hallazgos críticos.
+
 Problemas encontrados y cómo se resolvieron:
+
+- El corpus anterior tomaba casi todo del Gestor Normativo, que publica cada norma en
+  una sola página con formato irregular: la Ley 600 de 2000 quedaba con 421 de sus
+  536 artículos. Con Senado primero queda completa.
+- La relatoría de la Corte Constitucional escribe "SU.917/10", "SU917/10" y
+  "SU-917/10"; la validación y el grafo aceptan las tres formas.
 
 - La relatoría de la Corte Constitucional publica las SU sin guion (`su016-20`) y
   las C y T con guion (`c-207-19`). Pedirlas con el patrón equivocado devuelve la

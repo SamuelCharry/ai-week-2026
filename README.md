@@ -1,134 +1,190 @@
-# AI Week 2026
+# P34K — Derecho colombiano con un modelo pequeño
 
-Sistema RAG para preguntas de derecho colombiano. Recupera artículos del corpus, responde con Salamandra y registra las fuentes utilizadas.
+Sistema RAG para la Hackathon 2026 de la AI Week (Universidad de los Andes). Responde preguntas de
+derecho colombiano con un modelo abierto de menos de 8.000 millones de parámetros y un corpus
+jurídico propio. Cada respuesta incluye los pasajes que la sustentan, y toda norma citada debe
+aparecer en esos pasajes.
 
-## Configuración actual
+El enunciado está en [`docs/enunciado.pdf`](docs/enunciado.pdf) y el informe técnico en
+[`docs/informe_tecnico.md`](docs/informe_tecnico.md).
+
+## Reproducción con un solo comando
+
+Requiere Docker, una GPU NVIDIA y NVIDIA Container Toolkit.
+
+```bash
+./reproducir.sh
+```
+
+El comando construye el contenedor y descarga el corpus procesado y el índice congelado (sección
+[Corpus e índice](#corpus-e-índice)), además de los modelos. Luego responde las 50 preguntas de
+muestra y ejecuta el evaluador oficial. La entrega y el reporte quedan en `data/reproduccion/`. Con
+`./reproducir.sh --ragas` también se evalúa el texto libre; para eso hay que exportar antes
+`OPENROUTER_API_KEY`.
+
+Sin Docker, desde un entorno con las dependencias instaladas:
+
+```bash
+python -m scripts.sistema.reproducir
+```
+
+## Arquitectura
+
+```text
+                 ┌────────────── scripts/corpus ──────────────┐
+fuentes oficiales ─► descarga ─► texto limpio + metadatos ─► data/processed/corpus
+                                                                    │
+                                   scripts/indice/construir ◄───────┘
+                                              │
+                                   data/index/corpus (FAISS)
+                                              │
+pregunta ─► recuperar ─► evidencia ─► decoder (temp. 0) ─► control de citas ─► JSON de entrega
+            └─────────── scripts/sistema/componentes.py (Sistema) ───────────┘
+                         │                        │
+            scripts/sistema/pipeline      scripts/sistema/servicio ─► web/
+            (submissions.jsonl)           (POST /preguntar)
+```
+
+| Paso del enunciado | Dónde está |
+|---|---|
+| 1. Ingesta y normalización | `scripts/corpus/` — cada fragmento identifica su norma y su artículo |
+| 2. Indexación vectorial | `scripts/indice/construir.py` (encoder abierto, índice reconstruible) |
+| 3. Generación | `scripts/generacion/` (prompts y JSON por formato), `scripts/sistema/componentes.py` |
+| 4. Citas y abstención | `scripts/generacion/politica.py`, `scripts/evaluacion/entrega.py` (`auditar_citas`) |
+| 5. Enriquecimiento del corpus | `CORPUS.md`, `corpus_manifest.json`, `scripts/corpus/` |
 
 | Componente | Configuración |
 |---|---|
-| Encoder | BAAI/bge-m3 |
-| Índice | FAISS IndexFlatIP, vectores normalizados |
-| Segmentación | 320 tokens, solapamiento de 32 |
-| Decoder | BSC-LT/salamandra-7b-instruct, Q4_K_M |
-| Generación | Temperatura 0, semilla 0, contexto de 8192 tokens |
-| Evidencia | Hasta 5 artículos completos y sus cabeceras literales |
+| Encoder | BAAI/bge-m3, 1.024 dimensiones |
+| Índice | FAISS `IndexFlatIP`, vectores normalizados, ventanas de 320 tokens con solapamiento de 32 |
+| Decoder | BSC-LT/salamandra-7b-instruct, Q4_K_M, 7.768.117.248 parámetros, llama.cpp |
+| Generación | temperatura 0, semilla 0, contexto de 8.192 tokens |
+| Recuperación y generación finales | pendientes en `configs/sistema.json` |
 
-Las revisiones y licencias están en `configs/modelos.json`. Salamandra tiene 7.768.117.248 parámetros y cumple el límite de 8.000 millones.
+Revisiones, licencias y conteos de parámetros en `configs/modelos.json`. No se usa ningún modelo
+cerrado en el sistema. El juez de OpenRouter solo interviene en la autoevaluación.
 
-La siguiente comparación mantiene los modelos y cambia la recuperación: densa, híbrida y densa con reranker abierto. Su configuración está en `configs/experimentos.json`. La variante definitiva queda pendiente de los resultados.
+### Dónde se conecta la versión final
+
+`scripts/sistema/componentes.py` define la clase `Sistema` con cuatro métodos: `abrir`,
+`recuperar`, `responder` y `cerrar`. El pipeline, el servicio de la interfaz y la reproducción solo
+dependen de esa clase. Su docstring lista las piezas ya disponibles: índice, BM25, reranker,
+evidencia, política de generación y servidor local. También lista los requisitos del enunciado que
+dependen de ella. Sus parámetros van en `recuperacion` y `generacion` de `configs/sistema.json`.
+
+## Ejecución
+
+```bash
+python -m scripts.sistema.pipeline --split sample   # 50 preguntas -> data/reproduccion/submissions_sample.jsonl
+python -m scripts.sistema.pipeline --split test     # 992 preguntas -> submissions.jsonl
+python -m scripts.sistema.servicio                  # backend de la interfaz en http://127.0.0.1:8000
+python -m http.server 8766 --directory web --bind 127.0.0.1   # interfaz en http://127.0.0.1:8766
+```
+
+El pipeline guarda cada respuesta al terminarla y reanuda si se interrumpe. Si una pregunta falla,
+la tanda continúa: la falla queda registrada y el proceso termina con código de error. Al final
+valida la entrega con el esquema oficial. El archivo `*_resumen.json` informa los tiempos frente al
+presupuesto de 22 s por pregunta. Las preguntas pasan por `preparar_entrada`, que descarta los
+campos de respuesta y `legal_basis`, así que no llegan al sistema.
+
+Para el sábado, copiar `test_992.jsonl` a `data/oficial/data/` antes de correr `--split test`.
+
+## Corpus e índice
+
+Corpus procesado, índice vectorial serializado y `LICENSE` (CC-BY-4.0):
+
+**Enlace: pendiente.** Al publicarlo, declarar la URL y el SHA-256 del ZIP en
+`configs/sistema.json` (`corpus_indice`) para que la reproducción lo descargue y lo verifique.
+
+El índice se congela en el momento de la entrega. Se reconstruye desde el corpus con
+`python -m scripts.indice.construir --config configs/indice.json --congelar` y desde las URL declaradas con el flujo de `scripts/corpus/`
+descrito en `CORPUS.md`.
+
+### Estado del corpus
+
+- **Entrega ampliada:** 13.967 documentos en `data/data/raw`. La preparación
+  (`python -m scripts.corpus.preparar_corpus --raw data/data/raw --output data/processed/corpus_preparado --workers 6`)
+  conserva los originales, verifica hashes, lee OCR y Word, y genera texto canónico con procedencia.
+  Correcciones, comprobaciones y falencias en [CORPUS_PREPARACION.md](CORPUS_PREPARACION.md).
+- **Versión de evaluación `corpus_eval_v1`:** 13.962 documentos seleccionados, cinco fuentes
+  excluidas y restricciones por documento. Manifiesto en `data/releases/corpus_eval_v1`. Plan en
+  `configs/plan_evaluacion_corpus_v1.json`; reporte en
+  [REPORTE_CORPUS_Y_EXPERIMENTOS.md](REPORTE_CORPUS_Y_EXPERIMENTOS.md).
+- Falta generar las unidades citables y el índice nuevo sobre esa versión.
+
+## Dependencias
+
+Python 3.12, PyTorch 2.6.0 con CUDA 12.4 y los paquetes de `requirements.txt`. El decoder corre en
+llama.cpp, que `scripts/entorno/runtime.py` compila con CUDA en la revisión fijada en
+`configs/modelos.json`. La primera conversión de Salamandra requiere 45 GiB libres.
+
+```bash
+python -m venv .venv
+.venv/bin/pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+.venv/bin/pip install -r requirements.txt -r data/oficial/scripts/requirements-evaluador.txt
+```
+
+`requirements-experimentos.txt` añade Jupyter para los notebooks, y `requirements-colab.txt`
+contiene lo que se instala en Colab.
 
 ## Estructura
 
 ```text
-notebooks/
-  basicos/       00_eda, 01_ingesta_normalizacion, 02_indexacion
-  experimentos/  e01_encoders, e02_decoders, e03, e04, e05
 scripts/
-  corpus/        ingesta, ampliar, fuentes_csj, constitucion_senado, cobertura, auditar, manifiesto
-  indice/        recuperacion, reordenamiento, sondas, construir, verificar, comparar_encoders
-  generacion/    cliente, politica, evidencia, responder, comparar_decoders
-  evaluacion/    oficial, entrega, comparar, diagnostico
-  entorno/       runtime, modelos, encoders, paquete, ejecutar_notebook
-  experimentos/  orquestador, experimentar, v04, v05
+  corpus/        descarga, limpieza, grafo normativo, auditoría y manifiesto del corpus
+  indice/        construcción, carga y verificación del índice; BM25, reranker y sondas
+  generacion/    cliente de llama.cpp, evidencia, prompts, reparación de JSON y política de citas
+  sistema/       componentes (a completar), pipeline por lotes, servicio HTTP y reproducción
+  evaluacion/    esquema, auditoría de citas, evaluador oficial y comparación de corridas
+  entorno/       descarga de modelos, runtime de llama.cpp y paquete para Colab
+  experimentos/  comparaciones de encoders y decoders y experimentos 03 a 05
   pruebas/
-configs/
-data/
-web/
+configs/         sistema.json (entrega), modelos.json, indice.json, experimentos.json, corpus_*.json
+data/oficial/    material del reto: muestra, esquema y evaluador
+docs/            enunciado e informe técnico
+notebooks/       basicos/ (EDA, ingesta, índice) y experimentos/ (e01 a e05)
+web/             interfaz
 ```
 
-Los notebooks de `basicos/` recorren el pipeline: exploración, ingesta e índice. Los de
-`experimentos/` comparan una cosa a la vez y conservan sus salidas. El trabajo nuevo se
-sigue desde `experimentos/e05.ipynb`.
+Cada carpeta de `scripts/` es un paquete importable como `scripts.<carpeta>.<modulo>`, y los
+ejecutables se corren con `python -m` desde la raíz. Los datos, los índices, los modelos y los
+resultados quedan fuera de Git. Solo se versiona `data/oficial/`.
 
-Cada carpeta de `scripts/` es un paquete importable como `scripts.<carpeta>.<modulo>`, y
-los ejecutables se corren con `python -m`. `configs/evolucion.json` guarda el puntaje de
-cada corrida evaluada y alimenta la tabla de `CORPUS.md`.
+## Pruebas
 
-## Colab
+```bash
+python -m unittest discover -s scripts/pruebas -p 'test_*.py' -t .
+```
 
-**Evaluación del corpus definitivo:** usa [E06](notebooks/experimentos/e06_corpus_definitivo.ipynb) y su [guía de ejecución](GUIA_NOTEBOOK_DEFINITIVO.md) para RTX 4090, A100 o L4. E06 indexa `corpus_eval_v1` (13.962 documentos) y puntúa con el paquete oficial de `data/oficial`; el E05 descrito a continuación corresponde a la línea experimental anterior.
+## Experimentos en Colab
 
-1. Subir `data/colab/ai-week.zip` a `Mi unidad/AIWEEK`, sin descomprimir.
-2. Abrir `notebooks/experimentos/e05.ipynb` en Colab y seleccionar L4 o A100.
+La evaluación del corpus definitivo usa [E06](notebooks/experimentos/e06_corpus_definitivo.ipynb)
+y su [guía de ejecución](GUIA_NOTEBOOK_DEFINITIVO.md) para RTX 4090, A100 o L4. E06 indexa
+`corpus_eval_v1` (13.962 documentos) y puntúa con el paquete oficial de `data/oficial`. E01 a E05
+son la línea experimental anterior, sobre el corpus de 386 documentos.
+
+1. Subir `data/colab/ai-week.zip` (`python -m scripts.entorno.paquete`) a `Mi unidad/AIWEEK`, sin descomprimir.
+2. Abrir el notebook en Colab y seleccionar L4 o A100.
 3. Ejecutar las celdas en orden. Si la instalación pide reiniciar, reiniciar la sesión y empezar desde la primera celda.
 
-El notebook busca el índice BGE en `AIWEEK/resultados`, donde quedaron las comparaciones anteriores. Comprueba sus archivos, modelo, segmentación y corpus antes de reutilizarlo. Si no encuentra uno compatible, informa el motivo. `permitir_construir = True` habilita la construcción de un índice nuevo.
+Cada pregunta se guarda al terminar y `reanudar = "auto"` continúa la última ejecución. El modelo
+convertido se conserva en `AIWEEK/modelos_cache`. En Colab, la llave del juez se guarda en Secretos
+como `OPENROUTER_API_KEY`; solo se usa para evaluar y las llamadas están desactivadas por defecto.
 
-Los resultados nuevos quedan en `AIWEEK/experimentos`. `reanudar = "auto"` continúa la última ejecución. Para crear otra, usar `reanudar = ""`. Una configuración o un entorno incompatibles requieren una ejecución separada.
+## Entregables (enunciado, §9.2)
 
-Cada pregunta se guarda al terminar. El modelo convertido se conserva en `AIWEEK/modelos_cache`. La primera preparación de Salamandra requiere 45 GiB libres. Una copia verificada evita repetir la conversión en sesiones posteriores.
+| N.º | Entregable | Estado |
+|---|---|---|
+| 2 | Repositorio con README: dependencias, arquitectura, comando único | este archivo |
+| 3 | `submissions.jsonl` con las 992 respuestas | pendiente (sábado) |
+| 4 | `CORPUS.md` y `corpus_manifest.json` | `CORPUS.md` en la raíz; el manifiesto se regenera con el corpus nuevo |
+| 5 | Corpus e índice con licencia abierta, enlace en [Corpus e índice](#corpus-e-índice) | pendiente |
+| 6 | Informe técnico de tres páginas como máximo | `docs/informe_tecnico.md` (esqueleto) |
+| 7 | Video de cinco minutos como máximo | pendiente |
+| 8 | Interfaz gráfica | `web/` + `scripts/sistema/servicio.py` |
 
-El paquete anterior `ai-week-colab.zip` y sus resultados se conservan. El paquete nuevo contiene el código actualizado, el corpus procesado y el material oficial, sin claves ni pesos.
+## Integridad
 
-## Local
-
-Python 3.12 y GPU NVIDIA con CUDA para la tanda completa.
-
-```powershell
-python -m venv .venv
-.venv\Scripts\python.exe -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124
-.venv\Scripts\python.exe -m pip install -r requirements-experimentos.txt
-.venv\Scripts\python.exe -m ipykernel install --user --name ai-week --display-name "AI Week"
-.venv\Scripts\python.exe -m jupyter lab
-```
-
-Abrir `notebooks/experimentos/e05.ipynb` con el kernel AI Week. El entorno se detecta automáticamente. Los resultados quedan en `data/experimentos_sistema`.
-
-Para actualizar el paquete de Colab:
-
-```powershell
-.venv\Scripts\python.exe -m scripts.entorno.paquete
-```
-
-Deja `data/colab/ai-week.zip`. Los paquetes anteriores (`ai-week-colab.zip`,
-`ai-week-experimentos.zip`, `ai-week-v04.zip`) se conservan pero ya no se regeneran.
-
-## Resultados y evaluación
-
-Cada variante guarda respuestas originales, salidas evaluadas, configuración, tiempos y motivos de abstención. La ejecución produce `resumen.csv`, `por_pregunta.csv` y una entrega `submissions.jsonl` por variante.
-
-El evaluador oficial sin llave cubre 50 puntos: preguntas cerradas, citas y abstención. Los 30 puntos de texto libre quedan pendientes hasta activar el juez oficial. En Colab, su llave se guarda en Secretos como `OPENROUTER_API_KEY`. Solo se utiliza para evaluación y las llamadas están desactivadas por defecto.
-
-El recall de normas no demuestra que se haya encontrado el artículo necesario. Los controles de citas tampoco certifican la corrección jurídica. Se revisan los ejemplos y las omisiones de contexto junto con las métricas. Las latencias suman recuperación previamente medida y generación.
-
-El esquema oficial rechaza `respuesta_correcta: null` aunque lo describe para abstenciones cerradas. Esa discrepancia se registra sin alterar el material oficial. Una ejecución con errores de esquema no se considera una entrega validada.
-
-Las respuestas esperadas se usan únicamente para evaluación. No entran al índice ni al contexto del modelo.
-
-## Corpus e índice
-
-La entrega ampliada contiene **13.967 documentos** y está en `data/data/raw`.
-La preparación de esta entrega se guarda en `data/processed/corpus_preparado`.
-Los notebooks y experimentos anteriores usaban un corpus de 386 documentos en
-`data/raw` y `data/processed/corpus`; sus índices y resultados no describen la
-entrega ampliada. Los datos, índices, modelos y resultados quedan fuera de Git.
-
-La preparación nueva conserva los originales, verifica hashes, lee OCR/Word y
-genera texto canónico con procedencia. Se puede reanudar con:
-
-```powershell
-.venv\Scripts\python.exe -m scripts.corpus.preparar_corpus --raw data/data/raw --output data/processed/corpus_preparado --workers 6
-```
-
-Este paso aún no crea fragmentos ni un índice. El estado de correcciones,
-comprobaciones y falencias se documenta en [CORPUS_PREPARACION.md](CORPUS_PREPARACION.md).
-El notebook de selección de modelos queda pendiente por decisión del equipo.
-
-La versión documental fija para la nueva evaluación es `corpus_eval_v1`: 13.962
-documentos seleccionados, cinco fuentes excluidas y restricciones por documento.
-Su manifiesto está en `data/releases/corpus_eval_v1`; los textos se referencian
-por ruta y SHA-256. Consultar [CORPUS.md](CORPUS.md) y el
-[reporte de estructura, rúbrica y combinaciones](REPORTE_CORPUS_Y_EXPERIMENTOS.md).
-El plan aún no ejecutado está en `configs/plan_evaluacion_corpus_v1.json`.
-Esta versión documental todavía necesita unidades citables e índice nuevos;
-el paquete oficial de evaluación no está presente en este checkout.
-
-La revisión de vigencia, el enriquecimiento documentado y el enlace público del corpus e índice están pendientes. El paquete final debe incluir licencia, manifiesto, corpus procesado e índice serializado.
-
-## Interfaz
-
-```powershell
-python -m http.server 8766 --directory web --bind 127.0.0.1
-```
-
-Abrir [la interfaz](http://127.0.0.1:8766/) o [la demo](http://127.0.0.1:8766/?demo=1). El contrato del servicio está en [web/README.md](web/README.md). La conexión con el backend sigue pendiente.
+Las respuestas esperadas solo se usan en la evaluación. No entran al índice ni al contexto del
+modelo: `preparar_entrada` rechaza esos campos y la auditoría del corpus (`scripts/corpus/auditoria.py`)
+busca fugas del banco en el índice.

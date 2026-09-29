@@ -20,10 +20,14 @@ from bs4 import BeautifulSoup, Comment, NavigableString, Tag, UnicodeDammit
 from ftfy import fix_encoding
 import pdfplumber
 
-VERSION_INGESTA = "0.5.0-local"
+VERSION_INGESTA = "0.7.0"
 MAX_CARACTERES = 1800
 SOLAPAMIENTO = 200
 MAX_BLOQUE_JUDICIAL = 6000
+# Documentos sin artículos propios: jurisprudencia, compendios y doctrina. Se segmentan
+# por párrafo o sección en bloques acotados; con la segmentación de normas quedarían
+# como un único preámbulo de cientos de páginas.
+TIPOS_POR_BLOQUES = {"sentencia", "auto", "providencia", "fallo", "compendio", "concepto", "circular"}
 
 # Defectos comprobados en reports/a_muestra.csv, revisión del 2026-09-26.
 # La restricción solo aplica al original auditado, identificado por su SHA-256.
@@ -222,7 +226,7 @@ def extraer_html(contenido, archivo):
                 partes.append("\n")
 
     recorrer(principal)
-    texto = normalizar("".join(partes))
+    texto, retirado = retirar_navegacion_editorial(normalizar("".join(partes)))
     if len(texto) < 1500 and re.search(r"captcha|access denied|just a moment|acceso denegado|page not found", texto, re.I):
         raise ValueError("El HTML contiene una página de bloqueo o error.")
     return [{"pagina": None, "texto": texto}], {
@@ -231,8 +235,48 @@ def extraer_html(contenido, archivo):
         "anotaciones_detectadas": editorial,
         "paginas_pdf": None, "paginas_con_poco_texto": [], "entidades_reparadas": entidades_reparadas,
         "elementos_html_retirados": retiradas_html,
+        "editorial_retirado": retirado,
         **tablas,
     }
+
+
+NAVEGACION = {"inicio", "|", "siguiente", "anterior"}
+PIE_EDITORIAL_INICIO = re.compile(r"^Disposiciones analizadas por Avance Jur[ií]dico", re.I)
+PIE_EDITORIAL_FIN = re.compile(r"normas de uso de la informaci[oó]n aqu[ií] contenida", re.I)
+
+
+def retirar_navegacion_editorial(texto):
+    """Quita la navegación y el pie editorial que Senado y las compilaciones de Avance
+    Jurídico repiten en cada tramo ("Inicio | Siguiente", "Disposiciones analizadas por
+    Avance Jurídico ... normas de uso de la información aquí contenida").
+
+    Sin esto el pie, de unos mil caracteres, queda pegado al último artículo de cada
+    tramo. Solo se retiran líneas exactas de navegación y el bloque delimitado del pie
+    (a lo sumo diez líneas); las notas de vigencia y del editor se conservan.
+    """
+    lineas, salida, retiradas, i = texto.split("\n"), [], {"navegacion": 0, "pie_editorial": 0}, 0
+    while i < len(lineas):
+        linea = lineas[i]
+        # Navegación: una corrida de líneas que solo son "Inicio", "|", "Anterior" o
+        # "Siguiente" y que incluye el separador. Una línea suelta "inicio" es texto.
+        j = i
+        while j < len(lineas) and lineas[j].strip().lower() in NAVEGACION:
+            j += 1
+        corrida = [l.strip() for l in lineas[i:j]]
+        siguiente_es_pie = j < len(lineas) and PIE_EDITORIAL_INICIO.match(lineas[j].strip())
+        if (len(corrida) >= 2 and "|" in corrida) or (corrida and siguiente_es_pie):
+            retiradas["navegacion"] += len(corrida)
+            i = j
+            continue
+        if PIE_EDITORIAL_INICIO.match(linea.strip()):
+            fin = next((j for j in range(i, min(i + 10, len(lineas))) if PIE_EDITORIAL_FIN.search(lineas[j])), None)
+            if fin is not None:
+                retiradas["pie_editorial"] += 1
+                i = fin + 1
+                continue
+        salida.append(linea)
+        i += 1
+    return "\n".join(salida), retiradas
 
 
 def extraer_pdf(contenido):
@@ -824,7 +868,9 @@ def segmentar_documento(documento, texto, max_chars=MAX_CARACTERES, solapamiento
     campos = ("doc_id", "titulo", "tipo", "numero", "anio", "organo_emisor", "vigencia", "fuente", "url",
               "areas", "estado_extraccion", "revision_juridica", "texto_archivo", "redistribuir_raw",
               "edicion_con_anotaciones", "licencia_fuente", "fecha_consulta", "version_ingesta",
-              "estado_fuente", "rechazos_fuente", "nivel", "vigencia_fuente", "origen_ampliacion",
+              "estado_fuente", "rechazos_fuente",
+              # Para filtrar o ponderar en el índice (scripts.corpus.areas y scripts.corpus.niveles).
+              "nivel", "vigencia_fuente", "alcance", "origen_ampliacion",
               "alcance_vigencia", "temas", "advertencias_preliminares_fuente", "actualizacion_declarada_fuente")
     fragmentos = []
     for indice, u in enumerate(unidades):
@@ -919,8 +965,8 @@ def comprobar_resultados(registros, textos, unidades, fragmentos, max_chars=MAX_
         unidades_por_doc[u["doc_id"]].append(u)
     comprobar("Unidades sin solapamiento", all(a["fin"] <= b["inicio"] for us in unidades_por_doc.values()
                for a, b in zip(sorted(us, key=lambda u: u["inicio"]), sorted(us, key=lambda u: u["inicio"])[1:])))
-    comprobar("Sin artículos propios en jurisprudencia", all(f["articulo"] is None for f in fragmentos if f["tipo"] in {"sentencia", "auto", "providencia", "fallo"}))
-    comprobar("Bloques judiciales acotados", all(len(u["texto"]) <= MAX_BLOQUE_JUDICIAL for u in unidades if u["tipo"] in {"sentencia", "auto"} and u["tipo_unidad"] != "indice"))
+    comprobar("Sin artículos propios en jurisprudencia", all(f["articulo"] is None for f in fragmentos if f["tipo"] in TIPOS_POR_BLOQUES))
+    comprobar("Bloques judiciales acotados", all(len(u["texto"]) <= MAX_BLOQUE_JUDICIAL for u in unidades if u["tipo"] in TIPOS_POR_BLOQUES and u["tipo_unidad"] != "indice"))
     comprobar("Procedencia de todos los fragmentos", all(f["origenes"] for f in fragmentos))
     huecos = []
     for doc_id, grupos in por_doc.items():
