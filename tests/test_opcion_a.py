@@ -155,7 +155,7 @@ class VerificacionTest(unittest.TestCase):
 class TokenizadorFalso:
     eos_token_id = 0
 
-    def apply_chat_template(self, mensajes, tokenize, add_generation_prompt):
+    def apply_chat_template(self, mensajes, tokenize, add_generation_prompt, return_dict):
         return list(range(sum(len(m["content"]) for m in mensajes) // 10))
 
 

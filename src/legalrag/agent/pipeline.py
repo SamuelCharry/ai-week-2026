@@ -32,7 +32,7 @@ def _percentil(valores, p):
     return ordenados[min(len(ordenados) - 1, int(p * len(ordenados)))]
 
 
-def responder_lote(raiz, entrada, salida, config, sistema=None, reanudar=True):
+def responder_lote(raiz, entrada, salida, config, sistema=None, reanudar=True, ids=None):
     """Responde cada pregunta de `entrada` y escribe `salida`. Devuelve el resumen.
 
     sistema: instancia ya abierta; si falta, se crea con `implementacion` y se abre aquí.
@@ -40,6 +40,8 @@ def responder_lote(raiz, entrada, salida, config, sistema=None, reanudar=True):
     raiz, entrada, salida = Path(raiz), Path(entrada), Path(salida)
     # preparar_entrada deja solo los campos de la pregunta y rechaza respuestas o legal_basis.
     entradas = [preparar_entrada(p) for p in cargar_jsonl(entrada)]
+    if ids:
+        entradas = [e for e in entradas if e["id"] in set(ids)]
     carpeta = salida.with_name(salida.stem + "_respuestas")
     firma_config = _firma({k: v for k, v in config.items() if k != "notas"})
     propio = sistema is None
@@ -104,12 +106,13 @@ def main():
     ap.add_argument("--salida", type=Path, help="reemplaza la salida del split")
     ap.add_argument("--config", type=Path, default=CONFIG)
     ap.add_argument("--sin-reanudar", action="store_true", help="ignora las respuestas guardadas")
+    ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas (prueba corta)")
     args = ap.parse_args()
 
     config = leer_config(args.config)
     entrada = args.entrada or RAIZ / config["entradas"][args.split]
     salida = args.salida or RAIZ / config["salidas"][args.split]
-    resumen = responder_lote(RAIZ, entrada, salida, config, reanudar=not args.sin_reanudar)
+    resumen = responder_lote(RAIZ, entrada, salida, config, reanudar=not args.sin_reanudar, ids=args.ids)
     print(json.dumps({k: v for k, v in resumen.items() if k != "errores_esquema"}, ensure_ascii=False, indent=2))
     if resumen["errores_esquema"]:
         print(f"{len(resumen['errores_esquema'])} errores de esquema; detalle en el resumen.")

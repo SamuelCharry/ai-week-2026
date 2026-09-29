@@ -1,4 +1,9 @@
--r ../requirements.txt
+# Entorno de E01-E05 (transformers 4.48); el sistema entregado usa ../requirements.txt.
+jupyterlab>=4,<5
+beautifulsoup4==4.15.0
+ftfy==6.3.1
+pdfplumber==0.11.10
+matplotlib>=3.8,<4
 torch==2.6.0
 numpy==1.26.4
 transformers==4.48.3

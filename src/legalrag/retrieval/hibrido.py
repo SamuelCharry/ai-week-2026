@@ -72,7 +72,7 @@ class EncoderConsultas:
         self.max_tokens = max_tokens
         self.tokenizer = AutoTokenizer.from_pretrained(ficha["repo_id"], revision=ficha["revision"])
         self.modelo = AutoModel.from_pretrained(ficha["repo_id"], revision=ficha["revision"],
-                                                torch_dtype=getattr(torch, dtype)).to("cuda").eval()
+                                                dtype=getattr(torch, dtype)).to("cuda").eval()
 
     def codificar(self, texto):
         import torch
@@ -92,7 +92,7 @@ class Reordenador:
         self.max_tokens, self.lote = max_tokens, lote
         self.tokenizer = AutoTokenizer.from_pretrained(ficha["repo_id"], revision=ficha["revision"])
         self.modelo = AutoModelForSequenceClassification.from_pretrained(
-            ficha["repo_id"], revision=ficha["revision"], torch_dtype=getattr(torch, dtype)).to("cuda").eval()
+            ficha["repo_id"], revision=ficha["revision"], dtype=getattr(torch, dtype)).to("cuda").eval()
 
     def puntuar(self, texto, candidatos):
         import torch

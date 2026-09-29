@@ -135,19 +135,19 @@ declaradas con `python -m legalrag ingest`, según el método de `CORPUS.md`.
 
 ## Dependencias
 
-Python 3.12, PyTorch 2.6.0 con CUDA 12.4 y los paquetes de `requirements.txt`. El decoder corre en
-llama.cpp, que `src/legalrag/generation/runtime.py` compila con CUDA en la revisión fijada en
-`configs/modelos.json`. La primera conversión de Salamandra requiere 45 GiB libres.
+Python 3.12, PyTorch con CUDA 12.8 y los paquetes de `requirements.txt` (transformers 5.3, faiss,
+jsonschema). La opción A necesita una GPU de 24 GB (RTX 4090) y 32 GB de RAM. Guía paso a paso,
+con datos, pruebas y problemas frecuentes: [docs/EJECUCION.md](docs/EJECUCION.md).
 
 ```bash
-python -m venv .venv
-.venv/bin/pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124
-.venv/bin/pip install -r requirements.txt -r data/oficial/scripts/requirements-evaluador.txt
-.venv/bin/pip install -e .     # instala el paquete legalrag desde src/
+python3.12 -m venv .venv-sistema
+.venv-sistema/bin/pip install torch --index-url https://download.pytorch.org/whl/cu128
+.venv-sistema/bin/pip install -r requirements.txt -r data/oficial/scripts/requirements-evaluador.txt
+.venv-sistema/bin/pip install -e .     # instala el paquete legalrag desde src/
 ```
 
-`requirements/` contiene los entornos auxiliares: `experimentos.txt` (Jupyter), `colab.txt`,
-`notebook-definitivo.txt` (E06) y `profiling.txt`.
+`requirements/` contiene los entornos auxiliares: `experimentos.txt` (E01–E05, transformers 4.48),
+`colab.txt`, `notebook-definitivo.txt` (E06) y `profiling.txt`.
 
 ## Estructura
 

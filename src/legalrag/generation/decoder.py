@@ -23,7 +23,7 @@ class DecoderTransformers:
         ficha = self.config["decoder"]
         self.tokenizer = AutoTokenizer.from_pretrained(ficha["repo_id"], revision=ficha["revision"])
         self.modelo = AutoModelForCausalLM.from_pretrained(
-            ficha["repo_id"], revision=ficha["revision"], torch_dtype=getattr(torch, self.config["dtype"]),
+            ficha["repo_id"], revision=ficha["revision"], dtype=getattr(torch, self.config["dtype"]),
             device_map="cuda").eval()
         reales = sum(p.numel() for p in self.modelo.parameters())
         if reales != ficha["parametros"]:
@@ -33,8 +33,9 @@ class DecoderTransformers:
         self.modelo = None
 
     def _tokens(self, entrada, pasajes):
+        # return_dict=False: en transformers 5 el valor por defecto devuelve un diccionario.
         return self.tokenizer.apply_chat_template(mensajes(entrada, pasajes), tokenize=True,
-                                                  add_generation_prompt=True)
+                                                  add_generation_prompt=True, return_dict=False)
 
     def seleccionar(self, entrada, pasajes):
         """Pasajes en orden de ranking mientras quepan junto a la salida en el contexto."""
