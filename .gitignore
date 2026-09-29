@@ -3,6 +3,8 @@
 !/data/**/.gitkeep
 /reports/
 .venv/
+.venv-e06/
+.venv-profiling/
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/

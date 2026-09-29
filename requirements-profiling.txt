@@ -1,0 +1,10 @@
+# Entorno aislado: no mezclar con requirements-experimentos.txt (NumPy/Torch).
+# Python 3.12. Instalacion: python -m venv .venv-profiling
+ydata-profiling==4.18.4
+pandas==2.3.3
+numpy==2.3.5
+beautifulsoup4==4.15.0
+ftfy==6.3.1
+pdfplumber==0.11.10
+# ydata 4.18.4 todavia importa pkg_resources (eliminado en setuptools 82).
+setuptools==81.0.0

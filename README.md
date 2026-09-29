@@ -46,6 +46,8 @@ cada corrida evaluada y alimenta la tabla de `CORPUS.md`.
 
 ## Colab
 
+**Evaluación del corpus definitivo:** usa [E06](notebooks/experimentos/e06_corpus_definitivo.ipynb) y su [guía de ejecución](GUIA_NOTEBOOK_DEFINITIVO.md) para RTX 4090, A100 o L4. E06 indexa `corpus_eval_v1` (13.962 documentos) y puntúa con el paquete oficial de `data/oficial`; el E05 descrito a continuación corresponde a la línea experimental anterior.
+
 1. Subir `data/colab/ai-week.zip` a `Mi unidad/AIWEEK`, sin descomprimir.
 2. Abrir `notebooks/experimentos/e05.ipynb` en Colab y seleccionar L4 o A100.
 3. Ejecutar las celdas en orden. Si la instalación pide reiniciar, reiniciar la sesión y empezar desde la primera celda.
@@ -95,7 +97,31 @@ Las respuestas esperadas se usan únicamente para evaluación. No entran al índ
 
 ## Corpus e índice
 
-El corpus actual contiene 386 documentos. Los originales están en `data/raw` y los derivados en `data/processed/corpus`. Los datos, índices, modelos y resultados quedan fuera de Git.
+La entrega ampliada contiene **13.967 documentos** y está en `data/data/raw`.
+La preparación de esta entrega se guarda en `data/processed/corpus_preparado`.
+Los notebooks y experimentos anteriores usaban un corpus de 386 documentos en
+`data/raw` y `data/processed/corpus`; sus índices y resultados no describen la
+entrega ampliada. Los datos, índices, modelos y resultados quedan fuera de Git.
+
+La preparación nueva conserva los originales, verifica hashes, lee OCR/Word y
+genera texto canónico con procedencia. Se puede reanudar con:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.corpus.preparar_corpus --raw data/data/raw --output data/processed/corpus_preparado --workers 6
+```
+
+Este paso aún no crea fragmentos ni un índice. El estado de correcciones,
+comprobaciones y falencias se documenta en [CORPUS_PREPARACION.md](CORPUS_PREPARACION.md).
+El notebook de selección de modelos queda pendiente por decisión del equipo.
+
+La versión documental fija para la nueva evaluación es `corpus_eval_v1`: 13.962
+documentos seleccionados, cinco fuentes excluidas y restricciones por documento.
+Su manifiesto está en `data/releases/corpus_eval_v1`; los textos se referencian
+por ruta y SHA-256. Consultar [CORPUS.md](CORPUS.md) y el
+[reporte de estructura, rúbrica y combinaciones](REPORTE_CORPUS_Y_EXPERIMENTOS.md).
+El plan aún no ejecutado está en `configs/plan_evaluacion_corpus_v1.json`.
+Esta versión documental todavía necesita unidades citables e índice nuevos;
+el paquete oficial de evaluación no está presente en este checkout.
 
 La revisión de vigencia, el enriquecimiento documentado y el enlace público del corpus e índice están pendientes. El paquete final debe incluir licencia, manifiesto, corpus procesado e índice serializado.
 

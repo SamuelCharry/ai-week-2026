@@ -1,0 +1,15 @@
+[
+  {"doc_id":"doctrina_concepto_dian_c000003_2002","campo":"numero","antes":null,"despues":"3","evidencia_literal":"CONCEPTO TRIBUTARIO 3 DE 2002"},
+  {"doc_id":"doctrina_concepto_tributario_dian_0000001_2003","campo":"numero","antes":null,"despues":"1","evidencia_literal":"NUMERO 1 DE JUNIO 19 DE 2003"},
+  {"doc_id":"doctrina_concepto_tributario_dian_0000106_2022","campo":"numero","antes":null,"despues":"106","evidencia_literal":"CONCEPTO UNIFICADO No. 0106 (911428) DE 2022"},
+  {"doc_id":"doctrina_concepto_tributario_dian_0000481_2018","campo":"numero","antes":null,"despues":"481","evidencia_literal":"Concepto General Unificado número 0481 - 27/04/2018"},
+  {"doc_id":"doctrina_concepto_tributario_dian_0000577_2020","campo":"numero","antes":null,"despues":"577","evidencia_literal":"CONCEPTO 100202208-0577 (9510) DE 2020"},
+  {"doc_id":"doctrina_concepto_tributario_dian_0000912_2018","campo":"numero","antes":null,"despues":"912","evidencia_literal":"CONCEPTO GENERAL UNIFICADO 912 DE 2018"},
+  {"doc_id":"doctrina_concepto_tributario_dian_0001364_2018","campo":"numero","antes":null,"despues":"1364","evidencia_literal":"CONCEPTO 1364 [27495] DE 2018"},
+  {"doc_id":"doctrina_oficio_dian_3966_2023","campo":"numero","antes":null,"despues":"3966","evidencia_literal":"CONCEPTO 003966 int 416 DE 2023"},
+  {"doc_id":"sentencia_ce_suj_2185969_1900","campo":"anio","antes":null,"despues":2021,"evidencia_literal":"BOGOTÁ D.C., TRES (3) DE SEPTIEMBRE DE DOS MIL VEINTIUNO (2021)"},
+  {"doc_id":"sentencia_ce_suj_2185969_1900","campo":"titulo","antes":"Consejo de Estado, sentencia de unificación 11001-03-15-000-2021-02750-01 (s. f.)","despues":"Consejo de Estado, sentencia 11001-03-15-000-2021-02750-01 (2021)","evidencia_literal":"Radicación número: 11001-03-15-000-2021-02750-01(AC)"},
+  {"doc_id":"doctrina_concepto_dian_unificado_procedimiento_sancionatorio","campo":"anio","antes":2016,"despues":2017,"evidencia_literal":"Fecha — 2017-07-26","fuente_verificacion":"https://normograma.dian.gov.co/dian/compilacion/docs/concepto_tributario_dian_0014116_2017.htm"},
+  {"doc_id":"doctrina_concepto_dian_unificado_procedimiento_sancionatorio","campo":"numero","antes":null,"despues":"14116","evidencia_literal":"No. Radicado 00012017014116","fuente_verificacion":"https://normograma.dian.gov.co/dian/compilacion/docs/concepto_tributario_dian_0014116_2017.htm"},
+  {"doc_id":"doctrina_concepto_dian_unificado_procedimiento_sancionatorio","campo":"numeros_alternativos","antes":null,"despues":["0662","100202208-0662"],"evidencia_literal":"100202208 - 6 6 2","fuente_verificacion":"https://normograma.dian.gov.co/dian/compilacion/docs/concepto_tributario_dian_0014116_2017.htm"}
+]

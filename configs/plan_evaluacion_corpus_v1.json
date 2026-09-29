@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "estado": "notebook_e06_implementado_sin_corridas_de_modelos",
+  "archivo_de_plan_no_config_runtime": true,
+  "sin_notebook": false,
+  "notebook": "notebooks/experimentos/e06_corpus_definitivo.ipynb",
+  "reglas": {
+    "snapshot": "data/releases/corpus_eval_v1/snapshot.json",
+    "corpus_manifest": "data/releases/corpus_eval_v1/corpus_manifest.json",
+    "temperatura": 0,
+    "semilla": 0,
+    "max_pasajes_finales": 10,
+    "contexto_inicial_tokens": 8192,
+    "ventana_busqueda_tokens": 384,
+    "solapamiento_tokens": 64,
+    "bm25_top_n": 100,
+    "dense_top_n": 100,
+    "rrf_k": 60,
+    "rerank_top_n": 50,
+    "parametros_son_propuestas_no_resultados": true,
+    "normas_evidencia_articulo_integro": true,
+    "etiquetas_area_filtro_duro": false,
+    "web_dinamica": false
+  },
+  "bloqueos": [
+    "unidades_citables_por_tipo_por_validar",
+    "indice_nuevo_no_construido",
+    "filtro_heredado_excluye_conceptos_y_compendios_sin_articulo"
+  ],
+  "recuperacion": [
+    {
+      "id": "R00",
+      "retrieval": "bm25",
+      "encoder": null,
+      "reranker": null,
+      "decoder": null,
+      "diagnostico_no_entrega": true
+    },
+    {
+      "id": "R01",
+      "retrieval": "dense",
+      "encoder": "BAAI/bge-m3",
+      "reranker": null,
+      "decoder": null,
+      "diagnostico_no_entrega": false
+    },
+    {
+      "id": "R02",
+      "retrieval": "hybrid_rrf",
+      "encoder": "BAAI/bge-m3",
+      "reranker": null,
+      "decoder": null,
+      "diagnostico_no_entrega": false
+    },
+    {
+      "id": "R03",
+      "retrieval": "hybrid_rrf",
+      "encoder": "BAAI/bge-m3",
+      "reranker": "BAAI/bge-reranker-v2-m3",
+      "decoder": null,
+      "diagnostico_no_entrega": false
+    },
+    {
+      "id": "R04",
+      "retrieval": "hybrid_rrf",
+      "encoder": "intfloat/multilingual-e5-large",
+      "reranker": "BAAI/bge-reranker-v2-m3",
+      "decoder": null,
+      "diagnostico_no_entrega": false
+    },
+    {
+      "id": "R05",
+      "retrieval": "hybrid_rrf",
+      "encoder": "Qwen/Qwen3-Embedding-0.6B",
+      "reranker": "BAAI/bge-reranker-v2-m3",
+      "decoder": null,
+      "diagnostico_no_entrega": false
+    },
+    {
+      "id": "R06",
+      "retrieval": "hybrid_rrf",
+      "encoder": "Qwen/Qwen3-Embedding-4B",
+      "reranker": "BAAI/bge-reranker-v2-m3",
+      "decoder": null,
+      "diagnostico_no_entrega": false
+    },
+    {
+      "id": "R07",
+      "retrieval": "mejor_recuperacion_fijada",
+      "encoder": "encoder_ganador_en_desarrollo",
+      "reranker": "Qwen/Qwen3-Reranker-0.6B",
+      "decoder": null,
+      "diagnostico_no_entrega": false
+    }
+  ],
+  "decoders_con_evidencia_fija": [
+    "Qwen/Qwen2.5-7B-Instruct",
+    "Qwen/Qwen3-4B-Instruct-2507",
+    "BSC-LT/salamandra-7b-instruct"
+  ],
+  "ablaciones": [
+    "cabecera_literal",
+    "ventana384_64_vs768_128",
+    "area_blanda_vs_sin_area",
+    "nucleo_vs_ampliado",
+    "todos13962_vs_sin_restricciones13832",
+    "reranker",
+    "verificacion_selectiva"
+  ],
+  "metricas": [
+    "recall_documento",
+    "recall_unidad_citable",
+    "nDCG10",
+    "respaldo_citas_top10",
+    "calificacion_oficial_cuando_paquete_disponible",
+    "JSON_valido",
+    "riesgo_cobertura",
+    "latencia_media_p50_p95",
+    "VRAM_max",
+    "overflow",
+    "truncacion_entrada"
+  ],
+  "retador_actual_decoder": {
+    "modelo": "Qwen/Qwen3.5-4B",
+    "parametros_completos": 4659865088,
+    "entrada": "solo_texto",
+    "enable_thinking": false,
+    "condicion": "smoke en entorno con soporte qwen3_5; el actual transformers4.48.3 no sirve",
+    "comparar_con": "Qwen/Qwen2.5-7B-Instruct",
+    "mantener_evidencia_fija": true
+  }
+}

@@ -13,12 +13,14 @@ import io
 import json
 import re
 import unicodedata
+from xml.etree import ElementTree
+import zipfile
 
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag, UnicodeDammit
 from ftfy import fix_encoding
 import pdfplumber
 
-VERSION_INGESTA = "0.4.0"
+VERSION_INGESTA = "0.5.0-local"
 MAX_CARACTERES = 1800
 SOLAPAMIENTO = 200
 MAX_BLOQUE_JUDICIAL = 6000
@@ -46,7 +48,7 @@ def sha256(contenido):
 
 def normalizar(texto):
     texto = unicodedata.normalize("NFC", fix_encoding(texto))
-    texto = texto.replace("\r\n", "\n").replace("\r", "\n")
+    texto = texto.replace("\r\n", "\n").replace("\r", "\n").replace("\f", "\n")
     texto = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\xad\u200b\ufeff]", "", texto)
     lineas = [re.sub(r"[^\S\n]+", " ", linea).strip() for linea in texto.split("\n")]
     return "\n".join(linea for linea in lineas if linea)
@@ -56,7 +58,7 @@ def leer_original(archivo, raw_dir):
     RAW = Path(raw_dir)
     ruta = (RAW / archivo["archivo"]).resolve()
     if not ruta.is_relative_to(RAW.resolve()):
-        raise ValueError("La ruta sale de data/raw.")
+        raise ValueError("La ruta sale del directorio raw autorizado.")
     contenido = ruta.read_bytes()
     if len(contenido) != archivo["bytes"] or sha256(contenido) != archivo["sha256"]:
         raise ValueError(f"El original no coincide con el manifiesto: {archivo['archivo']}")
@@ -64,18 +66,33 @@ def leer_original(archivo, raw_dir):
 
 
 def extraer_html(contenido, archivo):
-    html, encoding = None, None
-    for candidato in ["utf-8-sig", archivo.get("encoding")]:
+    html, encoding, encoding_origen = None, None, None
+    errores_decodificacion = 0
+    declarado = re.search(br"<meta\b[^>]{0,1000}\bcharset\s*=\s*['\"]?\s*([a-zA-Z0-9._:-]+)", contenido, re.I)
+    charset_html = declarado.group(1).decode("ascii") if declarado else None
+    for candidato, origen in [("utf-8-sig", "utf8_comprobado"), (charset_html, "charset_html"),
+                              (archivo.get("encoding"), "manifiesto")]:
         if not candidato:
             continue
         try:
             html, encoding = contenido.decode(candidato), candidato
+            encoding_origen = origen
             break
-        except (UnicodeDecodeError, LookupError):
-            pass
+        except UnicodeDecodeError:
+            if origen == "charset_html":
+                # La fuente c226_2004 declara windows-1252 pero incluye un byte
+                # indefinido 0x81. Cambiar todo a otro alfabeto por ese byte
+                # transforma las ñ válidas. Mantener charset y señalar el daño.
+                html, encoding = contenido.decode(candidato, errors="replace"), candidato
+                errores_decodificacion = html.count("\ufffd")
+                encoding_origen = "charset_html_con_reemplazos"
+                break
+        except LookupError:
+            continue
     if html is None:
         detectado = UnicodeDammit(contenido, is_html=True)
         html, encoding = detectado.unicode_markup, detectado.original_encoding
+        encoding_origen = "autodetectado"
     if html is None:
         raise ValueError("No fue posible decodificar el HTML.")
     # Entidades de acentos sin punto y coma, presentes en Ley 2191.
@@ -93,9 +110,34 @@ def extraer_html(contenido, archivo):
             principal, selector = elementos[-1], candidato
             break
     editorial = bool(soup.select("#aj_data, .panel-documento"))
-    for etiqueta in list(principal.select("script, style, noscript, nav, header, footer, form, button, iframe")):
+    retiradas_html = []
+    # Selectores comprobados en ley_100_1993/000.html del Senado. Las cajas de
+    # vigencia/concordancias y el título de la norma no forman parte de esta lista.
+    if selector == "#aj_data":
+        for etiqueta in list(principal.select("#selector_aj, #imprimir, #logo_aj, a.hlk_inicio, a.antsig")):
+            if etiqueta.parent is not None:
+                retiradas_html.append({"selector": etiqueta.get("id") or ".".join(etiqueta.get("class", [])),
+                                       "texto": normalizar(etiqueta.get_text(" ")),
+                                       "motivo": "navegacion_o_pie_editorial_Senado"})
+                etiqueta.decompose()
+    for etiqueta in list(principal.select("head, script, style, noscript, nav, footer, form, button, iframe, xml")):
         if etiqueta.parent is not None:
             etiqueta.decompose()
+    # En ley_27_1977 el servidor ya aplanó los metadatos Word/CSS como texto
+    # anterior al primer párrafo. Retirar sólo ese prefijo con ambas firmas.
+    if selector == ".descripcion-contenido":
+        prefijo = []
+        for nodo in principal.contents:
+            if not isinstance(nodo, NavigableString):
+                break
+            prefijo.append(nodo)
+        ruido = "".join(str(nodo) for nodo in prefijo)
+        if ("/* Style Definitions */" in ruido and "table.MsoNormalTable" in ruido
+                and not re.search(r"\b(?:LEY|DECRETO|ART[ÍI]CULO)\s+\d", ruido, re.I)):
+            retiradas_html.append({"selector": ".descripcion-contenido > prefijo_textual",
+                                   "texto": normalizar(ruido), "motivo": "metadatos_Word_y_CSS_aplanados"})
+            for nodo in prefijo:
+                nodo.extract()
     bloques = {"p", "div", "section", "h1", "h2", "h3", "h4", "h5", "h6", "li", "tr", "table", "br"}
     partes = []
     tablas = {"tablas_estructuradas": 0, "tablas_en_texto": 0}
@@ -184,8 +226,11 @@ def extraer_html(contenido, archivo):
     if len(texto) < 1500 and re.search(r"captcha|access denied|just a moment|acceso denegado|page not found", texto, re.I):
         raise ValueError("El HTML contiene una página de bloqueo o error.")
     return [{"pagina": None, "texto": texto}], {
-        "selector": selector, "encoding": encoding, "anotaciones_detectadas": editorial,
+        "selector": selector, "encoding": encoding, "encoding_origen": encoding_origen,
+        "charset_html": charset_html, "n_errores_decodificacion": errores_decodificacion,
+        "anotaciones_detectadas": editorial,
         "paginas_pdf": None, "paginas_con_poco_texto": [], "entidades_reparadas": entidades_reparadas,
+        "elementos_html_retirados": retiradas_html,
         **tablas,
     }
 
@@ -206,6 +251,124 @@ def extraer_pdf(contenido):
     }
 
 
+def extraer_docx(contenido):
+    """Lee XML de Word sin ejecutar macros, relaciones externas ni descomprimir a disco."""
+    ns = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+    mc = "{http://schemas.openxmlformats.org/markup-compatibility/2006}"
+    alternativas = {"choice": 0, "fallback": 0, "sin_rama_textual": 0}
+
+    def elegir_alternativa(nodo):
+        # Word guarda representaciones equivalentes para distintos lectores.
+        # El texto WordML/txbxContent es soportado; no concatenar sus copias.
+        for opcion in nodo.findall(mc + "Choice"):
+            if any(t.text and t.text.strip() for t in opcion.iter(ns + "t")):
+                alternativas["choice"] += 1
+                return opcion
+        respaldo = nodo.find(mc + "Fallback")
+        if respaldo is not None:
+            alternativas["fallback"] += 1
+            return respaldo
+        alternativas["sin_rama_textual"] += 1
+        return None
+
+    def leer_xml(archivo, nombre):
+        info = archivo.getinfo(nombre)
+        if info.file_size > 64 * 1024 * 1024:
+            raise ValueError("El XML DOCX supera el límite de extracción de 64 MiB.")
+        datos = archivo.read(nombre)
+        if re.search(br"<!\s*(?:DOCTYPE|ENTITY)\b", datos.replace(b"\x00", b""), re.I):
+            raise ValueError("Declaraciones DTD o ENTITY no admitidas en DOCX.")
+        return ElementTree.fromstring(datos)
+
+    def texto_parrafo(nodo):
+        def inline(elemento):
+            if elemento.tag == mc + "AlternateContent":
+                elegido = elegir_alternativa(elemento)
+                return inline(elegido) if elegido is not None else ""
+            if elemento.tag == ns + "txbxContent":
+                # Las cajas pueden contener tablas y párrafos completos.
+                return "\n" + "\n".join(bloques(elemento)) + "\n"
+            if elemento.tag == ns + "t":
+                return elemento.text or ""
+            if elemento.tag == ns + "tab":
+                return "\t"
+            if elemento.tag in {ns + "br", ns + "cr"}:
+                return "\n"
+            if elemento.tag in {ns + "footnoteReference", ns + "endnoteReference"}:
+                return " [NOTA " + elemento.get(ns + "id", "?") + "] "
+            return "".join(inline(hijo) for hijo in elemento)
+        return inline(nodo)
+
+    def bloques(nodo):
+        if nodo.tag == mc + "AlternateContent":
+            elegido = elegir_alternativa(nodo)
+            if elegido is not None:
+                yield from bloques(elegido)
+            return
+        for hijo in nodo:
+            if hijo.tag == ns + "p":
+                yield texto_parrafo(hijo)
+            elif hijo.tag == ns + "tbl":
+                for fila in hijo.findall(ns + "tr"):
+                    yield " | ".join(" / ".join(bloques(celda)) for celda in fila.findall(ns + "tc"))
+            else:
+                yield from bloques(hijo)
+
+    with zipfile.ZipFile(io.BytesIO(contenido)) as archivo:
+        arbol = leer_xml(archivo, "word/document.xml")
+        partes = list(bloques(arbol))
+        anexos = []
+        for nombre, etiqueta in [("word/footnotes.xml", "footnote"), ("word/endnotes.xml", "endnote")]:
+            if nombre not in archivo.namelist():
+                continue
+            for nota in leer_xml(archivo, nombre).findall(ns + etiqueta):
+                if nota.get(ns + "type") in {"separator", "continuationSeparator"}:
+                    continue
+                partes.append("[NOTA " + nota.get(ns + "id", "?") + "]\n" + "\n".join(bloques(nota)))
+            anexos.append(nombre)
+    return [{"pagina": None, "texto": normalizar("\n".join(partes))}], {
+        "selector": "docx_xml_stdlib", "encoding": "XML", "anotaciones_detectadas": False,
+        "paginas_pdf": None, "paginas_con_poco_texto": [], "anexos_docx": anexos,
+        "alternativas_docx": alternativas,
+        "limitaciones": ["sin_paginacion_original", "cabeceras_pies_y_objetos_incrustados_no_extraidos"],
+    }
+
+
+def extraer_texto_derivado(archivo, contenido_original, raw_dir):
+    """Usa el derivado declarado sólo después de verificar sus bytes y hash."""
+    derivado = archivo["texto_derivado"]
+    if not isinstance(derivado, dict) or Path(derivado.get("archivo", "")).suffix.lower() != ".txt":
+        raise ValueError("texto_derivado debe describir un archivo .txt verificable.")
+    contenido = leer_original(derivado, raw_dir)
+    texto = contenido.decode("utf-8-sig", errors="strict")
+    trozos = texto.split("\f")
+    if len(trozos) > 1 and not trozos[-1].strip():
+        trozos.pop()
+    paginas_pdf, mapeo = None, False
+    error_paginacion = None
+    es_pdf = Path(archivo["archivo"]).suffix.lower() == ".pdf"
+    if es_pdf:
+        inicio = contenido_original[:1024].find(b"%PDF-")
+        if inicio < 0:
+            raise ValueError("El original del derivado no tiene cabecera PDF.")
+        try:
+            with pdfplumber.open(io.BytesIO(contenido_original[inicio:])) as lector:
+                paginas_pdf = len(lector.pages)
+            mapeo = len(trozos) == paginas_pdf
+        except Exception as error:
+            error_paginacion = f"{type(error).__name__}: {error}"
+    paginas = [{"pagina": i if mapeo else None, "texto": normalizar(t)}
+               for i, t in enumerate(trozos, 1)]
+    return paginas, {
+        "selector": "texto_derivado_verificado", "encoding": "utf-8-sig", "anotaciones_detectadas": False,
+        "paginas_pdf": paginas_pdf, "paginas_derivado": len(trozos), "mapeo_paginas_verificado": mapeo,
+        "paginas_con_poco_texto": [p["pagina"] for p in paginas if p["pagina"] is not None and len(p["texto"]) < 40],
+        "archivo_texto_derivado": derivado["archivo"], "sha256_texto_derivado": derivado["sha256"],
+        "bytes_texto_derivado": len(contenido), "metodo_derivado": derivado.get("metodo"),
+        "motivo_derivado": derivado.get("motivo"), "error_verificacion_paginas": error_paginacion,
+    }
+
+
 def procesar_documento(documento, raw_dir):
     texto, partes, extraccion, avisos = "", [], [], []
     if not documento.get("archivos_raw"):
@@ -213,16 +376,44 @@ def procesar_documento(documento, raw_dir):
     for archivo in documento["archivos_raw"]:
         contenido = leer_original(archivo, raw_dir)
         extension = Path(archivo["archivo"]).suffix.lower()
-        if extension in {".html", ".htm"}:
+        if extension == ".docx" and archivo.get("texto_derivado"):
+            # Los 316 derivados DOCX recibidos se generaron sólo desde
+            # word/document.xml. 255 originales contienen además notas XML.
+            # Verificar el sidecar, pero recuperar cuerpo, tablas y notas nativos.
+            derivado = archivo["texto_derivado"]
+            contenido_derivado = leer_original(derivado, raw_dir)
+            bloques, info = extraer_docx(contenido)
+            info["derivado_conservado_no_utilizado"] = {
+                "archivo": derivado["archivo"], "sha256": derivado["sha256"],
+                "bytes": len(contenido_derivado), "metodo": derivado.get("metodo"),
+                "motivo": "derivado_solo_document_xml_incompleto_para_notas",
+            }
+            avisos.extend(["docx_nativo_preferido_para_preservar_notas",
+                           "revisar_estructura_word_sin_paginacion"])
+        elif archivo.get("texto_derivado"):
+            bloques, info = extraer_texto_derivado(archivo, contenido, raw_dir)
+            avisos.append("texto_derivado_verificado_utilizado")
+            if "ocr" in archivo["texto_derivado"]["archivo"].lower() or "tesseract" in str(info.get("metodo_derivado", "")).lower():
+                avisos.append("revisar_calidad_OCR")
+            if extension == ".pdf" and not info["mapeo_paginas_verificado"]:
+                avisos.append("paginacion_derivado_no_verificada")
+        elif extension in {".html", ".htm"}:
             bloques, info = extraer_html(contenido, archivo)
         elif extension == ".pdf":
             bloques, info = extraer_pdf(contenido)
             avisos.append("revisar_orden_y_texto_pdf")
+        elif extension == ".docx":
+            bloques, info = extraer_docx(contenido)
+            avisos.append("revisar_estructura_word_sin_paginacion")
+        elif extension == ".doc":
+            raise ValueError("Word binario .doc requiere texto_derivado con bytes y SHA-256; no se decodifica como texto.")
         else:
             raise ValueError(f"Formato no admitido: {extension}")
         extraccion.append({"archivo": archivo["archivo"], **info})
         if info.get("cierre_pdf_completo") is False:
             avisos.append("original_pdf_sin_cierre_completo")
+        if info.get("n_errores_decodificacion", 0):
+            avisos.append("bytes_no_decodificables_en_charset_declarado")
         if info["anotaciones_detectadas"]:
             avisos.append("anotaciones_editoriales")
         if info["paginas_con_poco_texto"]:
@@ -234,7 +425,8 @@ def procesar_documento(documento, raw_dir):
             texto += cabecera
             inicio = len(texto)
             texto += bloque["texto"]
-            partes.append({"archivo": archivo["archivo"], "url": archivo.get("url_final") or archivo["url"],
+            partes.append({"archivo": archivo["archivo"], "url": archivo.get("url_final") or archivo.get("url") or documento.get("url"),
+                           "archivo_texto_derivado": info.get("archivo_texto_derivado"),
                            "pagina": bloque["pagina"], "inicio": inicio, "fin": len(texto)})
     caracteres_extraidos = sum(p["fin"] - p["inicio"] for p in partes)
     if caracteres_extraidos == 0:
@@ -290,7 +482,7 @@ _ORDINALES.update({"primer": 1, "tercer": 3, "decimoprimero": 11, "decimosegundo
                   "septuagesimo": 70, "octogesimo": 80, "nonagesimo": 90})
 _NUMERO = r"\d+(?:\.\d+)*(?:[ \t]?[A-Za-z](?=[º°ª.\s:;–—-]|$))?[º°ª]?"
 _ARTICULO = re.compile(
-    r'(?<!\w)(?P<comilla>["“«][ \t]*)?(?P<etiqueta>ART[ÍI]CULO|ART\.)\s+'
+    r'(?<!\w)(?P<comilla>["“«][ \t]*)?(?P<etiqueta>ART[ÍI]CULO\.?|ART\.)\s+'
     r'(?P<transitorio>TRANSITORIO\s+)?(?P<numero>' + _NUMERO +
     r'|[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ \t]+[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)?)', re.I,
 )
@@ -347,7 +539,7 @@ def candidatos_articulo(texto):
         if not alineado and not pegado and not m.group("comilla"):
             continue
         siguiente = texto[m.end():m.end() + 160]
-        puntuado = bool(re.match(r"^[ \t]*[.°ºª:;–—-]", siguiente)) or bool(re.search(r"[º°ª]$", m.group("numero")))
+        puntuado = bool(re.match(r"^\s*[.°ºª:;–—-]", siguiente)) or bool(re.search(r"[º°ª]$", m.group("numero")))
         primera = siguiente.lstrip(" \t")
         titulo = primera.lstrip("\n \t")
         titulo_sin_punto = bool(titulo[:1].isupper()) and not re.match(r"^(?:DE|DEL|EN|QUE|SE|Y|O|A|POR)\b", titulo)
@@ -590,8 +782,30 @@ def _ventanas(texto, inicio, fin, max_chars, solapamiento):
 
 def _origenes(documento, inicio, fin):
     return [{"archivo": p["archivo"], "url": p["url"], "pagina": p["pagina"],
+             "archivo_texto_derivado": p.get("archivo_texto_derivado"),
              "inicio": max(inicio, p["inicio"]), "fin": min(fin, p["fin"])}
             for p in documento.get("partes", []) if max(inicio, p["inicio"]) < min(fin, p["fin"])]
+
+
+def familia_documental(documento):
+    tipo = _sin_tildes(str(documento.get("tipo", ""))).strip()
+    if tipo in {"sentencia", "auto", "providencia", "fallo"}:
+        return "jurisprudencia"
+    if tipo in {"ley", "decreto", "acto_legislativo", "constitucion", "acuerdo", "resolucion", "decision"}:
+        return "norma"
+    return "documental"
+
+
+def _unidades_documentales(texto):
+    # Conceptos, circulares, compendios y tipos desconocidos pueden transcribir
+    # artículos de terceros. Se conserva la referencia sin atribuirles autoría.
+    unidades = _unidades_jurisprudencia(texto)
+    for indice, unidad in enumerate(unidades):
+        if unidad["tipo"] in {"preambulo", "bloque_jurisprudencia"}:
+            unidad["tipo"] = "bloque_documental"
+        fin = unidades[indice + 1]["inicio"] if indice + 1 < len(unidades) else len(texto)
+        unidad["articulos_referidos"] = list(dict.fromkeys(_REFERENCIA.findall(texto[unidad["inicio"]:fin])))
+    return unidades
 
 
 def segmentar_documento(documento, texto, max_chars=MAX_CARACTERES, solapamiento=SOLAPAMIENTO):
@@ -602,13 +816,16 @@ def segmentar_documento(documento, texto, max_chars=MAX_CARACTERES, solapamiento
         raise ValueError("Falta doc_id")
     if not texto.strip():
         return []
-    judicial = _sin_tildes(str(documento.get("tipo", ""))) in {"sentencia", "auto", "providencia", "fallo"}
-    unidades = _unidades_jurisprudencia(texto) if judicial else _unidades_norma(texto)
+    familia = familia_documental(documento)
+    funciones = {"jurisprudencia": _unidades_jurisprudencia, "norma": _unidades_norma,
+                 "documental": _unidades_documentales}
+    unidades = funciones[familia](texto)
     unidades = sorted({u["inicio"]: u for u in unidades}.values(), key=lambda u: u["inicio"])
     campos = ("doc_id", "titulo", "tipo", "numero", "anio", "organo_emisor", "vigencia", "fuente", "url",
               "areas", "estado_extraccion", "revision_juridica", "texto_archivo", "redistribuir_raw",
               "edicion_con_anotaciones", "licencia_fuente", "fecha_consulta", "version_ingesta",
-              "estado_fuente", "rechazos_fuente")
+              "estado_fuente", "rechazos_fuente", "nivel", "vigencia_fuente", "origen_ampliacion",
+              "alcance_vigencia", "temas", "advertencias_preliminares_fuente", "actualizacion_declarada_fuente")
     fragmentos = []
     for indice, u in enumerate(unidades):
         fin_unidad = unidades[indice + 1]["inicio"] if indice + 1 < len(unidades) else len(texto)
@@ -630,6 +847,7 @@ def segmentar_documento(documento, texto, max_chars=MAX_CARACTERES, solapamiento
                 "unidad_id": f"{documento['doc_id']}__u{indice + 1:05d}", "unidad_tipo": u["tipo"],
                 "unidad_inicio": u["inicio"], "unidad_fin": fin_unidad, "parte": parte,
                 "seccion": u["seccion"], "version_fuente": u["version_fuente"],
+                "familia_documental": familia,
                 "division_tecnica": u.get("division_tecnica", False),
                 "apta_para_busqueda": u["apta_para_busqueda"] and documento.get("apta_para_busqueda", True),
                 "origenes": origenes, "archivos": list(dict.fromkeys(o["archivo"] for o in origenes)),
@@ -659,8 +877,7 @@ def unidades_de_fragmentos(documento, texto, fragmentos):
 
 def diagnosticar_continuidad(documento, texto, unidades):
     """Cuenta candidatos y discontinuidades. No estima artículos jurídicos esperados."""
-    judicial = documento.get("tipo") in {"sentencia", "auto", "providencia", "fallo"}
-    candidatos = [] if judicial else candidatos_articulo(texto)
+    candidatos = candidatos_articulo(texto) if familia_documental(documento) == "norma" else []
     propios = [u for u in unidades if u["articulo"] is not None]
     limites = {u["inicio"] for u in unidades}
     sin_explicar = []
@@ -734,9 +951,12 @@ def comprobar_resultados(registros, textos, unidades, fragmentos, max_chars=MAX_
     return filas
 
 
-def ejecutar_ingesta(raiz, modo="corpus", ids_muestra=None, max_chars=MAX_CARACTERES, solapamiento=SOLAPAMIENTO):
+def ejecutar_ingesta(raiz, modo="corpus", ids_muestra=None, max_chars=MAX_CARACTERES, solapamiento=SOLAPAMIENTO,
+                     raw_dir=None):
     raiz = Path(raiz)
-    raw = raiz / "data/raw"
+    raw = Path(raw_dir) if raw_dir is not None else raiz / "data/raw"
+    if raw_dir is not None and not raw.is_absolute():
+        raw = raiz / raw
     manifest_bytes = (raw / "manifest.json").read_bytes()
     manifest = json.loads(manifest_bytes.decode("utf-8"))
     ids = [d["doc_id"] for d in manifest]
