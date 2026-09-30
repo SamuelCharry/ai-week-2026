@@ -84,7 +84,10 @@ class DecoderTransformers:
                               device=self.config.get("dispositivo", "cuda"))
         ids = [self._id_letra(prefijo, letra) for letra in letras]
         with torch.inference_mode():
-            logits = self.modelo(tokens).logits[0, -1].float()
+            try:  # solo la última posición: con 10k tokens de contexto, todas pesarían ~3 GB en la GPU
+                logits = self.modelo(tokens, logits_to_keep=1).logits[0, -1].float()
+            except TypeError:
+                logits = self.modelo(tokens).logits[0, -1].float()
         probabilidades = torch.softmax(logits[ids], dim=0).tolist()
         return dict(zip(letras, probabilidades))
 

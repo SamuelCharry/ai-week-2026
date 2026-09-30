@@ -84,13 +84,17 @@ class Sistema:
                                          prefijo=f'{{"respuesta_correcta": "{letra}", "justificacion": "')
         else:
             crudo = self.decoder.generar(entrada, usados, evidencia)
-        respuesta, registro = respuesta_final(entrada, crudo, usados, evidencia,
+        # Con entregar_todos, la evidencia entregada son los pasajes recuperados completos (máx. 10), aunque el
+        # prompt solo haya usado los que caben: el respaldo de citas y el fundamento se miden sobre ellos.
+        entregados = pasajes[:10] if self.config["generacion"].get("entregar_todos") else usados
+        respuesta, registro = respuesta_final(entrada, crudo, entregados, evidencia,
                                               self.config["generacion"]["politica"], self.validador)
         if probabilidades and not respuesta.get("abstencion"):
             respuesta["respuesta_correcta"] = letra
             respuesta["descarte_opciones"] = {k: v for k, v in respuesta["descarte_opciones"].items() if k != letra}
         self.ultimo_problema = registro["problema"]
-        self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades}
+        self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades,
+                                "pasajes_en_prompt": len(usados), "pasajes_entregados": len(entregados)}
         return respuesta
 
     def __enter__(self):

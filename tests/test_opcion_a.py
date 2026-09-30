@@ -372,6 +372,20 @@ class SistemaTest(unittest.TestCase):
         self.assertEqual(respuesta["respuesta_correcta"], "C")
         self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
 
+    def test_entregar_todos_los_pasajes_aunque_el_prompt_use_menos(self):
+        otro = {**PASAJE, "doc_id": "ley_84_1873", "articulo": "946", "texto": "ARTÍCULO 946. Reivindicación. " + "x" * 3000,
+                "encabezado": EVIDENCIA.encabezado({"doc_id": "ley_84_1873", "articulo": "946"})}
+        crudo = json.dumps({"respuesta": "Veinte días. Aplica al proceso verbal. Corre desde la notificación.",
+                            "palabras_clave": ["traslado"], "referencia_legal": "CGP"})
+        for entregar_todos, esperados in ((False, 1), (True, 2)):
+            sistema = self.sistema(crudo)
+            sistema.config["generacion"]["entregar_todos"] = entregar_todos
+            sistema.decoder.seleccionar = lambda e, pasajes, ev: pasajes[:1]  # el prompt solo alcanza para uno
+            respuesta = sistema.responder(SEMI, [PASAJE, otro])
+            self.assertEqual(len(respuesta["pasajes_recuperados"]), esperados)
+            self.assertEqual(sistema.ultimo_registro["pasajes_en_prompt"], 1)
+        self.assertIn("Código Civil", respuesta["referencia_legal"])  # la norma del segundo pasaje queda citada
+
     def test_sin_contexto_se_abstiene(self):
         sistema = self.sistema("{}", contexto=10)
         respuesta = sistema.responder(SEMI, [PASAJE])

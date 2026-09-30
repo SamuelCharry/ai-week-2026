@@ -83,6 +83,12 @@ VARIANTES_SISTEMA = {
     "phi4-mini": {"generacion.decoder": DECODERS["phi4-mini"]},
     "gemma3-4b": {"generacion.decoder": DECODERS["gemma3-4b"]},
     "llama32-3b": {"generacion.decoder": DECODERS["llama32-3b"]},
+    # Evidencia completa: los 10 pasajes recuperados se entregan siempre; con más contexto el modelo los lee todos.
+    "todos10": {"generacion.entregar_todos": True},
+    "todos10-ctx10k": {"generacion.entregar_todos": True, "generacion.contexto": 10240},
+    "todos10-ctx10k-recuperacion": {"generacion.entregar_todos": True, "generacion.contexto": 10240,
+                                    "recuperacion.reservar_nombradas": 2, "recuperacion.max_por_documento": 3,
+                                    "recuperacion.min_normativos": 2},
     "qwen25-7b-sin-enrutar": {"recuperacion.enrutar_normas": False},
     # Fundamento con las normas dueñas de los pasajes, sin las que los pasajes mencionan (corrida de 30,75).
     "qwen25-7b-citar-todas": {"generacion.politica": {"citar_evidencia": "todas", "abstener_libre": "sin_evidencia",
