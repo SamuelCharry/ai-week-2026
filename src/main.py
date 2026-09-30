@@ -183,9 +183,34 @@ def estado_indice(rec):
     return fragmentos.is_file() and indice.is_file() and meta.is_file()
 
 
+def apartar_si_otro_inventario(rec):
+    """Si los fragmentos existentes son de otro inventario, se aparta la carpeta (no se borra) y se reconstruye.
+
+    Pasa cuando se copió un índice de otra corrida (p. ej. el de E06 en Colab) pero el inventario
+    data/releases/corpus_eval_v1 se armó aquí: mezclarlos daría pasajes de un corpus con vectores de otro.
+    """
+    carpeta = (RAIZ / rec["fragmentos"]).parent
+    marcador = carpeta / "chunks_complete.json"
+    release = (RAIZ / rec["manifiesto"]).parent / "snapshot.json"
+    if not marcador.is_file() or not release.is_file():
+        return
+    anterior = json.loads(marcador.read_text(encoding="utf-8")).get("snapshot_id", "")
+    actual = json.loads(release.read_text(encoding="utf-8"))["snapshot_id"]
+    if anterior == actual:
+        return
+    destino = carpeta.with_name(f"{carpeta.name}_inventario_{anterior[:8]}")
+    n = 1
+    while destino.exists():
+        destino, n = carpeta.with_name(f"{carpeta.name}_inventario_{anterior[:8]}_{n}"), n + 1
+    carpeta.rename(destino)
+    print(f"  AVISO: el índice existente era de otro inventario ({anterior[:8]} ≠ {actual[:8]}).\n"
+          f"  Se apartó en {destino.relative_to(RAIZ)} (no se borró) y se reconstruye para el inventario actual.")
+
+
 def preparar_indice(config, solo_lexico=False):
     paso(3, "Índice (BM25 en SQLite + BGE-M3 en FAISS)")
     rec = config["recuperacion"]
+    apartar_si_otro_inventario(rec)
     if solo_lexico:
         from legalrag.experimentos import corpus_definitivo as e06
         print("  Segmentación y BM25 (sin GPU)...", flush=True)
