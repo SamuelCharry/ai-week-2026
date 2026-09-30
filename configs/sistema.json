@@ -73,6 +73,6 @@
       "saneo": "cita",
       "maximo_abiertas": 6
     },
-    "letra_por_probabilidad": true
+    "letra_por_probabilidad": "razonada"
   }
 }
