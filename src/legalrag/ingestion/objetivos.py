@@ -172,6 +172,12 @@ def radical_cc(sala, n, anio):
 DOCTRINA_MASIVA = {"supersociedades_concepto", "gestor_conceptos_fp"}
 
 
+def documentos_existentes():
+    """doc_id del inventario curado de partida (legalrag.ingestion.reconstruir.manifiesto_base)."""
+    from legalrag.ingestion.reconstruir import manifiesto_base
+    return {d["doc_id"] for d in manifiesto_base(RAIZ)}
+
+
 def ficha_cc(sala, n, anio, areas, origen):
     return {"doc_id": f"sentencia_cc_{sala.lower()}{n:03d}_{anio}", "titulo": f"Sentencia {sala}-{n:03d} de {anio}",
             "fuente": "Corte Constitucional - Relatoría",
@@ -259,7 +265,7 @@ def main():
     previas = [d for d in json.loads(ruta_previa.read_text(encoding="utf-8"))["documentos"]
                if d.get("origen") == "grafo_normativo"] if ruta_previa.is_file() else []
     iteracion = max((d.get("iteracion", 1) for d in previas), default=0) + 1
-    existentes = {d["doc_id"] for d in json.loads((RAIZ / "corpus_manifest.json").read_text(encoding="utf-8"))["documentos"]}
+    existentes = documentos_existentes()
     documentos = [ficha(*f, "seed_targets") for f in SEED]
     documentos += [ficha_cc(*f, "seed_targets") for f in SEED_CC]
     documentos += [ficha(d, t, a, u, [], "norma_troncal") for d, t, a, u in NORMAS]

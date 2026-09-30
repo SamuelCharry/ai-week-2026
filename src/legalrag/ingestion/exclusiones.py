@@ -94,7 +94,8 @@ def main():
     for fila in csv.DictReader((RAIZ / "data/raw/reconstruccion.csv").open(encoding="utf-8-sig")):
         intentos.setdefault(fila["doc_id"], []).append(f"{fila['url']} -> {fila['estado']}")
     textos = {Path(f).name.split(".")[0]: f for f in glob.glob(str(RAIZ / "data/raw/.texto_grafo/*.txt"))}
-    inventario = [d["doc_id"] for d in json.loads((RAIZ / "corpus_manifest.json").read_text(encoding="utf-8"))["documentos"]]
+    from legalrag.ingestion.objetivos import documentos_existentes
+    inventario = sorted(documentos_existentes())
     inventario += [d["doc_id"] for d in json.loads((RAIZ / "configs/corpus_objetivos.json").read_text(encoding="utf-8"))["documentos"]]
     pendientes = sorted({d for d in inventario if re.sub(r"^co_", "", d) not in sin_prefijo})
     origen = {d["doc_id"]: d.get("origen") for d in

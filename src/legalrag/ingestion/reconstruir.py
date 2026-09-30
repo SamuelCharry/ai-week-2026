@@ -588,8 +588,16 @@ def excluidas(raiz):
     return {e["clave"] for e in json.loads(ruta.read_text(encoding="utf-8"))["exclusiones"]} if ruta.is_file() else set()
 
 
+def manifiesto_base(raiz):
+    """Inventario curado de partida: corpus_manifest.json de la raíz o, si no está, configs/corpus_base.json."""
+    ruta = Path(raiz) / "corpus_manifest.json"
+    if not ruta.is_file():
+        ruta = Path(raiz) / "configs/corpus_base.json"
+    return json.loads(ruta.read_text(encoding="utf-8"))["documentos"]
+
+
 def inventario(raiz):
-    docs = {d["doc_id"]: d for d in json.loads((raiz / "corpus_manifest.json").read_text(encoding="utf-8"))["documentos"]}
+    docs = {d["doc_id"]: d for d in manifiesto_base(raiz)}
     extra = raiz / "configs/corpus_objetivos.json"
     if extra.is_file():
         for d in json.loads(extra.read_text(encoding="utf-8"))["documentos"]:
