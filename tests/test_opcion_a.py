@@ -190,6 +190,15 @@ class VerificacionTest(unittest.TestCase):
         self.assertGreaterEqual(registro["normas_agregadas"], 2)
         self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
 
+    def test_modo_de_cita_tolera_mayusculas_y_rechaza_valores_desconocidos(self):
+        crudo = json.dumps({"respuesta": "Veinte días. Aplica al proceso verbal. Corre desde la notificación.",
+                            "palabras_clave": ["traslado"], "referencia_legal": "CGP"})
+        respuesta, _ = respuesta_final(SEMI, crudo, [PASAJE], EVIDENCIA, {**POLITICA, "citar_evidencia": " Respaldo "}, VALIDADOR)
+        self.assertIn("Código General del Proceso", respuesta["referencia_legal"])
+        with self.assertRaises(ValueError) as error:
+            respuesta_final(SEMI, crudo, [PASAJE], EVIDENCIA, {**POLITICA, "citar_evidencia": "respaldos"}, VALIDADOR)
+        self.assertIn("no es válido", str(error.exception))
+
     def test_cita_inventada_se_quita_sin_anular_la_respuesta(self):
         crudo = json.dumps({"respuesta": "El traslado es de veinte días. Lo confirma la Ley 999 de 2019. "
                             "Corre desde la notificación.", "palabras_clave": ["traslado"],

@@ -177,8 +177,12 @@ def respuesta_final(entrada, crudo, pasajes, evidencia, politica_config, validad
         letra = letra_de(crudo, letras)
         if letra:
             salida["respuesta_correcta"] = letra
-    respaldo_completo = politica_config.get("citar_evidencia") == "respaldo"
-    politica_base = {**politica_config, "citar_evidencia": "todas"} if respaldo_completo else politica_config
+    modo = str(politica_config.get("citar_evidencia", "todas")).strip().lower()
+    if modo not in ("todas", "usadas", "ninguna", "respaldo") and not modo.isdigit():
+        raise ValueError(f'citar_evidencia="{politica_config.get("citar_evidencia")}" no es válido: usar '
+                         '"respaldo", "todas", "usadas", "ninguna" o un número de normas')
+    respaldo_completo = modo == "respaldo"
+    politica_base = {**politica_config, "citar_evidencia": "todas" if respaldo_completo else modo}
     respuesta, detalle = postprocesar(entrada, salida, pasajes, evidencia, politica_base)
     respuesta["pasajes_recuperados"] = pasajes_de_entrega(pasajes)
     if respaldo_completo:
