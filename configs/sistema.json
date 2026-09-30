@@ -68,7 +68,7 @@
     "repetition_penalty": 1.1,
     "max_caracteres_prompt": 1800,
     "politica": {
-      "citar_evidencia": "usadas",
+      "citar_evidencia": "todas",
       "abstener_libre": "sin_evidencia",
       "saneo": "cita"
     },

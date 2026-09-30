@@ -163,6 +163,20 @@ class VerificacionTest(unittest.TestCase):
         self.assertIn("Código General del Proceso", respuesta["referencia_legal"])
         self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
 
+    def test_fundamento_cita_todas_las_normas_de_la_evidencia(self):
+        # Una cita respaldada nunca resta: con "todas", referencia_legal nombra cada norma recuperada
+        # (cuenta para citas y abstención; el juez RAGAS de semiabiertas solo lee "respuesta").
+        otro = {**PASAJE, "doc_id": "ley_84_1873", "articulo": "946", "texto": "ARTÍCULO 946. Reivindicación.",
+                "encabezado": EVIDENCIA.encabezado({"doc_id": "ley_84_1873", "articulo": "946"})}
+        crudo = json.dumps({"respuesta": "El traslado es de veinte días. Aplica al proceso verbal. Corre desde la "
+                            "notificación.", "palabras_clave": ["traslado"], "referencia_legal": "CGP"})
+        politica = {**POLITICA, "citar_evidencia": "todas"}
+        respuesta, _ = respuesta_final(SEMI, crudo, [PASAJE, otro], EVIDENCIA, politica, VALIDADOR)
+        citadas = CITAS.bodies(CITAS.extract(respuesta["referencia_legal"]))
+        self.assertTrue({("codigo_general_proceso", None, None), ("codigo_civil", None, None)} <= citadas)
+        self.assertEqual(citadas - EVIDENCIA.respaldo([PASAJE, otro]), set())
+        self.assertNotIn("Código Civil", respuesta["respuesta"])
+
     def test_cita_inventada_se_quita_sin_anular_la_respuesta(self):
         crudo = json.dumps({"respuesta": "El traslado es de veinte días. Lo confirma la Ley 999 de 2019. "
                             "Corre desde la notificación.", "palabras_clave": ["traslado"],

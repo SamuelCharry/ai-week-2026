@@ -65,6 +65,12 @@ VARIANTES_SISTEMA = {
     "qwen3-4b-2507": {"generacion.decoder": DECODERS["qwen3-4b-2507"]},
     "salamandra-7b": {"generacion.decoder": DECODERS["salamandra-7b"]},
     "qwen25-7b-sin-enrutar": {"recuperacion.enrutar_normas": False},
+    # Fundamento solo con las normas que el modelo nombró (la política de la primera corrida en la 4090: 29,07).
+    "qwen25-7b-citar-usadas": {"generacion.politica": {"citar_evidencia": "usadas", "abstener_libre": "sin_evidencia",
+                                                       "saneo": "cita"}},
+    "qwen3-4b-2507-citar-usadas": {"generacion.decoder": DECODERS["qwen3-4b-2507"],
+                                   "generacion.politica": {"citar_evidencia": "usadas", "abstener_libre": "sin_evidencia",
+                                                           "saneo": "cita"}},
     "qwen25-7b-saneo-oracion": {"generacion.politica": {"citar_evidencia": "todas", "abstener_libre": "sin_evidencia",
                                                         "saneo": "oracion"}},
 }
