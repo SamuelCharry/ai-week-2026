@@ -56,6 +56,15 @@ def interpretar_json(texto):
     raise ValueError("La salida no contiene un objeto JSON")
 
 
+def justificacion_de(texto):
+    """Texto de la justificación aunque el JSON venga incompleto."""
+    try:
+        return _texto(interpretar_json(texto).get("justificacion"))
+    except ValueError:
+        m = re.search(r'justificacion"?\s*:\s*"(.*?)(?<!\\)"', texto or "", flags=re.S)
+        return m.group(1) if m else ""
+
+
 def letra_de(texto, letras):
     """Letra elegida aunque el JSON no se pueda leer (`"respuesta_correcta": "B"` o sin comillas)."""
     m = re.search(r'respuesta_correcta"?\s*:\s*"?([A-Z])\b', texto or "")

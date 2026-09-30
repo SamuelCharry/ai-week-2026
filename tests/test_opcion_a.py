@@ -271,6 +271,20 @@ class SistemaTest(unittest.TestCase):
         self.assertEqual(sistema.ultimo_registro["probabilidades_letras"]["C"], 0.6)
         self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
 
+    def test_letra_razonada_elige_despues_de_la_justificacion(self):
+        sistema = self.sistema('La demanda se traslada por veinte días según el artículo 369 del Código General del '
+                               'Proceso.", "respuesta_correcta": "A", "descarte_opciones": {"A": "No.", "B": "No.", "D": "No."}}',
+                               letra_por_probabilidad="razonada")
+        vistos = []
+        sistema.decoder.probabilidades_letras = lambda e, p, ev, prefijo: vistos.append(prefijo) or \
+            {"A": 0.1, "B": 0.2, "C": 0.6, "D": 0.1}
+        respuesta = sistema.responder(CERRADA, [PASAJE])
+        self.assertEqual(sistema.decoder.prefijo, '{"justificacion": "')
+        self.assertIn("veinte días", vistos[0])
+        self.assertTrue(vistos[0].endswith('"respuesta_correcta": "'))
+        self.assertEqual(respuesta["respuesta_correcta"], "C")
+        self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
+
     def test_sin_contexto_se_abstiene(self):
         sistema = self.sistema("{}", contexto=10)
         respuesta = sistema.responder(SEMI, [PASAJE])

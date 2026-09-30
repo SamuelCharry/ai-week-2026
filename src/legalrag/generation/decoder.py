@@ -9,7 +9,8 @@ dejaban el JSON truncado. Contexto y salida vienen fijos de la configuración, n
 
 En cerradas, `probabilidades_letras` elige la opción sin generar texto: con la respuesta abierta en
 `{"respuesta_correcta": "`, compara la probabilidad del siguiente token para cada letra. Después
-`generar` escribe la justificación con esa letra ya fijada en el prefijo.
+`generar` escribe la justificación con esa letra ya fijada en el prefijo. En el modo "razonada" el
+orden se invierte: primero se genera la justificación y luego se comparan las letras con ella escrita.
 """
 from legalrag.generation import politica
 
@@ -58,12 +59,15 @@ class DecoderTransformers:
                 elegidos.append(pasaje)
         return elegidos
 
-    def probabilidades_letras(self, entrada, pasajes, evidencia):
-        """{letra: probabilidad} del siguiente token tras `{"respuesta_correcta": "`, normalizada entre las opciones."""
+    def probabilidades_letras(self, entrada, pasajes, evidencia, prefijo='{"respuesta_correcta": "'):
+        """{letra: probabilidad} del siguiente token tras `prefijo`, normalizada entre las opciones.
+
+        El prefijo por defecto pide la letra de entrada; con la justificación ya escrita en el prefijo
+        (modo "razonada") la letra se elige después de razonar."""
         import torch
 
         letras = list((entrada.get("opciones") or {}).keys())
-        tokens = torch.tensor([self._tokens(self.mensajes(entrada, pasajes, evidencia), '{"respuesta_correcta": "')],
+        tokens = torch.tensor([self._tokens(self.mensajes(entrada, pasajes, evidencia), prefijo)],
                               device=self.config.get("dispositivo", "cuda"))
         ids = [self.tokenizer.encode(letra, add_special_tokens=False)[0] for letra in letras]
         with torch.inference_mode():

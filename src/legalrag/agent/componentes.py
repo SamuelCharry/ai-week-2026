@@ -59,7 +59,7 @@ class Sistema:
 
     def responder(self, entrada, pasajes):
         """Objeto de entrega con el mismo id y formato. `ultimo_problema` resume los arreglos."""
-        from legalrag.citations.verificacion import abstencion, respuesta_final
+        from legalrag.citations.verificacion import abstencion, justificacion_de, respuesta_final
 
         evidencia = self.recuperador.evidencia
         usados = self.decoder.seleccionar(entrada, pasajes, evidencia)
@@ -67,7 +67,16 @@ class Sistema:
             self.ultimo_problema = "sin_evidencia_en_contexto"
             return abstencion(entrada, pasajes)
         probabilidades = None
-        if entrada["formato"] == "multiple_choice" and self.config["generacion"].get("letra_por_probabilidad"):
+        modo = self.config["generacion"].get("letra_por_probabilidad")
+        if entrada["formato"] == "multiple_choice" and modo == "razonada":
+            # Primero razona (justificación) y después se comparan las letras con ese razonamiento escrito.
+            crudo = self.decoder.generar(entrada, usados, evidencia, prefijo='{"justificacion": "')
+            razon = justificacion_de(crudo)
+            probabilidades = self.decoder.probabilidades_letras(
+                entrada, usados, evidencia,
+                prefijo='{"justificacion": ' + json.dumps(razon, ensure_ascii=False) + ', "respuesta_correcta": "')
+            letra = max(sorted(probabilidades), key=probabilidades.get)
+        elif entrada["formato"] == "multiple_choice" and modo:
             # La letra sale de comparar A-D en una pasada; el texto se genera ya con esa letra.
             probabilidades = self.decoder.probabilidades_letras(entrada, usados, evidencia)
             letra = max(sorted(probabilidades), key=probabilidades.get)

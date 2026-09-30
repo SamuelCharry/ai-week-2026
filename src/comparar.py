@@ -71,6 +71,10 @@ VARIANTES_SISTEMA = {
     "qwen3-4b-2507-citar-usadas": {"generacion.decoder": DECODERS["qwen3-4b-2507"],
                                    "generacion.politica": {"citar_evidencia": "usadas", "abstener_libre": "sin_evidencia",
                                                            "saneo": "cita"}},
+    # Razona primero (justificación) y elige la letra después, comparando A-D con ese razonamiento escrito.
+    "qwen25-7b-letra-razonada": {"generacion.letra_por_probabilidad": "razonada"},
+    "qwen3-4b-2507-letra-razonada": {"generacion.decoder": DECODERS["qwen3-4b-2507"],
+                                     "generacion.letra_por_probabilidad": "razonada"},
     "qwen25-7b-saneo-oracion": {"generacion.politica": {"citar_evidencia": "todas", "abstener_libre": "sin_evidencia",
                                                         "saneo": "oracion"}},
 }
