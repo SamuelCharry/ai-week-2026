@@ -157,8 +157,11 @@ class DiversificacionTest(unittest.TestCase):
         manifiesto = [{"doc_id": "ley_1116_2006", "tipo": "ley", "numero": "1116", "anio": 2006, "titulo": "Ley 1116 de 2006"},
                       {"doc_id": "sentencia_cc_c145_2018", "tipo": "sentencia", "numero": "C-145", "anio": 2018,
                        "titulo": "Sentencia C-145 de 2018"}]
+        # Los ajustes parten apagados aquí, sin importar lo que tenga configs/sistema.json.
         self.recuperador = RecuperadorHibrido(raiz, {**leer_config()["recuperacion"], "fragmentos": "chunks.sqlite",
-                                                     "textos": "textos", "max_pasajes": 4, "rerank_top": 20})
+                                                     "textos": "textos", "max_pasajes": 4, "rerank_top": 20,
+                                                     "reservar_nombradas": 0, "max_por_documento": None,
+                                                     "min_normativos": 0, "ajustes_solo_texto_libre": False})
         self.recuperador.fragmentos = Fragmentos(raiz / "chunks.sqlite")
         self.recuperador.indice = IndiceFalso(list(range(8)))
         self.recuperador.encoder = EncoderFalso()
