@@ -177,6 +177,19 @@ class VerificacionTest(unittest.TestCase):
         self.assertEqual(citadas - EVIDENCIA.respaldo([PASAJE, otro]), set())
         self.assertNotIn("Código Civil", respuesta["respuesta"])
 
+    def test_respaldo_cita_tambien_las_normas_que_el_pasaje_menciona(self):
+        menciona = {**PASAJE, "texto": ARTICULO + " Se aplicará lo dispuesto en la Ley 80 de 1993 y la Sentencia C-355 de 2006."}
+        crudo = json.dumps({"respuesta": "El traslado es de veinte días. Aplica al proceso verbal. Corre desde la "
+                            "notificación.", "palabras_clave": ["traslado"], "referencia_legal": "CGP"})
+        politica = {**POLITICA, "citar_evidencia": "respaldo"}
+        respuesta, registro = respuesta_final(SEMI, crudo, [menciona], EVIDENCIA, politica, VALIDADOR)
+        citadas = CITAS.bodies(CITAS.extract(respuesta["referencia_legal"]))
+        self.assertTrue({("ley", "80", "1993"), ("jurisprudencia", "C-355", "2006"),
+                         ("codigo_general_proceso", None, None)} <= citadas)
+        self.assertEqual(citadas - EVIDENCIA.respaldo([menciona]), set())  # nada sin respaldo
+        self.assertGreaterEqual(registro["normas_agregadas"], 2)
+        self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
+
     def test_cita_inventada_se_quita_sin_anular_la_respuesta(self):
         crudo = json.dumps({"respuesta": "El traslado es de veinte días. Lo confirma la Ley 999 de 2019. "
                             "Corre desde la notificación.", "palabras_clave": ["traslado"],

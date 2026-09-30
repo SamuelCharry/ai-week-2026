@@ -47,8 +47,21 @@ class DecoderTransformers:
         if "Qwen3" in self.config["decoder"]["repo_id"]:
             opciones["enable_thinking"] = False
         # return_dict=False: en transformers 5 el valor por defecto devuelve un diccionario.
-        return list(self.tokenizer.apply_chat_template(mensajes, **opciones)) + \
-            self.tokenizer.encode(prefijo, add_special_tokens=False)
+        try:
+            plantilla = self.tokenizer.apply_chat_template(mensajes, **opciones)
+        except Exception:
+            # Plantillas sin rol de sistema (p. ej. Mistral): las instrucciones van al comienzo del usuario.
+            unidos = [{"role": "user", "content": mensajes[0]["content"] + "\n\n" + mensajes[1]["content"]}]
+            plantilla = self.tokenizer.apply_chat_template(unidos, **opciones)
+        return list(plantilla) + self.tokenizer.encode(prefijo, add_special_tokens=False)
+
+    def _id_letra(self, prefijo, letra):
+        """Token de la letra tal como sigue al prefijo (en SentencePiece "A" suelta lleva un espacio: "▁A")."""
+        base = self.tokenizer.encode(prefijo, add_special_tokens=False)
+        junto = self.tokenizer.encode(prefijo + letra, add_special_tokens=False)
+        if junto[:len(base)] == base and len(junto) == len(base) + 1:
+            return junto[-1]
+        return self.tokenizer.encode(letra, add_special_tokens=False)[-1]
 
     def seleccionar(self, entrada, pasajes, evidencia):
         """Pasajes en orden de ranking mientras quepan junto a la salida en el contexto."""
@@ -69,7 +82,7 @@ class DecoderTransformers:
         letras = list((entrada.get("opciones") or {}).keys())
         tokens = torch.tensor([self._tokens(self.mensajes(entrada, pasajes, evidencia), prefijo)],
                               device=self.config.get("dispositivo", "cuda"))
-        ids = [self.tokenizer.encode(letra, add_special_tokens=False)[0] for letra in letras]
+        ids = [self._id_letra(prefijo, letra) for letra in letras]
         with torch.inference_mode():
             logits = self.modelo(tokens).logits[0, -1].float()
         probabilidades = torch.softmax(logits[ids], dim=0).tolist()

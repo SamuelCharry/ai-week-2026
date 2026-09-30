@@ -57,6 +57,15 @@ DECODERS = {
                       "parametros": 4022468096, "licencia": "apache-2.0"},
     "salamandra-7b": {"repo_id": "BSC-LT/salamandra-7b-instruct", "revision": "a3ed5452fafb3698a0423b1a18bfb5888f4e611b",
                       "parametros": 7768117248, "licencia": "apache-2.0"},
+    "mistral-7b": {"repo_id": "mistralai/Mistral-7B-Instruct-v0.3", "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+                   "parametros": 7248023552, "licencia": "apache-2.0"},
+    "phi4-mini": {"repo_id": "microsoft/Phi-4-mini-instruct", "revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+                  "parametros": 3836021760, "licencia": "mit"},
+    # Con licencia que hay que aceptar en Hugging Face (huggingface-cli login).
+    "gemma3-4b": {"repo_id": "google/gemma-3-4b-it", "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+                  "parametros": 4300079472, "licencia": "gemma"},
+    "llama32-3b": {"repo_id": "meta-llama/Llama-3.2-3B-Instruct", "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+                   "parametros": 3212749824, "licencia": "llama3.2"},
 }
 
 # Variantes del sistema: rutas "seccion.clave" sobre configs/sistema.json.
@@ -64,7 +73,14 @@ VARIANTES_SISTEMA = {
     "qwen25-7b": {},
     "qwen3-4b-2507": {"generacion.decoder": DECODERS["qwen3-4b-2507"]},
     "salamandra-7b": {"generacion.decoder": DECODERS["salamandra-7b"]},
+    "mistral-7b": {"generacion.decoder": DECODERS["mistral-7b"]},
+    "phi4-mini": {"generacion.decoder": DECODERS["phi4-mini"]},
+    "gemma3-4b": {"generacion.decoder": DECODERS["gemma3-4b"]},
+    "llama32-3b": {"generacion.decoder": DECODERS["llama32-3b"]},
     "qwen25-7b-sin-enrutar": {"recuperacion.enrutar_normas": False},
+    # Fundamento con las normas dueñas de los pasajes, sin las que los pasajes mencionan (corrida de 30,75).
+    "qwen25-7b-citar-todas": {"generacion.politica": {"citar_evidencia": "todas", "abstener_libre": "sin_evidencia",
+                                                      "saneo": "cita"}},
     # Fundamento solo con las normas que el modelo nombró (la política de la primera corrida en la 4090: 29,07).
     "qwen25-7b-citar-usadas": {"generacion.politica": {"citar_evidencia": "usadas", "abstener_libre": "sin_evidencia",
                                                        "saneo": "cita"}},

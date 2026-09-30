@@ -121,6 +121,48 @@ def abstencion(entrada, pasajes, letra=None):
     return respuesta
 
 
+CAMPO_FUNDAMENTO = {"multiple_choice": "justificacion", "semi_open": "referencia_legal", "open_ended": "marco_normativo"}
+
+
+def texto_citable(respuesta):
+    """Texto del que el evaluador oficial extrae las citas (evaluate.answer_text)."""
+    campos = {"multiple_choice": ("justificacion",), "semi_open": ("respuesta", "referencia_legal"),
+              "open_ended": ("marco_normativo", "analisis", "jurisprudencia", "conclusion")}[respuesta["formato"]]
+    return " ".join(_texto(respuesta.get(c)) for c in campos)
+
+
+def citar_respaldo(respuesta, pasajes, evidencia, maximo_abiertas=6):
+    """Agrega al fundamento toda norma que el evaluador ya reconoce en los 10 primeros pasajes.
+
+    Incluye las normas que un pasaje *menciona* (no solo la norma a la que pertenece): la referencia
+    suele estar ahí. Ninguna puede restar, porque todas figuran en la evidencia. En abiertas el
+    campo lo lee el juez RAGAS, así que se limita a `maximo_abiertas`; en semiabiertas va a
+    `referencia_legal`, que el juez no lee. Devuelve cuántas normas agregó.
+    """
+    from legalrag.citations.evidencia import nombre_cuerpo
+    from legalrag.citations.normas import EvidenciaCorpus
+    from legalrag.generation.politica import _anexar
+
+    citas = evidencia.citas
+    respaldo = evidencia.respaldo(pasajes)
+    ya = citas.bodies(citas.extract(texto_citable(respuesta)))
+    nombres = []
+    for pasaje in pasajes[:10]:
+        for cuerpo in sorted(citas.bodies(citas.extract(EvidenciaCorpus.texto_entregado(pasaje))), key=str):
+            nombre = nombre_cuerpo(cuerpo)
+            if cuerpo in ya or not nombre or nombre in nombres or citas.bodies(citas.extract(nombre)) != {cuerpo}:
+                continue
+            nombres.append(nombre)
+    if respuesta["formato"] == "open_ended":
+        nombres = nombres[:maximo_abiertas]
+    campo = CAMPO_FUNDAMENTO[respuesta["formato"]]
+    nuevo = _anexar(respuesta.get(campo, ""), "; ".join(nombres), "Normas de la evidencia: ")
+    if not nombres or citas.bodies(citas.extract(nuevo)) - respaldo - ya:
+        return 0
+    respuesta[campo] = nuevo
+    return len(nombres)
+
+
 def respuesta_final(entrada, crudo, pasajes, evidencia, politica_config, validador_oficial):
     """Devuelve (respuesta, registro). `registro["problema"]` es None si salió sin arreglos."""
     from legalrag.generation.politica import postprocesar
@@ -135,8 +177,13 @@ def respuesta_final(entrada, crudo, pasajes, evidencia, politica_config, validad
         letra = letra_de(crudo, letras)
         if letra:
             salida["respuesta_correcta"] = letra
-    respuesta, detalle = postprocesar(entrada, salida, pasajes, evidencia, politica_config)
+    respaldo_completo = politica_config.get("citar_evidencia") == "respaldo"
+    politica_base = {**politica_config, "citar_evidencia": "todas"} if respaldo_completo else politica_config
+    respuesta, detalle = postprocesar(entrada, salida, pasajes, evidencia, politica_base)
     respuesta["pasajes_recuperados"] = pasajes_de_entrega(pasajes)
+    if respaldo_completo:
+        registro["normas_agregadas"] = citar_respaldo(respuesta, pasajes, evidencia,
+                                                      politica_config.get("maximo_abiertas", 6))
     registro.update(oraciones_eliminadas=detalle.get("oraciones_eliminadas", []),
                     campos_rellenados=detalle.get("campos_rellenados", []))
     if registro["problema"] is None and (registro["oraciones_eliminadas"] or registro["campos_rellenados"]):
