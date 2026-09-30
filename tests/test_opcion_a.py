@@ -322,6 +322,11 @@ class DecoderTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             DecoderTransformers({"decoder": {"parametros": 8_190_735_360}})
 
+    def test_solo_pasa_del_limite_si_el_enunciado_lo_sugiere(self):
+        DecoderTransformers({"decoder": {"parametros": 8_190_735_360, "admitido_por_enunciado": "§3.1"}})
+        with self.assertRaises(ValueError):
+            DecoderTransformers({"decoder": {"parametros": 9_150_000_000}})
+
     def test_seleccion_respeta_el_contexto(self):
         pasajes = [{**PASAJE, "doc_id": d, "texto": t} for d, t in
                    (("co_ley_1564_2012", "x" * 400), ("ley_84_1873", "y" * 1700), ("co_ley_1564_2012", "z " * 150))]

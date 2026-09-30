@@ -15,9 +15,15 @@ orden se invierte: primero se genera la justificación y luego se comparan las l
 from legalrag.generation import politica
 
 
+def limite_de(ficha, limite=8_000_000_000):
+    """Límite de parámetros para esta ficha. Solo un modelo que el enunciado sugiere por nombre (§3.1:
+    Qwen/Qwen3-8B, meta-llama/Llama-3.1-8B-Instruct) puede pasar de 8.000 M, y debe decirlo en su ficha."""
+    return max(limite, ficha["parametros"]) if ficha.get("admitido_por_enunciado") else limite
+
+
 class DecoderTransformers:
     def __init__(self, config, limite_parametros=8_000_000_000):
-        if config["decoder"]["parametros"] > limite_parametros:
+        if config["decoder"]["parametros"] > limite_de(config["decoder"], limite_parametros):
             raise ValueError("El decoder supera el límite de 8.000 millones de parámetros")
         self.config = config
         self.tokenizer = self.modelo = None
@@ -33,7 +39,7 @@ class DecoderTransformers:
             ficha["repo_id"], revision=ficha["revision"], dtype=getattr(torch, self.config["dtype"]),
             device_map=self.config.get("dispositivo", "cuda")).eval()
         self.parametros_cargados = sum(p.numel() for p in self.modelo.parameters())
-        if self.parametros_cargados > 8_000_000_000:
+        if self.parametros_cargados > limite_de(ficha):
             raise ValueError(f"El decoder cargado tiene {self.parametros_cargados} parámetros (> 8.000 M)")
 
     def cerrar(self):

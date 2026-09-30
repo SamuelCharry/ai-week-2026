@@ -67,6 +67,10 @@ DECODERS = {
                    "parametros": 7248023552, "licencia": "apache-2.0"},
     "phi4-mini": {"repo_id": "microsoft/Phi-4-mini-instruct", "revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
                   "parametros": 3836021760, "licencia": "mit"},
+    # El enunciado lo sugiere por nombre en la §3.1 aunque tiene 8.190.735.360 parámetros.
+    "qwen3-8b": {"repo_id": "Qwen/Qwen3-8B", "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+                 "parametros": 8190735360, "licencia": "apache-2.0",
+                 "admitido_por_enunciado": "§3.1 del enunciado: opción sugerida Qwen/Qwen3-8B"},
     # Con licencia que hay que aceptar en Hugging Face (huggingface-cli login).
     "gemma3-4b": {"repo_id": "google/gemma-3-4b-it", "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
                   "parametros": 4300079472, "licencia": "gemma"},
@@ -79,6 +83,9 @@ VARIANTES_SISTEMA = {
     "qwen25-7b": {},
     "qwen3-4b-2507": {"generacion.decoder": DECODERS["qwen3-4b-2507"]},
     "salamandra-7b": {"generacion.decoder": DECODERS["salamandra-7b"]},
+    # Qwen3-8B sobre la mejor configuración (38,43): letra razonada y recuperación en texto libre.
+    "qwen3-8b": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": "razonada"},
+    "qwen3-8b-letra-directa": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True},
     "mistral-7b": {"generacion.decoder": DECODERS["mistral-7b"]},
     "phi4-mini": {"generacion.decoder": DECODERS["phi4-mini"]},
     "gemma3-4b": {"generacion.decoder": DECODERS["gemma3-4b"]},
