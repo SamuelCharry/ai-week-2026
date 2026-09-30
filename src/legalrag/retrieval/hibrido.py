@@ -18,6 +18,8 @@ activable en `configs/sistema.json` para poder medirlo:
                        pregunta nombra sin artículo (p. ej. "reorganización ley 1116 de 2006").
     max_por_documento  tope de pasajes de un mismo documento (las sentencias "se parecen" a todo).
     min_normativos     pasajes mínimos de leyes, decretos, códigos o Constitución cuando hay candidatos.
+    ajustes_solo_texto_libre  los tres anteriores solo en semiabiertas y abiertas (las cerradas conservan su
+                       evidencia).
 """
 import json
 import re
@@ -320,4 +322,11 @@ class RecuperadorHibrido:
         return pasaje
 
     def buscar(self, entrada):
-        return self.pasajes(self.ranking(entrada))
+        c = self.config
+        if c.get("ajustes_solo_texto_libre") and entrada.get("formato") == "multiple_choice":
+            # En la 4090 los ajustes subieron citas pero cambiaron la evidencia de una cerrada que se acertaba.
+            self.config = {**c, "reservar_nombradas": 0, "max_por_documento": None, "min_normativos": 0}
+        try:
+            return self.pasajes(self.ranking(entrada))
+        finally:
+            self.config = c

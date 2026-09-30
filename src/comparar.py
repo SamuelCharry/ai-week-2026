@@ -89,6 +89,10 @@ VARIANTES_SISTEMA = {
     "todos10-ctx10k-recuperacion": {"generacion.entregar_todos": True, "generacion.contexto": 10240,
                                     "recuperacion.reservar_nombradas": 2, "recuperacion.max_por_documento": 3,
                                     "recuperacion.min_normativos": 2},
+    # Letra razonada (explícita, no depende de configs/sistema.json) con los ajustes de recuperación solo en texto libre.
+    "razonada-recuperacion-texto-libre": {"generacion.letra_por_probabilidad": "razonada",
+                                          "recuperacion.reservar_nombradas": 2, "recuperacion.max_por_documento": 3,
+                                          "recuperacion.min_normativos": 2, "recuperacion.ajustes_solo_texto_libre": True},
     "qwen25-7b-sin-enrutar": {"recuperacion.enrutar_normas": False},
     # Fundamento con las normas dueñas de los pasajes, sin las que los pasajes mencionan (corrida de 30,75).
     "qwen25-7b-citar-todas": {"generacion.politica": {"citar_evidencia": "todas", "abstener_libre": "sin_evidencia",

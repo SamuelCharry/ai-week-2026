@@ -188,6 +188,13 @@ class DiversificacionTest(unittest.TestCase):
         self.assertEqual(docs.count("sentencia_cc_c145_2018"), 2)
         self.assertEqual(docs.count("ley_1116_2006"), 2)
 
+    def test_ajustes_solo_en_texto_libre(self):
+        self.recuperador.config = {**self.recuperador.config, "reservar_nombradas": 2, "ajustes_solo_texto_libre": True}
+        cerrada = {**self.entrada, "formato": "multiple_choice", "opciones": {"A": "sí", "B": "no"}}
+        self.assertEqual({p["doc_id"] for p in self.recuperador.buscar(cerrada)}, {"sentencia_cc_c145_2018"})
+        self.assertEqual(self.recuperador.config["reservar_nombradas"], 2)  # se restaura después
+        self.assertIn("ley_1116_2006", [p["doc_id"] for p in self.recuperador.buscar(self.entrada)])
+
     def test_minimo_normativo_reemplaza_los_ultimos(self):
         docs = self.docs(min_normativos=1)
         self.assertEqual(docs[:3], ["sentencia_cc_c145_2018"] * 3)
