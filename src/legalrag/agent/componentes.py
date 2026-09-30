@@ -1,4 +1,4 @@
-"""Sistema entregado (opción A): BM25 + BGE-M3 con RRF, reranker BGE y Qwen2.5-7B-Instruct.
+"""Sistema entregado: BM25 + BGE-M3 con RRF, reranker BGE y un decoder instruct abierto.
 
 El pipeline por lotes, el servicio de la interfaz y la reproducción solo hablan con
 esta clase. Otra implementación se declara en `configs/sistema.json`
@@ -6,11 +6,13 @@ esta clase. Otra implementación se declara en `configs/sistema.json`
 
 Recorrido de una pregunta:
 
-    recuperar  legalrag.retrieval.hibrido     BM25 top 100 + BGE-M3 top 100 -> RRF -> reranker top 50
-                                              -> hasta 10 unidades literales, con cabecera de la norma
-    responder  legalrag.generation.decoder    pasajes que caben en el contexto -> Qwen2.5-7B greedy
-               legalrag.citations.verificacion JSON por formato, citas respaldadas, esquema oficial;
-                                              si algo falla, abstención con la evidencia conservada
+    recuperar  legalrag.retrieval.hibrido     BM25 + denso (+ búsqueda dentro de la norma que nombra la
+                                              pregunta) -> RRF -> reranker -> hasta 10 unidades literales,
+                                              cada una encabezada con el nombre de su norma
+    responder  legalrag.generation.decoder    prompt v04/05 con los pasajes que caben -> decoder greedy
+               legalrag.citations.verificacion JSON reparado, letra siempre en cerradas, citas sin
+                                              respaldo quitadas (no se anula la respuesta), fundamento
+                                              desde la evidencia; abstención solo sin evidencia
 
 Requisitos del enunciado que dependen de esta clase:
 
@@ -34,15 +36,13 @@ class Sistema:
         self.config = config
         self.recuperador = RecuperadorHibrido(self.raiz, config["recuperacion"])
         self.decoder = DecoderTransformers(config["generacion"])
-        self.manifiesto = self.validador = None
-        self.ultimo_problema = None
+        self.validador = None
+        self.ultimo_problema = self.ultimo_registro = None
 
     def abrir(self):
         """Carga índice, encoder, reranker y decoder. Se llama una vez antes de responder."""
         import jsonschema
 
-        ruta = self.raiz / self.config["recuperacion"]["manifiesto"]
-        self.manifiesto = json.loads(ruta.read_text(encoding="utf-8"))
         esquema = json.loads((self.raiz / self.config["oficial"] / "schema/submission.schema.json")
                              .read_text(encoding="utf-8"))
         self.validador = jsonschema.validators.validator_for(esquema)(esquema)
@@ -58,15 +58,30 @@ class Sistema:
         return self.recuperador.buscar(entrada)
 
     def responder(self, entrada, pasajes):
-        """Objeto de entrega con el mismo id y formato. `ultimo_problema` dice por qué se abstuvo."""
+        """Objeto de entrega con el mismo id y formato. `ultimo_problema` resume los arreglos."""
         from legalrag.citations.verificacion import abstencion, respuesta_final
 
-        usados = self.decoder.seleccionar(entrada, pasajes)
+        evidencia = self.recuperador.evidencia
+        usados = self.decoder.seleccionar(entrada, pasajes, evidencia)
         if not usados:
             self.ultimo_problema = "sin_evidencia_en_contexto"
             return abstencion(entrada, pasajes)
-        crudo = self.decoder.generar(entrada, usados)
-        respuesta, self.ultimo_problema = respuesta_final(entrada, crudo, usados, self.manifiesto, self.validador)
+        probabilidades = None
+        if entrada["formato"] == "multiple_choice" and self.config["generacion"].get("letra_por_probabilidad"):
+            # La letra sale de comparar A-D en una pasada; el texto se genera ya con esa letra.
+            probabilidades = self.decoder.probabilidades_letras(entrada, usados, evidencia)
+            letra = max(sorted(probabilidades), key=probabilidades.get)
+            crudo = self.decoder.generar(entrada, usados, evidencia,
+                                         prefijo=f'{{"respuesta_correcta": "{letra}", "justificacion": "')
+        else:
+            crudo = self.decoder.generar(entrada, usados, evidencia)
+        respuesta, registro = respuesta_final(entrada, crudo, usados, evidencia,
+                                              self.config["generacion"]["politica"], self.validador)
+        if probabilidades and not respuesta.get("abstencion"):
+            respuesta["respuesta_correcta"] = letra
+            respuesta["descarte_opciones"] = {k: v for k, v in respuesta["descarte_opciones"].items() if k != letra}
+        self.ultimo_problema = registro["problema"]
+        self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades}
         return respuesta
 
     def __enter__(self):

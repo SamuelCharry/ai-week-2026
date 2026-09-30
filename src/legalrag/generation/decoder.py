@@ -1,11 +1,17 @@
-"""Decoder de la entrega (opción A): Qwen2.5-7B-Instruct con transformers.
+"""Decoder de la entrega: un modelo instruct abierto (≤ 8.000 M) con transformers.
 
-Generación greedy (`do_sample=False`), equivalente a temperatura 0: la misma pregunta
-con la misma evidencia produce el mismo texto, como exige la verificación en vivo.
-El contexto y la longitud de salida vienen fijos de la configuración, no de la VRAM,
-para que el resultado no cambie entre equipos.
+Generación greedy (`do_sample=False`), equivalente a temperatura 0: la misma pregunta con la
+misma evidencia produce el mismo texto, como exige la verificación en vivo. El prompt es el de
+la versión 04/05 (`generation.politica.mensajes`): pasajes numerados con el nombre de su norma,
+letra obligatoria en cerradas y longitudes por campo. La respuesta se abre con "{" para que el
+modelo escriba solo el objeto JSON, y una penalización de repetición corta los bucles que
+dejaban el JSON truncado. Contexto y salida vienen fijos de la configuración, no de la VRAM.
+
+En cerradas, `probabilidades_letras` elige la opción sin generar texto: con la respuesta abierta en
+`{"respuesta_correcta": "`, compara la probabilidad del siguiente token para cada letra. Después
+`generar` escribe la justificación con esa letra ya fijada en el prefijo.
 """
-from legalrag.generation.cliente import mensajes
+from legalrag.generation import politica
 
 
 class DecoderTransformers:
@@ -24,33 +30,54 @@ class DecoderTransformers:
         self.tokenizer = AutoTokenizer.from_pretrained(ficha["repo_id"], revision=ficha["revision"])
         self.modelo = AutoModelForCausalLM.from_pretrained(
             ficha["repo_id"], revision=ficha["revision"], dtype=getattr(torch, self.config["dtype"]),
-            device_map="cuda").eval()
-        reales = sum(p.numel() for p in self.modelo.parameters())
-        if reales != ficha["parametros"]:
-            raise ValueError(f"El decoder cargado tiene {reales} parámetros, no {ficha['parametros']}")
+            device_map=self.config.get("dispositivo", "cuda")).eval()
+        self.parametros_cargados = sum(p.numel() for p in self.modelo.parameters())
+        if self.parametros_cargados > 8_000_000_000:
+            raise ValueError(f"El decoder cargado tiene {self.parametros_cargados} parámetros (> 8.000 M)")
 
     def cerrar(self):
         self.modelo = None
 
-    def _tokens(self, entrada, pasajes):
-        # return_dict=False: en transformers 5 el valor por defecto devuelve un diccionario.
-        return self.tokenizer.apply_chat_template(mensajes(entrada, pasajes), tokenize=True,
-                                                  add_generation_prompt=True, return_dict=False)
+    def mensajes(self, entrada, pasajes, evidencia):
+        return politica.mensajes(entrada, pasajes, evidencia, self.config.get("max_caracteres_prompt", 1800))
 
-    def seleccionar(self, entrada, pasajes):
+    def _tokens(self, mensajes, prefijo="{"):
+        opciones = {"tokenize": True, "add_generation_prompt": True, "return_dict": False}
+        if "Qwen3" in self.config["decoder"]["repo_id"]:
+            opciones["enable_thinking"] = False
+        # return_dict=False: en transformers 5 el valor por defecto devuelve un diccionario.
+        return list(self.tokenizer.apply_chat_template(mensajes, **opciones)) + \
+            self.tokenizer.encode(prefijo, add_special_tokens=False)
+
+    def seleccionar(self, entrada, pasajes, evidencia):
         """Pasajes en orden de ranking mientras quepan junto a la salida en el contexto."""
         presupuesto = self.config["contexto"] - self.config["max_nuevos_tokens"] - 64
         elegidos = []
         for pasaje in pasajes:
-            if len(self._tokens(entrada, elegidos + [pasaje])) <= presupuesto:
+            if len(self._tokens(self.mensajes(entrada, elegidos + [pasaje], evidencia))) <= presupuesto:
                 elegidos.append(pasaje)
         return elegidos
 
-    def generar(self, entrada, pasajes):
+    def probabilidades_letras(self, entrada, pasajes, evidencia):
+        """{letra: probabilidad} del siguiente token tras `{"respuesta_correcta": "`, normalizada entre las opciones."""
         import torch
 
-        tokens = torch.tensor([self._tokens(entrada, pasajes)], device="cuda")
+        letras = list((entrada.get("opciones") or {}).keys())
+        tokens = torch.tensor([self._tokens(self.mensajes(entrada, pasajes, evidencia), '{"respuesta_correcta": "')],
+                              device=self.config.get("dispositivo", "cuda"))
+        ids = [self.tokenizer.encode(letra, add_special_tokens=False)[0] for letra in letras]
+        with torch.inference_mode():
+            logits = self.modelo(tokens).logits[0, -1].float()
+        probabilidades = torch.softmax(logits[ids], dim=0).tolist()
+        return dict(zip(letras, probabilidades))
+
+    def generar(self, entrada, pasajes, evidencia, prefijo="{"):
+        import torch
+
+        tokens = torch.tensor([self._tokens(self.mensajes(entrada, pasajes, evidencia), prefijo)],
+                              device=self.config.get("dispositivo", "cuda"))
         with torch.inference_mode():
             salida = self.modelo.generate(tokens, max_new_tokens=self.config["max_nuevos_tokens"], do_sample=False,
+                                          repetition_penalty=self.config.get("repetition_penalty", 1.0),
                                           pad_token_id=self.tokenizer.eos_token_id)
-        return self.tokenizer.decode(salida[0, tokens.shape[-1]:], skip_special_tokens=True)
+        return prefijo + self.tokenizer.decode(salida[0, tokens.shape[-1]:], skip_special_tokens=True)

@@ -1,5 +1,5 @@
 {
-  "notas": "Opción A: BM25 + BGE-M3 con RRF, reranker BGE-v2-m3 y Qwen2.5-7B-Instruct. Los artefactos de recuperación son los que construye E06 (legalrag.experimentos.corpus_definitivo); contexto y salida fijos para que el resultado no dependa de la GPU.",
+  "notas": "BM25 + BGE-M3 con RRF (+ búsqueda dentro de la norma que nombra la pregunta), reranker BGE-v2-m3, pasajes encabezados con su norma y Qwen2.5-7B-Instruct con el prompt y el posprocesado de la versión 05 (letra siempre, citas sin respaldo quitadas, abstención solo sin evidencia).",
   "implementacion": "legalrag.agent.componentes:Sistema",
   "entradas": {
     "sample": "data/oficial/data/sample_50.jsonl",
@@ -46,7 +46,14 @@
     "rrf_k": 60,
     "rerank_top": 50,
     "max_pasajes": 10,
-    "max_caracteres_pasaje": 2400
+    "max_caracteres_pasaje": 2400,
+    "enrutar_normas": true,
+    "max_fijos": 3,
+    "consulta_con_tema": false,
+    "encabezado_norma": true,
+    "usar_bm25": true,
+    "usar_denso": true,
+    "usar_reranker": true
   },
   "generacion": {
     "decoder": {
@@ -57,6 +64,14 @@
     },
     "dtype": "bfloat16",
     "contexto": 6144,
-    "max_nuevos_tokens": 600
+    "max_nuevos_tokens": 700,
+    "repetition_penalty": 1.1,
+    "max_caracteres_prompt": 1800,
+    "politica": {
+      "citar_evidencia": "usadas",
+      "abstener_libre": "sin_evidencia",
+      "saneo": "cita"
+    },
+    "letra_por_probabilidad": true
   }
 }

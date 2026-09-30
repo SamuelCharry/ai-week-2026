@@ -1,4 +1,4 @@
-"""Opción A sin GPU: SQLite FTS5 real, índice y modelos falsos, citas con el evaluador oficial."""
+"""Sistema sin GPU: SQLite FTS5 real, índice y modelos falsos, citas con el evaluador oficial."""
 import json
 import sqlite3
 import tempfile
@@ -9,23 +9,34 @@ import jsonschema
 import numpy as np
 
 from legalrag.agent.componentes import Sistema
-from legalrag.citations.verificacion import abstencion, interpretar_json, respuesta_final
+from legalrag.citations.normas import EvidenciaCorpus
+from legalrag.citations.verificacion import (abstencion, interpretar_json, letra_de, normalizar_campos,
+                                             respuesta_final)
 from legalrag.config import RAIZ, leer_config
+from legalrag.evaluation.oficial import cargar_citaciones
 from legalrag.generation.decoder import DecoderTransformers
 from legalrag.retrieval.hibrido import Fragmentos, RecuperadorHibrido, consulta, rrf
 
+CITAS = cargar_citaciones(RAIZ)
 MANIFIESTO = [{"doc_id": "co_ley_1564_2012", "tipo": "ley", "numero": "1564", "anio": 2012,
-               "titulo": "Código General del Proceso"}]
-CABECERA = "LEY 1564 DE 2012\n(julio 12)\nPor medio de la cual se expide el Código General del Proceso.\n\n"
+               "titulo": "Código General del Proceso"},
+              {"doc_id": "ley_84_1873", "tipo": "ley", "numero": "84", "anio": 1873, "titulo": "Código Civil"}]
+EVIDENCIA = EvidenciaCorpus(CITAS, MANIFIESTO)
 ARTICULO = "ARTÍCULO 369. TRASLADO DE LA DEMANDA. Admitida la demanda se correrá traslado al demandado por veinte días."
+OTRO = "ARTÍCULO 90. ADMISIÓN, INADMISIÓN Y RECHAZO. El juez admitirá la demanda que reúna los requisitos."
 ESQUEMA = json.loads((RAIZ / "data/oficial/schema/submission.schema.json").read_text(encoding="utf-8"))
 VALIDADOR = jsonschema.validators.validator_for(ESQUEMA)(ESQUEMA)
-SEMI = {"id": 7, "formato": "semi_open", "pregunta": "¿Cuál es el término de traslado de la demanda verbal?"}
-CERRADA = {"id": 8, "formato": "multiple_choice", "pregunta": "¿Término de traslado?",
+POLITICA = {"citar_evidencia": "usadas", "abstener_libre": "sin_evidencia", "saneo": "cita"}
+SEMI = {"id": 7, "formato": "semi_open", "pregunta": "¿Cuál es el término de traslado de la demanda verbal?",
+        "tema": "Traslado de la demanda", "area": "Derecho procesal"}
+CERRADA = {"id": 8, "formato": "multiple_choice", "pregunta": "¿Término de traslado?", "area": "Derecho procesal",
            "opciones": {"A": "diez días", "B": "veinte días", "C": "tres días", "D": "un mes"}}
+PASAJE = {"doc_id": "co_ley_1564_2012", "inicio": 0, "fin": len(ARTICULO), "texto": ARTICULO, "score": 1.0,
+          "titulo": "Código General del Proceso", "articulo": "369",
+          "encabezado": EVIDENCIA.encabezado({"doc_id": "co_ley_1564_2012", "articulo": "369"})}
 
 
-def crear_fragmentos(ruta, textos):
+def crear_fragmentos(ruta, filas):
     conexion = sqlite3.connect(ruta)
     conexion.executescript("""
     CREATE TABLE chunks (id INTEGER PRIMARY KEY, doc_id TEXT, titulo TEXT, tipo TEXT, articulo TEXT,
@@ -33,8 +44,8 @@ def crear_fragmentos(ruta, textos):
       texto TEXT, texto_busqueda TEXT, avisos TEXT);
     CREATE VIRTUAL TABLE fts USING fts5(texto_busqueda, content='chunks', content_rowid='id',
       tokenize='unicode61 remove_diacritics 2');""")
-    for doc_id, texto, inicio, fin, unidad in textos:
-        fila = (doc_id, "Código General del Proceso", "ley", "369", None, unidad, inicio, fin, inicio, fin,
+    for doc_id, texto, inicio, fin, articulo in filas:
+        fila = (doc_id, "Código General del Proceso", "ley", articulo, None, f"u{articulo}", inicio, fin, inicio, fin,
                 texto[inicio:fin], "Código General del Proceso\n" + texto[inicio:fin], "[]")
         cursor = conexion.execute("INSERT INTO chunks(doc_id,titulo,tipo,articulo,seccion,unidad_id,unidad_inicio,"
                                   "unidad_fin,inicio,fin,texto,texto_busqueda,avisos) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", fila)
@@ -58,10 +69,10 @@ class EncoderFalso:
 
 
 class ReordenadorFalso:
-    """Prefiere los candidatos que mencionan 'traslado'."""
+    """Prefiere los candidatos que mencionan 'admisión' (para probar que el artículo fijado gana igual)."""
 
     def puntuar(self, texto, candidatos):
-        return [float("traslado" in c.lower()) for c in candidatos]
+        return [float("admisi" in c.lower()) for c in candidatos]
 
 
 class RecuperacionTest(unittest.TestCase):
@@ -69,104 +80,133 @@ class RecuperacionTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         raiz = Path(self.tmp.name)
         (raiz / "textos").mkdir()
-        self.texto = CABECERA + ARTICULO + "\n\nARTÍCULO 370. OTRA COSA. Texto sin relación con el tema."
+        self.texto = ARTICULO + "\n\n" + OTRO
         (raiz / "textos/co_ley_1564_2012.txt").write_text(self.texto, encoding="utf-8")
-        a = len(CABECERA)
-        b = a + len(ARTICULO)
         crear_fragmentos(raiz / "chunks.sqlite", [
-            ("co_ley_1564_2012", self.texto, a, b, "u369"),
-            ("co_ley_1564_2012", self.texto, b + 2, len(self.texto), "u370")])
+            ("co_ley_1564_2012", self.texto, 0, len(ARTICULO), "369"),
+            ("co_ley_1564_2012", self.texto, len(ARTICULO) + 2, len(self.texto), "90")])
         config = {**leer_config()["recuperacion"], "fragmentos": "chunks.sqlite", "textos": "textos"}
         self.recuperador = RecuperadorHibrido(raiz, config)
-        from legalrag.evaluation.oficial import cargar_citaciones
         self.recuperador.fragmentos = Fragmentos(raiz / "chunks.sqlite")
         self.recuperador.indice = IndiceFalso([1, 0])
         self.recuperador.encoder = EncoderFalso()
         self.recuperador.reordenador = ReordenadorFalso()
-        self.recuperador.citaciones = cargar_citaciones(RAIZ)
+        self.recuperador.citaciones = CITAS
+        self.recuperador.evidencia = EVIDENCIA
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_consulta_incluye_opciones(self):
+    def test_consulta_con_opciones_y_tema(self):
         self.assertIn("B. veinte días", consulta(CERRADA))
-        self.assertEqual(consulta(SEMI), SEMI["pregunta"] + "\n")
+        self.assertTrue(consulta(SEMI, con_tema=True).startswith("Traslado de la demanda\n"))
+        self.assertNotIn("Traslado de la demanda\n", consulta(SEMI))
 
     def test_rrf_premia_coincidencias_y_desempata_por_id(self):
         self.assertEqual([i for i, _ in rrf([(3, 9), (1, 8)], [(1, 5), (2, 4)])], [1, 3, 2])
-        self.assertEqual([i for i, _ in rrf([(5, 1)], [(4, 1)])], [4, 5])
 
-    def test_bm25_encuentra_por_termino(self):
+    def test_bm25_general_y_dentro_de_una_norma(self):
         self.assertEqual(self.recuperador.fragmentos.bm25("traslado demanda", 10)[0][0], 1)
-        self.assertEqual(self.recuperador.fragmentos.bm25("", 10), [])
+        self.assertEqual(self.recuperador.fragmentos.bm25("traslado", 10, doc_ids=["otra_norma"]), [])
+        self.assertEqual(self.recuperador.fragmentos.por_articulo("co_ley_1564_2012", "369"), [1])
 
-    def test_reranker_decide_y_pasajes_son_literales_con_cabecera(self):
-        ranking = self.recuperador.ranking(SEMI)
+    def test_articulo_nombrado_se_fija_aunque_el_reranker_prefiera_otro(self):
+        entrada = {**SEMI, "pregunta": "¿Qué ordena el artículo 369 del Código General del Proceso?"}
+        ranking = self.recuperador.ranking(entrada)
         self.assertEqual(ranking[0][0], 1)
-        pasajes = self.recuperador.pasajes(ranking)
-        self.assertEqual(pasajes[0]["texto"], ARTICULO)
-        self.assertEqual(self.texto[pasajes[0]["inicio"]:pasajes[0]["fin"]], ARTICULO)
-        cabecera = pasajes[1]
-        self.assertTrue(cabecera["unidad_id"].endswith("__cabecera_literal"))
-        self.assertTrue(cabecera["texto"].startswith("LEY 1564 DE 2012"))
-        self.assertEqual(len({p["unidad_id"] for p in pasajes}), len(pasajes))
+        self.assertEqual(self.recuperador.ultima_traza["normas_nombradas"], {"co_ley_1564_2012": ["369"]})
+        self.recuperador.config = {**self.recuperador.config, "enrutar_normas": False}
+        self.assertEqual(self.recuperador.ranking(entrada)[0][0], 2)
+
+    def test_pasajes_literales_con_encabezado_que_respalda_la_cita(self):
+        pasajes = self.recuperador.buscar(SEMI)
+        self.assertEqual({p["texto"] for p in pasajes}, {ARTICULO, OTRO})
+        for p in pasajes:
+            self.assertEqual(self.texto[p["inicio"]:p["fin"]], p["texto"])
+        self.assertTrue(pasajes[0]["encabezado"].startswith("Código General del Proceso (Ley 1564 de 2012), artículo"))
+        self.assertIn(("codigo_general_proceso", None, None), EVIDENCIA.respaldo(pasajes))
+        # Sin encabezado el artículo suelto no respalda la cita (el problema que se corrige).
+        self.assertEqual(EVIDENCIA.respaldo([{**pasajes[0], "encabezado": None}]), set())
 
 
 class VerificacionTest(unittest.TestCase):
-    pasajes = [{"doc_id": "co_ley_1564_2012", "inicio": 0, "fin": 10, "texto": CABECERA + ARTICULO, "score": 1.0,
-                "titulo": "Código General del Proceso", "articulo": "369"}]
-
-    def test_json_con_bloque_de_codigo(self):
+    def test_json_con_bloque_de_codigo_texto_alrededor_y_truncado(self):
         self.assertEqual(interpretar_json('```json\n{"a": 1}\n```'), {"a": 1})
         self.assertEqual(interpretar_json('Respuesta: {"a": 1} fin'), {"a": 1})
+        self.assertEqual(interpretar_json('{"a": "texto cortado'), {"a": "texto cortado"})
+        self.assertEqual(letra_de('{"respuesta_correcta": "C", "justificacion": "trunc', ["A", "B", "C", "D"]), "C")
+
+    def test_salidas_reales_de_modelo_pequeno(self):
+        # Claves sin comillas y un segundo objeto al final (Qwen2.5-0.5B, pregunta 290).
+        crudo = '{justificacion: "Art. 13 de la Ley 1150 de 2007.", respuesta_correcta: "C", descarte_opciones: ["A", "B"]}\n\n{"justificacion": "otra'
+        self.assertEqual(interpretar_json(crudo)["respuesta_correcta"], "C")
+        self.assertEqual(letra_de(crudo, ["A", "B", "C", "D"]), "C")
+        # Llave repetida y comilla de clave cerrada tarde con una lista como valor (pregunta 79).
+        crudo = '{{"respuesta":"La Ley 1010 de 2006","palabras_clave":["acoso laboral"],"referencia_legal:"[1, "Ley 1010 de 2006"]}}'
+        objeto = interpretar_json(crudo)
+        self.assertEqual(objeto["referencia_legal"], [1, "Ley 1010 de 2006"])
+        self.assertEqual(normalizar_campos(objeto, "semi_open")["referencia_legal"], "1 Ley 1010 de 2006")
+        self.assertEqual(normalizar_campos({"descarte_opciones": ["A", "B"], "respuesta_correcta": "c"},
+                                           "multiple_choice"), {"descarte_opciones": {}, "respuesta_correcta": "C"})
 
     def test_abstencion_cerrada_cumple_esquema_oficial(self):
-        respuesta = abstencion(CERRADA, self.pasajes)
+        respuesta = abstencion(CERRADA, [PASAJE])
         self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
-        self.assertTrue(respuesta["abstencion"])
-        self.assertEqual(respuesta["pasajes_recuperados"][0]["doc_id"], "co_ley_1564_2012")
-        self.assertNotIn("titulo", respuesta["pasajes_recuperados"][0])
+        self.assertTrue(respuesta["pasajes_recuperados"][0]["texto"].startswith("Código General del Proceso"))
 
-    def test_cita_respaldada_se_entrega(self):
-        crudo = json.dumps({"abstencion": False, "respuesta": "El traslado es de veinte días. Lo fija el artículo 369 "
-                            "de la Ley 1564 de 2012. Aplica al proceso verbal.",
-                            "palabras_clave": ["traslado"], "referencia_legal": "Artículo 369 de la Ley 1564 de 2012"})
-        respuesta, problema = respuesta_final(SEMI, crudo, self.pasajes, MANIFIESTO, VALIDADOR)
-        self.assertIsNone(problema)
+    def test_cita_respaldada_se_entrega_con_fundamento(self):
+        crudo = json.dumps({"respuesta": "El traslado es de veinte días según el artículo 369 del Código General del "
+                            "Proceso. Aplica al proceso verbal. Corre desde la notificación.",
+                            "palabras_clave": ["traslado"], "referencia_legal": "Artículo 369 del CGP"})
+        respuesta, registro = respuesta_final(SEMI, crudo, [PASAJE], EVIDENCIA, POLITICA, VALIDADOR)
         self.assertFalse(respuesta["abstencion"])
+        self.assertIn("Código General del Proceso", respuesta["referencia_legal"])
+        self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
 
-    def test_cita_sin_respaldo_se_abstiene_y_conserva_evidencia(self):
-        crudo = json.dumps({"abstencion": False, "respuesta": "Lo fija el artículo 90 de la Ley 1564 de 2012.",
-                            "palabras_clave": [], "referencia_legal": "Artículo 90 de la Ley 1564 de 2012"})
-        respuesta, problema = respuesta_final(SEMI, crudo, self.pasajes, MANIFIESTO, VALIDADOR)
-        self.assertEqual(problema, "cita_sin_respaldo_o_indeterminada")
-        self.assertTrue(respuesta["abstencion"])
-        self.assertEqual(len(respuesta["pasajes_recuperados"]), 1)
+    def test_cita_inventada_se_quita_sin_anular_la_respuesta(self):
+        crudo = json.dumps({"respuesta": "El traslado es de veinte días. Lo confirma la Ley 999 de 2019. "
+                            "Corre desde la notificación.", "palabras_clave": ["traslado"],
+                            "referencia_legal": "Ley 999 de 2019"})
+        respuesta, registro = respuesta_final(SEMI, crudo, [PASAJE], EVIDENCIA, POLITICA, VALIDADOR)
+        self.assertFalse(respuesta["abstencion"])
+        self.assertEqual(registro["problema"], "citas_saneadas")
+        self.assertNotIn("999", respuesta["respuesta"] + respuesta["referencia_legal"])
+        self.assertIn("veinte días", respuesta["respuesta"])
 
-    def test_json_invalido_y_null_del_modelo_en_cerradas(self):
-        respuesta, problema = respuesta_final(CERRADA, "no es json", self.pasajes, MANIFIESTO, VALIDADOR)
-        self.assertTrue(problema.startswith("json_invalido"))
-        crudo = json.dumps({"abstencion": True, "respuesta_correcta": None, "justificacion": "", "descarte_opciones": {}})
-        respuesta, problema = respuesta_final(CERRADA, crudo, self.pasajes, MANIFIESTO, VALIDADOR)
-        self.assertEqual(problema, "abstencion_del_modelo")
+    def test_cerrada_nunca_se_abstiene_y_recupera_la_letra(self):
+        respuesta, registro = respuesta_final(CERRADA, '{"respuesta_correcta": "B", "justificacion": "El artí',
+                                              [PASAJE], EVIDENCIA, POLITICA, VALIDADOR)
+        self.assertFalse(respuesta["abstencion"])
+        self.assertEqual(respuesta["respuesta_correcta"], "B")
+        respuesta, registro = respuesta_final(CERRADA, "no es json", [PASAJE], EVIDENCIA, POLITICA, VALIDADOR)
+        self.assertEqual(registro["problema"], "json_invalido")
+        self.assertFalse(respuesta["abstencion"])
+        self.assertIn(respuesta["respuesta_correcta"], "ABCD")
         self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
 
 
 class TokenizadorFalso:
     eos_token_id = 0
 
-    def apply_chat_template(self, mensajes, tokenize, add_generation_prompt, return_dict):
+    def apply_chat_template(self, mensajes, **opciones):
         return list(range(sum(len(m["content"]) for m in mensajes) // 10))
+
+    def encode(self, texto, add_special_tokens=False):
+        return [1]
 
 
 class DecoderFalso(DecoderTransformers):
     def __init__(self, crudo, contexto):
-        super().__init__({"decoder": {"parametros": 1}, "contexto": contexto, "max_nuevos_tokens": 10})
+        super().__init__({"decoder": {"repo_id": "falso", "parametros": 1}, "contexto": contexto,
+                          "max_nuevos_tokens": 10})
         self.tokenizer, self.crudo, self.vistos = TokenizadorFalso(), crudo, None
 
-    def generar(self, entrada, pasajes):
-        self.vistos = pasajes
-        return self.crudo
+    def generar(self, entrada, pasajes, evidencia, prefijo="{"):
+        self.vistos, self.prefijo = pasajes, prefijo
+        return self.crudo if prefijo == "{" else prefijo + self.crudo
+
+    def probabilidades_letras(self, entrada, pasajes, evidencia):
+        return {"A": 0.1, "B": 0.2, "C": 0.6, "D": 0.1}
 
 
 class DecoderTest(unittest.TestCase):
@@ -175,32 +215,51 @@ class DecoderTest(unittest.TestCase):
             DecoderTransformers({"decoder": {"parametros": 8_190_735_360}})
 
     def test_seleccion_respeta_el_contexto(self):
-        decoder = DecoderFalso("", contexto=300)
-        pasajes = [{"doc_id": "a", "texto": "x" * 400}, {"doc_id": "b", "texto": "y" * 4000},
-                   {"doc_id": "c", "texto": "z" * 400}]
-        self.assertEqual([p["doc_id"] for p in decoder.seleccionar(SEMI, pasajes)], ["a", "c"])
+        pasajes = [{**PASAJE, "doc_id": d, "texto": t} for d, t in
+                   (("co_ley_1564_2012", "x" * 400), ("ley_84_1873", "y" * 1700), ("co_ley_1564_2012", "z " * 150))]
+        decoder = DecoderFalso("", contexto=0)
+        justo = len(decoder._tokens(decoder.mensajes(SEMI, [pasajes[0], pasajes[2]], EVIDENCIA)))
+        decoder.config["contexto"] = justo + decoder.config["max_nuevos_tokens"] + 64
+        elegidos = decoder.seleccionar(SEMI, pasajes, EVIDENCIA)
+        self.assertEqual([p["texto"][0] for p in elegidos], ["x", "z"])
 
 
-class SistemaOpcionATest(unittest.TestCase):
-    def sistema(self, crudo, contexto=100_000):
-        sistema = Sistema(RAIZ, leer_config())
+class RecuperadorFalso:
+    evidencia = EVIDENCIA
+
+
+class SistemaTest(unittest.TestCase):
+    def sistema(self, crudo, contexto=100_000, letra_por_probabilidad=False):
+        config = leer_config()
+        config["generacion"]["letra_por_probabilidad"] = letra_por_probabilidad
+        sistema = Sistema(RAIZ, config)
         sistema.decoder = DecoderFalso(crudo, contexto)
-        sistema.manifiesto, sistema.validador = MANIFIESTO, VALIDADOR
+        sistema.recuperador = RecuperadorFalso()
+        sistema.validador = VALIDADOR
         return sistema
 
     def test_responde_con_los_pasajes_que_caben(self):
-        crudo = json.dumps({"abstencion": False, "respuesta_correcta": "B",
-                            "justificacion": "Veinte días según el artículo 369 de la Ley 1564 de 2012.",
-                            "descarte_opciones": {"A": "No.", "C": "No.", "D": "No."}})
+        crudo = json.dumps({"respuesta_correcta": "B", "justificacion": "Veinte días según el artículo 369 del "
+                            "Código General del Proceso.", "descarte_opciones": {"A": "No.", "C": "No.", "D": "No."}})
         sistema = self.sistema(crudo)
-        respuesta = sistema.responder(CERRADA, VerificacionTest.pasajes)
+        respuesta = sistema.responder(CERRADA, [PASAJE])
         self.assertEqual(respuesta["respuesta_correcta"], "B")
         self.assertIsNone(sistema.ultimo_problema)
-        self.assertEqual(sistema.decoder.vistos, VerificacionTest.pasajes)
+        self.assertEqual(sistema.decoder.vistos, [PASAJE])
+
+    def test_letra_por_probabilidad_manda_sobre_el_texto(self):
+        sistema = self.sistema('Según el artículo 369 del Código General del Proceso.", "descarte_opciones": '
+                               '{"A": "No.", "B": "No.", "D": "No."}}', letra_por_probabilidad=True)
+        respuesta = sistema.responder(CERRADA, [PASAJE])
+        self.assertEqual(sistema.decoder.prefijo, '{"respuesta_correcta": "C", "justificacion": "')
+        self.assertEqual(respuesta["respuesta_correcta"], "C")
+        self.assertNotIn("C", respuesta["descarte_opciones"])
+        self.assertEqual(sistema.ultimo_registro["probabilidades_letras"]["C"], 0.6)
+        self.assertEqual(list(VALIDADOR.iter_errors(respuesta)), [])
 
     def test_sin_contexto_se_abstiene(self):
         sistema = self.sistema("{}", contexto=10)
-        respuesta = sistema.responder(SEMI, VerificacionTest.pasajes)
+        respuesta = sistema.responder(SEMI, [PASAJE])
         self.assertTrue(respuesta["abstencion"])
         self.assertEqual(sistema.ultimo_problema, "sin_evidencia_en_contexto")
 

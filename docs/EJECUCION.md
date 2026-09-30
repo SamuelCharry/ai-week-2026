@@ -1,3 +1,44 @@
+# Prueba de fuerza en la RTX 4090 (rama `testing`)
+
+Todo el recorrido sobre el corpus completo y las 50 preguntas de muestra, desde un solo archivo.
+
+```bash
+# 0. Código
+git clone https://github.com/SamuelCharry/ai-week-2026.git && cd ai-week-2026   # o: git fetch
+git checkout testing
+# Copiar data/raw (no está en git) dentro de ai-week-2026/data/raw
+
+# 1. Gráfica: debe listar la RTX 4090 y un driver compatible con CUDA 12.8 (570 o posterior)
+nvidia-smi
+
+# 2. Entorno
+python3 -m venv .venv-sistema && source .venv-sistema/bin/activate
+pip install --upgrade pip
+pip install torch --index-url https://download.pytorch.org/whl/cu128
+pip install -r requirements.txt -r data/oficial/scripts/requirements-evaluador.txt
+python3 -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0), round(torch.cuda.get_device_properties(0).total_memory/2**30,1), 'GiB')"
+
+# 3. Todo: textos, inventario, BM25, índice BGE-M3, respuestas y evaluador oficial
+python3 src/main.py --desde-raw
+```
+
+La primera vez prepara ~14.000 documentos (CPU), calcula el índice BGE-M3 de ~1,3 millones de fragmentos
+(GPU, horas) y descarga ~20 GB de modelos. Si se corta, el mismo comando continúa donde iba.
+Resultados: `data/reproduccion/submissions_sample_reporte.json` (puntaje) y
+`data/reproduccion/submissions_sample_resumen.json` (segundos por pregunta frente a los 22 s del sábado).
+Cada respuesta queda con su texto crudo, sus probabilidades de letra y lo que se corrigió en
+`data/reproduccion/submissions_sample_respuestas/<id>.json`.
+
+Con el índice ya construido, comparar encoders y decoders antes de decidir:
+
+```bash
+python3 src/comparar.py --recuperacion
+python3 src/comparar.py --sistema --variantes qwen25-7b qwen3-4b-2507
+```
+
+La prueba en miniatura sin GPU (`python3 src/prueba_local.py --conjunto amplio`) dio 41,33/50 en 19
+preguntas con un decoder de 0,5B; en la 4090 corre el Qwen2.5-7B.
+
 # Cómo correr el sistema (opción A) en una RTX 4090
 
 BM25 + BGE-M3 con RRF, reranker BGE-v2-m3 y Qwen2.5-7B-Instruct. Todo se ejecuta desde la raíz
@@ -29,6 +70,19 @@ python3 src/main.py --desde-raw                  # las 50 de muestra + evaluador
 
 Si la preparación se hace en otro equipo, copiar a la máquina con GPU `data/processed/corpus_preparado/`,
 `data/releases/corpus_eval_v1/` y `data/experimentos/corpus_definitivo/`.
+
+### Comparar variantes antes de decidir (`src/comparar.py`)
+
+Con el índice listo, mide en la misma corrida las alternativas de encoder, recuperación y decoder
+sobre las 50 preguntas de muestra, y deja una tabla en `data/comparacion/`:
+
+```bash
+python3 src/comparar.py --recuperacion                               # minutos, sin decoder
+python3 src/comparar.py --sistema --variantes qwen25-7b qwen3-4b-2507  # con el evaluador oficial
+```
+
+Otros encoders (E5, Qwen3-Embedding) solo se miden si E06 dejó su índice en
+`data/experimentos/corpus_definitivo/indices/`.
 
 ## 0. Requisitos
 

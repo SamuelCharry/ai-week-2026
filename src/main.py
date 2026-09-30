@@ -165,7 +165,8 @@ def preparar_desde_raw(config, workers):
             salir("La preparación no terminó; volver a correr el mismo comando la reanuda.")
         if resumen["errores"]:
             print(f"  AVISO: {resumen['errores']} documentos no se pudieron extraer; quedan fuera (ver pendientes.csv).")
-        fijar_inventario(preparado, release.parent)
+        from legalrag.preprocessing.inventario import fijar_inventario
+        fijar_inventario(preparado, release.parent, RAIZ)
     catalogo = RAIZ / "reports/reporte_evaluacion/modelos_verificados.json"
     if not catalogo.is_file():
         catalogo.parent.mkdir(parents=True, exist_ok=True)
@@ -173,46 +174,6 @@ def preparar_desde_raw(config, workers):
         catalogo.write_text(json.dumps([{**f, "cumple_limite_8000000000": f.get("parametros", 0) <= 8_000_000_000}
                                         for f in fichas], ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"  catálogo de modelos escrito desde configs/sistema.json: {catalogo}")
-
-
-def fijar_inventario(preparado, destino):
-    """Inventario evaluable: los documentos extraídos y aptos para búsqueda, con texto y SHA-256."""
-    import hashlib
-    from datetime import datetime, timezone
-
-    campos = ("doc_id", "titulo", "tipo", "numero", "anio", "fuente", "url", "fecha_consulta", "organo_emisor",
-              "areas", "temas", "nivel", "vigencia", "vigencia_fuente", "licencia_fuente", "redistribuir_raw",
-              "edicion_con_anotaciones", "origen_ampliacion", "areas_por_epigrafe", "sha256_texto", "caracteres",
-              "estado_extraccion", "avisos")
-    elegidos, excluidos, restricciones = [], [], []
-    for linea in (preparado / "documentos.jsonl").read_text(encoding="utf-8").splitlines():
-        registro = json.loads(linea)
-        fila = {k: registro.get(k) for k in campos}
-        fila["texto_archivo"] = (Path("data/processed/corpus_preparado") / (registro.get("texto_archivo") or "")).as_posix()
-        fila["restricciones_especificas"] = sorted(set(registro.get("pendientes_preparacion", [])))
-        fila["archivos_raw"] = registro["archivos_raw"]
-        if registro["estado_extraccion"] == "error" or registro.get("apta_para_busqueda") is False:
-            excluidos.append(fila)
-        else:
-            elegidos.append(fila)
-            if fila["restricciones_especificas"]:
-                restricciones.append({"doc_id": fila["doc_id"], "restricciones": fila["restricciones_especificas"]})
-    destino.mkdir(parents=True, exist_ok=True)
-    archivos = []
-    for nombre, contenido in (("corpus_manifest.json", sorted(elegidos, key=lambda r: r["doc_id"])),
-                              ("excluidos.json", sorted(excluidos, key=lambda r: r["doc_id"])),
-                              ("restricciones.json", restricciones)):
-        ruta = destino / nombre
-        ruta.write_text(json.dumps(contenido, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        archivos.append({"archivo": nombre, "sha256": hashlib.sha256(ruta.read_bytes()).hexdigest()})
-    snapshot = {"version": destino.name,
-                "snapshot_id": hashlib.sha256(json.dumps(archivos, sort_keys=True).encode()).hexdigest(),
-                "fecha_utc": datetime.now(timezone.utc).isoformat(),
-                "tipo_snapshot": "desde_data_raw_con_src_main_sin_perfilado",
-                "archivos_version": archivos, "documentos_evaluables": len(elegidos),
-                "documentos_excluidos": len(excluidos)}
-    (destino / "snapshot.json").write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"  inventario: {len(elegidos)} documentos evaluables, {len(excluidos)} excluidos -> {destino}")
 
 
 # ------------------------------------------------------------------ 3. índice
