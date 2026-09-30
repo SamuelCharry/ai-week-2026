@@ -1,5 +1,5 @@
 {
-  "notas": "BM25 + BGE-M3 con RRF (+ búsqueda dentro de la norma que nombra la pregunta), reranker BGE-v2-m3, pasajes encabezados con su norma y Qwen2.5-7B-Instruct con el prompt y el posprocesado de la versión 05 (letra siempre, citas sin respaldo quitadas, abstención solo sin evidencia).",
+  "notas": "Sistema de la mejor corrida en la 4090 (38,43/50 deterministas en la muestra): BM25 + BGE-M3 con RRF, reranker BGE-v2-m3, pasajes encabezados con su norma, reserva/tope/mínimo normativo solo en texto libre, Qwen2.5-7B-Instruct con letra razonada y fundamento con el respaldo completo de la evidencia.",
   "implementacion": "legalrag.agent.componentes:Sistema",
   "entradas": {
     "sample": "data/oficial/data/sample_50.jsonl",
@@ -53,7 +53,11 @@
     "encabezado_norma": true,
     "usar_bm25": true,
     "usar_denso": true,
-    "usar_reranker": true
+    "usar_reranker": true,
+    "reservar_nombradas": 2,
+    "max_por_documento": 3,
+    "min_normativos": 2,
+    "ajustes_solo_texto_libre": true
   },
   "generacion": {
     "decoder": {
