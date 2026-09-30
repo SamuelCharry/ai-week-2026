@@ -14,6 +14,10 @@ activable en `configs/sistema.json` para poder medirlo:
     consulta_con_tema  el campo `tema` de la pregunta (entrada, no respuesta) se suma a la consulta.
     encabezado_norma   cada pasaje entregado empieza con el nombre de su norma
                        (citations.normas); reemplaza las "cabeceras literales" de E06.
+    reservar_nombradas N lugares de la evidencia para los mejores pasajes de la norma que la
+                       pregunta nombra sin artículo (p. ej. "reorganización ley 1116 de 2006").
+    max_por_documento  tope de pasajes de un mismo documento (las sentencias "se parecen" a todo).
+    min_normativos     pasajes mínimos de leyes, decretos, códigos o Constitución cuando hay candidatos.
 """
 import json
 import re
@@ -22,6 +26,8 @@ from collections import defaultdict
 from contextlib import closing
 from pathlib import Path
 
+NORMATIVOS = {"ley", "decreto", "decreto_ley", "constitucion", "acto_legislativo", "codigo", "resolucion",
+              "acuerdo", "decision", "circular"}
 INSTRUCCION_QWEN = "Instruct: Recupera pasajes jurídicos colombianos pertinentes a la pregunta\nQuery: "
 
 
@@ -32,6 +38,12 @@ def consulta(entrada, con_tema=False):
     if con_tema and entrada.get("tema"):
         partes.insert(0, str(entrada["tema"]).strip())
     return "\n".join(partes)
+
+
+def es_normativo(tipo):
+    import unicodedata
+    tipo = "".join(c for c in unicodedata.normalize("NFD", str(tipo or "").lower()) if unicodedata.category(c) != "Mn")
+    return tipo.strip().replace(" ", "_").replace("-", "_") in NORMATIVOS
 
 
 def rrf(*rankings, k=100, constante=60):
@@ -212,23 +224,34 @@ class RecuperadorHibrido:
         if c.get("usar_denso", True) and self.indice is not None:
             puntajes, posiciones = self.indice.search(self.encoder.codificar(texto), c["denso_top"])
             rankings.append([(int(i) + 1, float(s)) for i, s in zip(posiciones[0], puntajes[0]) if i >= 0])
-        fijos = []
+        fijos, ruta, nombradas = [], [], {}
         if c.get("enrutar_normas", False):
             nombradas = self.evidencia.normas_de(entrada["pregunta"] + " " + " ".join((entrada.get("opciones") or {}).values()))
             if nombradas:
-                rankings.append(self.fragmentos.bm25(texto, c["bm25_top"], doc_ids=list(nombradas)))
+                ruta = self.fragmentos.bm25(texto, c["bm25_top"], doc_ids=list(nombradas))
+                rankings.append(ruta)
                 fijos = [f for doc_id, articulos in nombradas.items() for a in sorted(articulos)
                          for f in self.fragmentos.por_articulo(doc_id, a, 2)][:c.get("max_fijos", 3)]
-            self.ultima_traza = {"normas_nombradas": {k: sorted(v) for k, v in nombradas.items()}, "fijos": fijos}
+        reservar = c.get("reservar_nombradas", 0) if nombradas else 0
+        # Con reserva, los mejores de la búsqueda dentro de la norma nombrada entran siempre al reranker.
+        de_ruta = [f for f, _ in ruta[:max(5, 2 * reservar)]] if reservar else []
         candidatos = [f for f, _ in rrf(*rankings, k=max(c["bm25_top"], c["denso_top"]), constante=c["rrf_k"])]
-        candidatos = list(dict.fromkeys(fijos + candidatos))[:c["rerank_top"] + len(fijos)]
+        candidatos = list(dict.fromkeys(fijos + de_ruta + candidatos))[:c["rerank_top"] + len(fijos) + len(de_ruta)]
         if self.reordenador is None or not c.get("usar_reranker", True):
-            return [(f, 1.0 / (i + 1)) for i, f in enumerate(candidatos)]
-        filas = self.fragmentos.filas(candidatos)
-        puntajes = self.reordenador.puntuar(texto, [f["texto_busqueda"] for f in filas])
-        orden = sorted(((f["id"], float(p)) for f, p in zip(filas, puntajes)), key=lambda x: (-x[1], x[0]))
-        # El artículo que la pregunta nombra va primero aunque el reranker lo ponga más abajo.
-        return [x for x in orden if x[0] in fijos] + [x for x in orden if x[0] not in fijos]
+            orden = [(f, 1.0 / (i + 1)) for i, f in enumerate(candidatos)]
+            docs = {f["id"]: f["doc_id"] for f in self.fragmentos.filas(candidatos)} if reservar else {}
+        else:
+            filas = self.fragmentos.filas(candidatos)
+            puntajes = self.reordenador.puntuar(texto, [f["texto_busqueda"] for f in filas])
+            orden = sorted(((f["id"], float(p)) for f, p in zip(filas, puntajes)), key=lambda x: (-x[1], x[0]))
+            docs = {f["id"]: f["doc_id"] for f in filas}
+        # El artículo nombrado va primero; después, si se pide, los mejores pasajes de la norma nombrada.
+        reservados = [x[0] for x in orden if x[0] not in fijos and docs.get(x[0]) in nombradas][:reservar]
+        if c.get("enrutar_normas", False):
+            self.ultima_traza = {"normas_nombradas": {k: sorted(v) for k, v in nombradas.items()}, "fijos": fijos,
+                                 "reservados": reservados}
+        primeros = fijos + reservados
+        return [x for f in primeros for x in orden if x[0] == f] + [x for x in orden if x[0] not in primeros]
 
     def _texto(self, doc_id):
         return (self._ruta("textos") / f"{doc_id}.txt").read_text(encoding="utf-8")
@@ -242,22 +265,28 @@ class RecuperadorHibrido:
         """
         c = self.config
         maximo = c["max_pasajes"]
-        elegidos, vistas, puntajes = [], set(), dict(ranking)
+        tope, minimo = c.get("max_por_documento"), c.get("min_normativos", 0)
+        elegidos, vistas, puntajes, por_doc = [], set(), dict(ranking), {}
+        reserva_normativa = []  # unidades normativas que no alcanzaron lugar, por si hay que asegurar el mínimo
         for fila in self.fragmentos.filas([f for f, _ in ranking]):
             if fila["unidad_id"] in vistas:
                 continue
             vistas.add(fila["unidad_id"])
-            a, b = fila["inicio"], fila["fin"]
-            if fila["unidad_fin"] - fila["unidad_inicio"] <= c["max_caracteres_pasaje"]:
-                a, b = fila["unidad_inicio"], fila["unidad_fin"]
-            pasaje = {"doc_id": fila["doc_id"], "inicio": a, "fin": b, "texto": self._texto(fila["doc_id"])[a:b],
-                      "score": puntajes[fila["id"]], "titulo": fila["titulo"], "articulo": fila["articulo"],
-                      "unidad_id": fila["unidad_id"], "avisos": json.loads(fila["avisos"])}
-            if c.get("encabezado_norma", True):
-                pasaje["encabezado"] = self.evidencia.encabezado(pasaje)
-            elegidos.append(pasaje)
-            if len(elegidos) >= maximo:
+            if len(elegidos) >= maximo or (tope and por_doc.get(fila["doc_id"], 0) >= tope):
+                if len(elegidos) >= maximo and minimo and es_normativo(fila["tipo"]) and len(reserva_normativa) < minimo:
+                    reserva_normativa.append(fila)
+                if len(elegidos) >= maximo and (not minimo or len(reserva_normativa) >= minimo):
+                    break
+                continue
+            por_doc[fila["doc_id"]] = por_doc.get(fila["doc_id"], 0) + 1
+            elegidos.append(self._pasaje(fila, puntajes))
+        # Si faltan pasajes normativos, reemplazan a los últimos no normativos (nunca a los primeros tres).
+        faltan = minimo - sum(es_normativo(p["tipo"]) for p in elegidos)
+        for fila in reserva_normativa[:max(0, faltan)]:
+            cambiable = [i for i in range(len(elegidos) - 1, 2, -1) if not es_normativo(elegidos[i]["tipo"])]
+            if not cambiable:
                 break
+            elegidos[cambiable[0]] = self._pasaje(fila, puntajes)
         if c.get("encabezado_norma", True):
             return elegidos
         extraer, cuerpos = self.citaciones.extract, self.citaciones.bodies
@@ -277,6 +306,18 @@ class RecuperadorHibrido:
         if cabeceras:
             elegidos = elegidos[:1] + cabeceras + elegidos[1:maximo - len(cabeceras)]
         return elegidos
+
+    def _pasaje(self, fila, puntajes):
+        c = self.config
+        a, b = fila["inicio"], fila["fin"]
+        if fila["unidad_fin"] - fila["unidad_inicio"] <= c["max_caracteres_pasaje"]:
+            a, b = fila["unidad_inicio"], fila["unidad_fin"]
+        pasaje = {"doc_id": fila["doc_id"], "inicio": a, "fin": b, "texto": self._texto(fila["doc_id"])[a:b],
+                  "score": puntajes[fila["id"]], "titulo": fila["titulo"], "articulo": fila["articulo"],
+                  "tipo": fila["tipo"], "unidad_id": fila["unidad_id"], "avisos": json.loads(fila["avisos"])}
+        if c.get("encabezado_norma", True):
+            pasaje["encabezado"] = self.evidencia.encabezado(pasaje)
+        return pasaje
 
     def buscar(self, entrada):
         return self.pasajes(self.ranking(entrada))

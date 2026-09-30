@@ -47,6 +47,12 @@ VARIANTES_RECUPERACION = {
     "hibrido+reranker (R03)": {"enrutar_normas": False},
     "+enrutamiento": {"enrutar_normas": True},
     "+enrutamiento+tema": {"enrutar_normas": True, "consulta_con_tema": True},
+    # Sistema actual (enrutamiento) más los ajustes para que la ley correcta no quede fuera de la evidencia.
+    "+reserva2": {"enrutar_normas": True, "reservar_nombradas": 2},
+    "+tope3": {"enrutar_normas": True, "max_por_documento": 3},
+    "+normativos2": {"enrutar_normas": True, "min_normativos": 2},
+    "+reserva2+tope3+normativos2": {"enrutar_normas": True, "reservar_nombradas": 2, "max_por_documento": 3,
+                                    "min_normativos": 2},
 }
 SOLO_DENSO = ("denso", "hibrido+reranker (R03)", "+enrutamiento")
 
@@ -159,8 +165,11 @@ def comparar_recuperacion(config, encoders, ids):
                         **{k: round(v, 3) if isinstance(v, float) else v for k, v in resultado.items()
                            if k not in ("detalle", "referencia_E06_R03")}}
                 filas.append(fila)
-                print(f"  {variante:24} top10={fila['respaldo_literal_top10']} MRR={fila['MRR_cita_top10']} "
-                      f"pasajes={fila['respaldo_en_pasajes']} {fila['segundos_promedio']} s", flush=True)
+                fallan = [d["id"] for d in resultado["detalle"] if not d["respaldo_en_pasajes"]]
+                fila["sin_norma_en_pasajes"] = " ".join(map(str, fallan))
+                print(f"  {variante:30} top10={fila['respaldo_literal_top10']} MRR={fila['MRR_cita_top10']} "
+                      f"pasajes={fila['respaldo_en_pasajes']} {fila['segundos_promedio']} s · sin la norma: {fallan}",
+                      flush=True)
                 (SALIDA / "recuperacion").mkdir(parents=True, exist_ok=True)
                 (SALIDA / "recuperacion" / f"{nombre}__{variante.replace(' ', '_')}.json").write_text(
                     json.dumps(resultado, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -169,7 +178,7 @@ def comparar_recuperacion(config, encoders, ids):
     escribir_csv(SALIDA / "recuperacion.csv", filas)
     print("\nRecuperación (referencia E06 R03: top10 0,854 · MRR 0,546)")
     imprimir(filas, ["encoder", "variante", "respaldo_literal_top10", "MRR_cita_top10", "respaldo_en_pasajes",
-                     "segundos_promedio"])
+                     "segundos_promedio", "sin_norma_en_pasajes"])
 
 
 # ----------------------------------------------------------------- etapa 2

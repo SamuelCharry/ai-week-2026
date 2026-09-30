@@ -129,6 +129,71 @@ class RecuperacionTest(unittest.TestCase):
         self.assertEqual(EVIDENCIA.respaldo([{**pasajes[0], "encabezado": None}]), set())
 
 
+class DiversificacionTest(unittest.TestCase):
+    """Norma nombrada sin artículo, tope por documento y mínimo de pasajes normativos."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        raiz = Path(self.tmp.name)
+        (raiz / "textos").mkdir()
+        conexion = sqlite3.connect(raiz / "chunks.sqlite")
+        conexion.executescript("""
+        CREATE TABLE chunks (id INTEGER PRIMARY KEY, doc_id TEXT, titulo TEXT, tipo TEXT, articulo TEXT,
+          seccion TEXT, unidad_id TEXT, unidad_inicio INTEGER, unidad_fin INTEGER, inicio INTEGER, fin INTEGER,
+          texto TEXT, texto_busqueda TEXT, avisos TEXT);
+        CREATE VIRTUAL TABLE fts USING fts5(texto_busqueda, content='chunks', content_rowid='id');""")
+        # 6 bloques de una sentencia que "se parece a todo" y 2 artículos de la ley que la pregunta nombra.
+        filas = [("sentencia_cc_c145_2018", "Sentencia", None, f"b{i}", "reorganización fiducia patrimonio autónomo")
+                 for i in range(6)] + [("ley_1116_2006", "Ley", str(i), f"a{i}", "reorganización empresarial") for i in (1, 2)]
+        for doc_id in {f[0] for f in filas}:
+            (raiz / "textos" / f"{doc_id}.txt").write_text("x" * 100, encoding="utf-8")
+        for doc_id, tipo, articulo, unidad, texto in filas:
+            cursor = conexion.execute("INSERT INTO chunks(doc_id,titulo,tipo,articulo,seccion,unidad_id,unidad_inicio,"
+                                      "unidad_fin,inicio,fin,texto,texto_busqueda,avisos) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                      (doc_id, doc_id, tipo, articulo, None, unidad, 0, 10, 0, 10, texto, texto, "[]"))
+            conexion.execute("INSERT INTO fts(rowid,texto_busqueda) VALUES(?,?)", (cursor.lastrowid, texto))
+        conexion.commit()
+        conexion.close()
+        manifiesto = [{"doc_id": "ley_1116_2006", "tipo": "ley", "numero": "1116", "anio": 2006, "titulo": "Ley 1116 de 2006"},
+                      {"doc_id": "sentencia_cc_c145_2018", "tipo": "sentencia", "numero": "C-145", "anio": 2018,
+                       "titulo": "Sentencia C-145 de 2018"}]
+        self.recuperador = RecuperadorHibrido(raiz, {**leer_config()["recuperacion"], "fragmentos": "chunks.sqlite",
+                                                     "textos": "textos", "max_pasajes": 4, "rerank_top": 20})
+        self.recuperador.fragmentos = Fragmentos(raiz / "chunks.sqlite")
+        self.recuperador.indice = IndiceFalso(list(range(8)))
+        self.recuperador.encoder = EncoderFalso()
+        self.recuperador.reordenador = type("SentenciasPrimero", (), {
+            "puntuar": staticmethod(lambda texto, cands: [2.0 if "fiducia" in c else 1.0 for c in cands])})()
+        self.recuperador.citaciones = CITAS
+        self.recuperador.evidencia = EvidenciaCorpus(CITAS, manifiesto)
+        self.entrada = {**SEMI, "pregunta": "¿Qué pasa con la fiducia en la reorganización de la ley 1116 de 2006?"}
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def docs(self, **cambios):
+        self.recuperador.config = {**self.recuperador.config, **cambios}
+        return [p["doc_id"] for p in self.recuperador.buscar(self.entrada)]
+
+    def test_sin_ajustes_la_sentencia_llena_la_evidencia(self):
+        self.assertEqual(set(self.docs()), {"sentencia_cc_c145_2018"})
+
+    def test_reserva_para_la_norma_nombrada(self):
+        docs = self.docs(reservar_nombradas=2)
+        self.assertEqual(docs[:2], ["ley_1116_2006", "ley_1116_2006"])
+        self.assertEqual(len(self.recuperador.ultima_traza["reservados"]), 2)
+
+    def test_tope_por_documento(self):
+        docs = self.docs(max_por_documento=2)
+        self.assertEqual(docs.count("sentencia_cc_c145_2018"), 2)
+        self.assertEqual(docs.count("ley_1116_2006"), 2)
+
+    def test_minimo_normativo_reemplaza_los_ultimos(self):
+        docs = self.docs(min_normativos=1)
+        self.assertEqual(docs[:3], ["sentencia_cc_c145_2018"] * 3)
+        self.assertEqual(docs[3], "ley_1116_2006")
+
+
 class VerificacionTest(unittest.TestCase):
     def test_json_con_bloque_de_codigo_texto_alrededor_y_truncado(self):
         self.assertEqual(interpretar_json('```json\n{"a": 1}\n```'), {"a": 1})
