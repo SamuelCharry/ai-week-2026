@@ -225,10 +225,133 @@ def comparar_recuperacion(config, encoders, ids):
 
 # ----------------------------------------------------------------- etapa 2
 
+FORMATO_CORTO = {"multiple_choice": "cerrada", "semi_open": "semiabierta", "open_ended": "abierta"}
+NOMBRE_PROBLEMA = {"json_invalido": "JSON inválido", "campos_rellenados": "campos rellenados",
+                   "citas_saneadas": "citas saneadas", "sin_evidencia_en_contexto": "sin evidencia",
+                   "esquema_oficial": "esquema oficial"}
+
+
+def evaluador_oficial(config):
+    """evaluate.py oficial, sin modificar, para puntuar pregunta por pregunta con sus mismas funciones."""
+    import importlib
+
+    sys.path.insert(0, str(RAIZ / config["oficial"] / "scripts"))
+    return importlib.import_module("evaluate")
+
+
+def por_pregunta(evaluador, salida, muestra):
+    """{id: resultado} con las reglas del evaluador oficial (cerradas, citas y abstención por ítem)."""
+    subs = {s["id"]: s for s in evaluador.read_jsonl(salida)} if salida.is_file() else {}
+    citas, resultado = evaluador.citations, {}
+    for pregunta in muestra:
+        s = subs.get(pregunta["id"])
+        fila = {"id": pregunta["id"], "formato": FORMATO_CORTO[pregunta["formato"]], "respondida": s is not None,
+                "abstencion": bool(s and s.get("abstencion"))}
+        if pregunta["formato"] == "multiple_choice" and pregunta["id"] not in evaluador.FLAWED_IDS:
+            fila["letra"] = (s or {}).get("respuesta_correcta")
+            fila["cerrada"] = bool(s) and not fila["abstencion"] and fila["letra"] == pregunta["respuesta_correcta"]
+        referencia = citas.extract(pregunta.get("legal_basis") or "")
+        if referencia:
+            fila.update(citas_acertadas=0.0, citas_ref=len(citas.bodies(referencia)), citas_sin_respaldo=0)
+            if s and not fila["abstencion"]:
+                r = citas.score(evaluador.answer_text(s), pregunta.get("legal_basis") or "",
+                                evaluador.citas_respaldadas(s))
+                fila.update(citas_acertadas=r["aciertos_respaldados"] + 0.5 * r["aciertos_sin_respaldo"],
+                            citas_ref=r["n_ref"], citas_sin_respaldo=r["citas_sin_respaldo"])
+        resultado[pregunta["id"]] = fila
+    return resultado
+
+
+def cambios(base, otra):
+    """[(signo, id, formato, detalle)] de lo que cambió frente a la base: + mejora, - empeora, ~ neutro."""
+    lineas = []
+    for qid, b in base.items():
+        o = otra.get(qid) or {}
+        if "cerrada" in b and (b["cerrada"], b["letra"]) != (o.get("cerrada"), o.get("letra")):
+            signo = "~" if b["cerrada"] == o.get("cerrada") else "+" if o.get("cerrada") else "-"
+            lineas.append((signo, qid, b["formato"], f"letra {b['letra']} → {o.get('letra')} "
+                                                     f"({'correcta' if o.get('cerrada') else 'incorrecta'})"))
+        if "citas_ref" in b:
+            antes = (b["citas_acertadas"], b["citas_sin_respaldo"])
+            despues = (o.get("citas_acertadas", 0.0), o.get("citas_sin_respaldo", 0))
+            if antes != despues:
+                delta = despues[0] - antes[0] - 2 * (despues[1] - antes[1])
+                signo = "+" if delta > 0 else "-" if delta < 0 else "~"
+                extra = f", sin respaldo {antes[1]} → {despues[1]}" if antes[1] != despues[1] else ""
+                lineas.append((signo, qid, b["formato"], f"citas {antes[0]:g}/{b['citas_ref']} → "
+                                                         f"{despues[0]:g}/{b['citas_ref']}{extra}"))
+        if b["abstencion"] != o.get("abstencion"):
+            lineas.append(("~", qid, b["formato"], "ahora se abstiene" if o.get("abstencion") else "ya no se abstiene"))
+    return sorted(lineas, key=lambda l: ("+-~".index(l[0]), l[1]))
+
+
+def compacto(conteos, nombres):
+    partes = [f"{nombres.get(k, k)} {v}" for k, v in sorted(conteos.items(), key=lambda kv: -kv[1]) if k != "limpia"]
+    return " · ".join(partes) or "—"
+
+
+def informe(filas, detalles):
+    """Tabla principal, cambios por pregunta frente a la primera variante y fallas que ninguna resuelve."""
+    lineas = []
+    base = filas[0]
+    tabla = []
+    for f in filas:
+        pasos = json.loads(f["pasos"])
+        texto_pasos = []
+        if pasos.get("expandidas"):
+            texto_pasos.append(f"expandidas {pasos['expandidas']}")
+        if pasos.get("reintentos_json"):
+            texto_pasos.append(f"reintentos JSON {pasos['reintentos_json']} (mejoraron {pasos.get('reintento_mejoro', 0)})")
+        if pasos.get("verificadas"):
+            texto_pasos.append(f"verificadas {pasos['verificadas']} (aceptadas {pasos.get('verificacion_aceptada', 0)})")
+        delta = None
+        if f.get("total") is not None and base.get("total") is not None and f is not base:
+            delta = f"{f['total'] - base['total']:+.2f}"
+        tabla.append({"variante": f["variante"], "total": f.get("total", "—"), "Δ base": delta or "—",
+                      "cerradas": f"{f['aciertos_cerradas']}/{f['n_cerradas']}" if "n_cerradas" in f else "—",
+                      "citas": f.get("citas", "—"), "recall": f.get("recall_citas", "—"),
+                      "abstención": f.get("abstencion", "—"), **({"ragas": f["ragas"]} if f.get("ragas") is not None else {}),
+                      "s/preg": f["s_por_pregunta"], "min": f["minutos"],
+                      "problemas": compacto(json.loads(f["problemas"]), NOMBRE_PROBLEMA),
+                      "pasos del agente": " · ".join(texto_pasos) or "—"})
+    columnas = list(dict.fromkeys(k for t in tabla for k in t))
+    anchos = {c: max(len(c), *(len(str(t.get(c, ""))) for t in tabla)) for c in columnas}
+    numericas = {"total", "Δ base", "cerradas", "citas", "recall", "abstención", "ragas", "s/preg", "min"}
+    formato = lambda c, v: str(v).rjust(anchos[c]) if c in numericas else str(v).ljust(anchos[c])  # noqa: E731
+    lineas += ["", "SISTEMA (muestra de 50, evaluador oficial)", "",
+               "  ".join(formato(c, c) for c in columnas), "  ".join("-" * anchos[c] for c in columnas)]
+    lineas += ["  ".join(formato(c, t.get(c, "")) for c in columnas) for t in tabla]
+
+    nombre_base = base["variante"]
+    for f in filas[1:]:
+        lista = cambios(detalles[nombre_base], detalles[f["variante"]])
+        lineas += ["", f"{f['variante']} frente a {nombre_base}: "
+                   f"{sum(l[0] == '+' for l in lista)} mejoras, {sum(l[0] == '-' for l in lista)} empeoras, "
+                   f"{sum(l[0] == '~' for l in lista)} cambios neutros"]
+        lineas += [f"  {signo} {qid:>4} {formato_q:<11} {detalle}" for signo, qid, formato_q, detalle in lista]
+        if not lista:
+            lineas.append("  (mismas respuestas puntuables en todas las preguntas)")
+
+    todas = list(detalles.values())
+    cerradas = [q for q, d in todas[0].items() if "cerrada" in d and not any(v[q]["cerrada"] for v in todas)]
+    sin_citas = [q for q, d in todas[0].items() if "citas_ref" in d and not any(v[q]["citas_acertadas"] for v in todas)]
+    parciales = [q for q, d in todas[0].items() if "citas_ref" in d and q not in sin_citas
+                 and not any(v[q]["citas_acertadas"] >= v[q]["citas_ref"] for v in todas)]
+    lineas += ["", "Sin resolver en ninguna variante",
+               f"  cerradas incorrectas:            {', '.join(map(str, cerradas)) or '—'}",
+               f"  ninguna norma del fundamento:    {', '.join(map(str, sin_citas)) or '—'}",
+               f"  fundamento citado en parte:      {', '.join(map(str, parciales)) or '—'}",
+               "", "+ mejora · - empeora · ~ cambia sin efecto en el puntaje. Detalle por pregunta en "
+               "data/comparacion/<variante>/por_pregunta.csv"]
+    return "\n".join(l.rstrip() for l in lineas)
+
+
 def comparar_sistema(config, variantes, ids, ragas, cache=True):
     from legalrag.agent.pipeline import responder_lote
 
-    filas = []
+    evaluador = evaluador_oficial(config)
+    muestra = [p for p in evaluador.read_jsonl(RAIZ / config["entradas"]["sample"]) if not ids or p["id"] in ids]
+    filas, detalles = [], {}
     for nombre in variantes:
         variante = aplicar(config, VARIANTES_SISTEMA[nombre])
         # Las respuestas guardadas se reutilizan solo si la configuración es la misma; con la huella del índice,
@@ -273,15 +396,19 @@ def comparar_sistema(config, variantes, ids, ragas, cache=True):
                            check=True, capture_output=True, text=True)
             datos = json.loads(reporte.read_text(encoding="utf-8"))
             fila.update(cerradas=datos["cerradas"]["puntos"], aciertos_cerradas=datos["cerradas"]["aciertos"],
+                        n_cerradas=datos["cerradas"]["n"],
                         citas=datos["citas"]["puntos"], recall_citas=datos["citas"]["recall_citas_ponderado"],
                         sin_respaldo=datos["citas"]["tasa_sin_respaldo"], abstencion=datos["abstencion"]["puntos"],
                         ragas=(datos.get("correccion_ragas") or {}).get("puntos"),
                         total=datos["total_automatico"]["obtenidos"], posibles=datos["total_automatico"]["posibles"])
         filas.append(fila)
+        detalles[nombre] = por_pregunta(evaluador, salida, muestra)
+        escribir_csv(salida.with_name("por_pregunta.csv"), list(detalles[nombre].values()))
         escribir_csv(SALIDA / "sistema.csv", filas)
-    print("\nSistema")
-    imprimir(filas, ["variante", "total", "posibles", "cerradas", "aciertos_cerradas", "citas", "recall_citas",
-                     "sin_respaldo", "abstencion", "ragas", "abstenciones", "s_por_pregunta", "problemas", "pasos"])
+    texto = informe(filas, detalles)
+    (SALIDA / "resumen.txt").write_text(texto + "\n", encoding="utf-8")
+    print(texto)
+    print(f"\n(guardado en {(SALIDA / 'resumen.txt').relative_to(RAIZ)})")
 
 
 def main():
