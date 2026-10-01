@@ -20,6 +20,9 @@ activable en `configs/sistema.json` para poder medirlo:
     min_normativos     pasajes mínimos de leyes, decretos, códigos o Constitución cuando hay candidatos.
     ajustes_solo_texto_libre  los tres anteriores solo en semiabiertas y abiertas (las cerradas conservan su
                        evidencia).
+    recuperar_por_opcion en cerradas, una búsqueda BM25 + densa más por opción (pregunta + opción).
+
+El reranker es BGE-v2-m3 o Qwen3-Reranker (0.6B/4B), según `reranker.repo_id`.
 """
 import json
 import re
@@ -170,6 +173,57 @@ class Reordenador:
         return puntajes
 
 
+class ReordenadorQwen:
+    """Qwen3-Reranker (0.6B/4B): "yes"/"no" con la plantilla publicada por Qwen (la misma de E06).
+
+    El puntaje es logit(yes) - logit(no), en la misma escala que los logits de BGE (0 = 50 %), así que
+    los umbrales de evidencia débil significan lo mismo con cualquiera de los dos rerankers."""
+
+    INSTRUCCION = "Dada una pregunta jurídica colombiana, identifica pasajes que permitan responderla con fundamento literal."
+
+    def __init__(self, ficha, dtype, max_tokens, lote, dispositivo="cuda"):
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        self.max_tokens, self.lote, self.dispositivo = max_tokens, lote, dispositivo
+        self.tokenizer = AutoTokenizer.from_pretrained(ficha["repo_id"], revision=ficha["revision"], padding_side="left")
+        self.modelo = AutoModelForCausalLM.from_pretrained(
+            ficha["repo_id"], revision=ficha["revision"], dtype=getattr(torch, dtype)).to(dispositivo).eval()
+        self.si, self.no = self.tokenizer.convert_tokens_to_ids("yes"), self.tokenizer.convert_tokens_to_ids("no")
+        codificar = lambda t: self.tokenizer.encode(t, add_special_tokens=False)  # noqa: E731
+        self.prefijo = codificar('<|im_start|>system\nJudge whether the Document meets the requirements based on the '
+                                 'Query and the Instruct provided. Note that the answer can only be "yes" or "no".'
+                                 '<|im_end|>\n<|im_start|>user\n')
+        self.sufijo = codificar('<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n')
+
+    def puntuar(self, texto, candidatos):
+        import torch
+
+        ids = [self.prefijo + self.tokenizer.encode(f"<Instruct>: {self.INSTRUCCION}\n<Query>: {texto}\n<Document>: {c}",
+                                                    add_special_tokens=False)[:self.max_tokens] + self.sufijo
+               for c in candidatos]
+        puntajes, i = [], 0
+        while i < len(ids):
+            try:
+                entrada = self.tokenizer.pad({"input_ids": ids[i:i + self.lote]}, padding=True,
+                                             return_tensors="pt").to(self.dispositivo)
+                with torch.inference_mode():
+                    logits = self.modelo(**entrada).logits[:, -1, :].float()
+                puntajes.extend((logits[:, self.si] - logits[:, self.no]).cpu().tolist())
+                i += len(ids[i:i + self.lote])
+            except torch.cuda.OutOfMemoryError:
+                torch.cuda.empty_cache()
+                if self.lote == 1:
+                    raise
+                self.lote //= 2
+        return puntajes
+
+
+def crear_reordenador(ficha, dtype, max_tokens, lote, dispositivo="cuda"):
+    clase = ReordenadorQwen if "Qwen3-Reranker" in ficha["repo_id"] else Reordenador
+    return clase(ficha, dtype, max_tokens, lote, dispositivo)
+
+
 class RecuperadorHibrido:
     def __init__(self, raiz, config):
         self.raiz, self.config = Path(raiz), config
@@ -203,8 +257,8 @@ class RecuperadorHibrido:
         dispositivo = c.get("dispositivo", "cuda")
         self.encoder = EncoderConsultas(c["encoder"], c["dtype"], c["max_tokens_encoder"], dispositivo)
         if c.get("usar_reranker", True):
-            self.reordenador = Reordenador(c["reranker"], c["dtype"], c["max_tokens_reranker"], c["lote_reranker"],
-                                           dispositivo)
+            self.reordenador = crear_reordenador(c["reranker"], c["dtype"], c["max_tokens_reranker"], c["lote_reranker"],
+                                                 dispositivo)
 
     def cerrar(self):
         import gc
@@ -224,7 +278,12 @@ class RecuperadorHibrido:
         c = self.config
         texto = consulta(entrada, c.get("consulta_con_tema", False))
         rankings = []
-        for busqueda in [texto] + ([expansion] if expansion else []):
+        busquedas = [texto] + ([expansion] if expansion else [])
+        if c.get("recuperar_por_opcion") and entrada.get("opciones"):
+            # Options-aware retrieval (2025): una búsqueda por opción, con la pregunta, para traer la evidencia que
+            # distingue entre las opciones; el reranker sigue puntuando contra la pregunta completa.
+            busquedas += [entrada["pregunta"].strip() + "\n" + opcion for opcion in entrada["opciones"].values()]
+        for busqueda in busquedas:
             if c.get("usar_bm25", True):
                 rankings.append(self.fragmentos.bm25(busqueda, c["bm25_top"]))
             if c.get("usar_denso", True) and self.indice is not None:

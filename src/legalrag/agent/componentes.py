@@ -22,6 +22,9 @@ Pasos opcionales del agente (configs/sistema.json, legalrag.generation.pasos), c
                                                  inválido o incompleto; se queda con la mejor de las dos
     generacion.verificar                         CoVe: preguntas de verificación, respuestas solo con los pasajes y
                                                  respuesta otra vez con ellas a la vista
+    generacion.verificador_nli                   cada oración de texto libre contra los pasajes con un modelo NLI
+                                                 pequeño (citations.respaldo_nli); registra o quita las contradichas
+    recuperacion.recuperar_por_opcion            en cerradas, una búsqueda más por opción (retrieval.hibrido)
 
 Requisitos del enunciado que dependen de esta clase:
 
@@ -52,6 +55,11 @@ class Sistema:
         self.config = config
         self.recuperador = RecuperadorHibrido(self.raiz, config["recuperacion"])
         self.decoder = DecoderTransformers(config["generacion"])
+        self.verificador = None
+        if config["generacion"].get("verificador_nli"):
+            from legalrag.citations.respaldo_nli import VerificadorNLI
+            self.verificador = VerificadorNLI(config["generacion"]["verificador_nli"],
+                                              config["generacion"].get("dispositivo", "cuda"))
         self.validador = None
         self.ultimo_problema = self.ultimo_registro = self.ultima_expansion = None
 
@@ -64,10 +72,14 @@ class Sistema:
         self.validador = jsonschema.validators.validator_for(esquema)(esquema)
         self.recuperador.abrir()
         self.decoder.abrir()
+        if self.verificador:
+            self.verificador.abrir()
 
     def cerrar(self):
         self.decoder.cerrar()
         self.recuperador.cerrar()
+        if self.verificador:
+            self.verificador.cerrar()
 
     def recuperar(self, entrada):
         """Pasajes de la pregunta, ordenados por el reranker.
@@ -82,7 +94,12 @@ class Sistema:
         modo = rec.get("expansion")
         if not modo or (entrada["formato"] == "multiple_choice" and not rec.get("expansion_cerradas")):
             return pasajes
-        debil, motivo = pasos.evidencia_debil(pasajes, rec.get("umbral_evidencia_debil"))
+        debil, motivo = pasos.evidencia_debil(pasajes, rec.get("umbral_evidencia_debil"),
+                                              criterio=rec.get("criterio_evidencia_debil", "ambos"))
+        nombradas = (getattr(self.recuperador, "ultima_traza", None) or {}).get("normas_nombradas") or {}
+        if debil and nombradas and rec.get("expansion_sin_norma_nombrada"):
+            # Adaptive-RAG: si la pregunta ya nombra una norma del corpus, el enrutamiento la trae; no se gasta más.
+            debil, motivo = False, "norma_nombrada"
         self.ultima_expansion = {"motivo": motivo, "puntaje_maximo": max((p["score"] for p in pasajes), default=None)}
         if modo == "debil" and not debil:
             return pasajes
@@ -159,6 +176,10 @@ class Sistema:
             reintento = {"problema_antes": registro["problema"], "problema_despues": registro_r["problema"]}
             if gravedad(registro_r["problema"]) < gravedad(registro["problema"]):
                 crudo, respuesta, registro = nuevo, respuesta_r, registro_r
+        nli = None
+        if getattr(self, "verificador", None) and not respuesta.get("abstencion"):
+            # Verificador NLI (citations.respaldo_nli): revisa cada oración contra los pasajes sin generar texto.
+            nli = self.verificador.verificar(respuesta, entregados, self.recuperador.citaciones)
         if probabilidades and not respuesta.get("abstencion"):
             respuesta["respuesta_correcta"] = letra
             respuesta["descarte_opciones"] = {k: v for k, v in respuesta["descarte_opciones"].items() if k != letra}
@@ -166,7 +187,7 @@ class Sistema:
         self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades, "eleccion": eleccion,
                                 "pasajes_en_prompt": len(usados), "pasajes_entregados": len(entregados),
                                 "expansion": self.ultima_expansion, "verificacion": verificacion,
-                                "reintento_json": reintento}
+                                "reintento_json": reintento, "verificacion_nli": nli}
         return respuesta
 
     def _verificar(self, entrada, usados, evidencia, borrador):

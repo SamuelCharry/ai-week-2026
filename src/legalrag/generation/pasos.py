@@ -33,16 +33,17 @@ def mensajes_hipotesis(entrada):
             {"role": "user", "content": f"{INSTRUCCION_HIPOTESIS}\n\nPREGUNTA ({entrada.get('area', '')})\n{pregunta}"}]
 
 
-def evidencia_debil(pasajes, umbral, normativos=3):
-    """(débil, motivo) según CRAG: mejor puntaje del reranker bajo el umbral o sin normas entre los primeros."""
+def evidencia_debil(pasajes, umbral, normativos=3, criterio="ambos"):
+    """(débil, motivo) según CRAG. criterio: "puntaje" (mejor puntaje del reranker bajo el umbral), "normas"
+    (ninguna ley, decreto o código entre los primeros) o "ambos" (cualquiera de los dos)."""
     from legalrag.retrieval.hibrido import es_normativo
 
     if not pasajes:
         return True, "sin_pasajes"
     mejor = max(p["score"] for p in pasajes)
-    if umbral is not None and mejor < umbral:
+    if criterio in ("puntaje", "ambos") and umbral is not None and mejor < umbral:
         return True, f"puntaje_maximo_{mejor:.2f}"
-    if not any(es_normativo(p.get("tipo")) for p in pasajes[:normativos]):
+    if criterio in ("normas", "ambos") and not any(es_normativo(p.get("tipo")) for p in pasajes[:normativos]):
         return True, "sin_normas_entre_los_primeros"
     return False, None
 

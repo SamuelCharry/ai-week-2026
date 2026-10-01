@@ -6,6 +6,7 @@ los pasajes entregados con su encabezado (respaldo_en_pasajes). El legal_basis s
 
     python3 src/comparar.py --recuperacion
     python3 src/comparar.py --recuperacion --encoders bge-m3 e5-large qwen3-emb-0.6b
+    python3 src/comparar.py --rerankers bge qwen3-0.6b qwen3-4b   # mismo recorrido, solo cambia el reranker
 
 Etapa 2 · sistema completo con el evaluador oficial (cerradas 20, citas 20, abstención 10; con
 --ragas también texto libre 30). Cada variante guarda sus respuestas y se reanuda si se corta.
@@ -25,6 +26,7 @@ data/experimentos/corpus_definitivo/indices/<modelo>/).
 import argparse
 import copy
 import csv
+import gc
 import json
 import subprocess
 import sys
@@ -84,6 +86,26 @@ DECODERS = {
 
 QWEN3_DIRECTA = {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True}
 
+RERANKERS = {
+    "bge": {"repo_id": "BAAI/bge-reranker-v2-m3", "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"},
+    "qwen3-0.6b": {"repo_id": "Qwen/Qwen3-Reranker-0.6B", "revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+                   "parametros": 595776512, "licencia": "apache-2.0"},
+    # ~8 GB en bf16: no cabe junto a Qwen3-8B en bf16 en 24 GB; se mide primero solo en recuperación.
+    "qwen3-4b": {"repo_id": "Qwen/Qwen3-Reranker-4B", "revision": "22e683669bc0f0bd69640a1354a6d0aebcfeede5",
+                 "parametros": 4021784576, "licencia": "apache-2.0"},
+}
+
+VERIFICADOR_NLI = {"modelo": {"repo_id": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
+                              "revision": "b5113eb38ab63efdd7f280f8c144ea8b13f978ce", "parametros": 278812163,
+                              "licencia": "mit"},
+                   "modo": "registrar", "umbral_implica": 0.5, "umbral_contradice": 0.9}
+
+# Expansión solo cuando el reranker no encontró nada convincente y la pregunta no nombra una norma del corpus
+# (Adaptive-RAG); en la corrida anterior el criterio "ambos" la activó en 26 de 35 preguntas de texto libre.
+CALIBRADA = {**QWEN3_DIRECTA, "recuperacion.expansion": "debil", "recuperacion.criterio_evidencia_debil": "puntaje",
+             "recuperacion.umbral_evidencia_debil": 0.0, "recuperacion.expansion_sin_norma_nombrada": True,
+             "generacion.regenerar_json": True}
+
 # Variantes del sistema: rutas "seccion.clave" sobre configs/sistema.json.
 VARIANTES_SISTEMA = {
     "qwen25-7b": {},
@@ -111,6 +133,13 @@ VARIANTES_SISTEMA = {
     "qwen3-8b-mejoras-cove": {**QWEN3_DIRECTA, "recuperacion.expansion": "debil",
                               "recuperacion.umbral_evidencia_debil": 0.0, "generacion.regenerar_json": True,
                               "generacion.verificar": True},
+    # Ronda 2: expansión calibrada, recuperación por opción en cerradas, verificador NLI y reranker Qwen3.
+    "qwen3-8b-calibrada": CALIBRADA,
+    "qwen3-8b-calibrada-opciones": {**CALIBRADA, "recuperacion.recuperar_por_opcion": True},
+    "qwen3-8b-calibrada-opciones-nli": {**CALIBRADA, "recuperacion.recuperar_por_opcion": True,
+                                        "generacion.verificador_nli": VERIFICADOR_NLI},
+    "qwen3-8b-calibrada-opciones-rr06": {**CALIBRADA, "recuperacion.recuperar_por_opcion": True,
+                                         "recuperacion.reranker": RERANKERS["qwen3-0.6b"]},
     "mistral-7b": {"generacion.decoder": DECODERS["mistral-7b"]},
     "phi4-mini": {"generacion.decoder": DECODERS["phi4-mini"]},
     "gemma3-4b": {"generacion.decoder": DECODERS["gemma3-4b"]},
@@ -304,6 +333,9 @@ def informe(filas, detalles):
             texto_pasos.append(f"reintentos JSON {pasos['reintentos_json']} (mejoraron {pasos.get('reintento_mejoro', 0)})")
         if pasos.get("verificadas"):
             texto_pasos.append(f"verificadas {pasos['verificadas']} (aceptadas {pasos.get('verificacion_aceptada', 0)})")
+        if pasos.get("nli_oraciones"):
+            texto_pasos.append(f"NLI: respaldadas {pasos.get('nli_respaldadas', 0)}/{pasos['nli_oraciones']} oraciones, "
+                               f"contradichas {pasos.get('nli_contradichas', 0)}, quitadas {pasos.get('nli_quitadas', 0)}")
         delta = None
         if f.get("total") is not None and base.get("total") is not None and f is not base:
             delta = f"{f['total'] - base['total']:+.2f}"
@@ -344,6 +376,49 @@ def informe(filas, detalles):
                "", "+ mejora · - empeora · ~ cambia sin efecto en el puntaje. Detalle por pregunta en "
                "data/comparacion/<variante>/por_pregunta.csv"]
     return "\n".join(l.rstrip() for l in lineas)
+
+
+def comparar_rerankers(config, nombres, ids):
+    """Etapa 1b: el sistema de recuperación actual con cada reranker, con y sin recuperación por opción.
+    Sin decoder, así que el reranker de 4B cabe en la GPU."""
+    from legalrag.evaluation.entrega import cargar_jsonl
+    from legalrag.evaluation.recuperacion import evaluar
+    from legalrag.retrieval.hibrido import RecuperadorHibrido, crear_reordenador
+
+    preguntas = [p for p in cargar_jsonl(RAIZ / config["entradas"]["sample"]) if not ids or p["id"] in ids]
+    rec = config["recuperacion"]
+    recuperador = RecuperadorHibrido(RAIZ, {**rec, "usar_reranker": False})
+    print("Cargando índice y encoder...", flush=True)
+    recuperador.abrir()
+    filas = []
+    try:
+        for nombre in nombres:
+            # Libera el reranker anterior antes de cargar el siguiente (el de 4B ocupa ~8 GB).
+            recuperador.reordenador = None
+            gc.collect()
+            if "torch" in sys.modules:
+                sys.modules["torch"].cuda.empty_cache()
+            print(f"\n[{nombre}] cargando {RERANKERS[nombre]['repo_id']}...", flush=True)
+            recuperador.reordenador = crear_reordenador(RERANKERS[nombre], rec["dtype"], rec["max_tokens_reranker"],
+                                                        rec["lote_reranker"], rec.get("dispositivo", "cuda"))
+            for variante, cambios in (("sistema", {}), ("+por_opcion", {"recuperar_por_opcion": True})):
+                recuperador.config = {**rec, "reranker": RERANKERS[nombre], **cambios}
+                resultado = evaluar(recuperador, preguntas, recuperador.citaciones)
+                fallan = [d["id"] for d in resultado["detalle"] if not d["respaldo_en_pasajes"]]
+                fila = {"reranker": nombre, "variante": variante,
+                        **{k: round(v, 3) if isinstance(v, float) else v for k, v in resultado.items()
+                           if k not in ("detalle", "referencia_E06_R03")},
+                        "sin_norma_en_pasajes": " ".join(map(str, fallan))}
+                filas.append(fila)
+                print(f"  {variante:12} top10={fila['respaldo_literal_top10']} MRR={fila['MRR_cita_top10']} "
+                      f"pasajes={fila['respaldo_en_pasajes']} {fila['segundos_promedio']} s · sin la norma: {fallan}",
+                      flush=True)
+    finally:
+        recuperador.cerrar()
+    escribir_csv(SALIDA / "rerankers.csv", filas)
+    print("\nRerankers (mismo índice y mismo recorrido; solo cambia el reordenamiento)")
+    imprimir(filas, ["reranker", "variante", "respaldo_literal_top10", "MRR_cita_top10", "respaldo_en_pasajes",
+                     "segundos_promedio", "sin_norma_en_pasajes"])
 
 
 def comparar_sistema(config, variantes, ids, ragas, cache=True):
@@ -387,6 +462,12 @@ def comparar_sistema(config, variantes, ids, ragas, cache=True):
                                  if registro.get("reintento_json") else None)):
                 if actuo:
                     pasos[paso] = pasos.get(paso, 0) + 1
+            nli = registro.get("verificacion_nli") or {}
+            for clave in ("oraciones", "respaldadas", "contradichas"):
+                if nli.get(clave):
+                    pasos[f"nli_{clave}"] = pasos.get(f"nli_{clave}", 0) + nli[clave]
+            if nli.get("quitadas"):
+                pasos["nli_quitadas"] = pasos.get("nli_quitadas", 0) + len(nli["quitadas"])
         fila["problemas"] = json.dumps(problemas, ensure_ascii=False)
         fila["pasos"] = json.dumps(pasos, ensure_ascii=False)
         if not ids:
@@ -421,14 +502,18 @@ def main():
     ap.add_argument("--variantes", nargs="+", default=["qwen25-7b", "qwen3-4b-2507"], choices=list(VARIANTES_SISTEMA))
     ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas (prueba corta)")
     ap.add_argument("--ragas", action="store_true", help="incluye el juez de texto libre (OPENROUTER_API_KEY)")
+    ap.add_argument("--rerankers", nargs="+", choices=list(RERANKERS),
+                    help="etapa 1b: compara rerankers sobre la recuperación del sistema (sin decoder)")
     ap.add_argument("--sin-cache", action="store_true",
                     help="genera todo de nuevo en cada variante (por defecto reutiliza generaciones con el mismo prompt)")
     args = ap.parse_args()
-    if not (args.recuperacion or args.sistema):
-        ap.error("indicar --recuperacion, --sistema o ambas")
+    if not (args.recuperacion or args.sistema or args.rerankers):
+        ap.error("indicar --recuperacion, --rerankers, --sistema o varias")
     config = leer_config()
     if args.recuperacion:
         comparar_recuperacion(config, args.encoders, args.ids)
+    if args.rerankers:
+        comparar_rerankers(config, list(dict.fromkeys(args.rerankers)), args.ids)
     if args.sistema:
         # Una variante repetida en el comando se corre una sola vez.
         comparar_sistema(config, list(dict.fromkeys(args.variantes)), args.ids, args.ragas, cache=not args.sin_cache)

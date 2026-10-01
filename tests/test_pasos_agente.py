@@ -136,5 +136,90 @@ class ReintentoYVerificacion(unittest.TestCase):
         self.assertEqual(gravedad(None), gravedad("citas_saneadas"))
 
 
+class Calibracion(unittest.TestCase):
+    def test_criterio_puntaje_ignora_normas(self):
+        sin_normas = [pasaje("s", tipo="sentencia", score=2.0)] * 3
+        self.assertTrue(pasos.evidencia_debil(sin_normas, 0.0, criterio="ambos")[0])
+        self.assertFalse(pasos.evidencia_debil(sin_normas, 0.0, criterio="puntaje")[0])
+        self.assertTrue(pasos.evidencia_debil([pasaje("s", score=-1.0)], 0.0, criterio="puntaje")[0])
+
+    def test_no_expande_si_la_pregunta_nombra_una_norma(self):
+        config = {"recuperacion": {"expansion": "debil", "umbral_evidencia_debil": 0.0,
+                                   "criterio_evidencia_debil": "puntaje", "expansion_sin_norma_nombrada": True},
+                  "generacion": {}}
+        r = Recuperador([pasaje("ley_472_1998", score=-3.0)], [pasaje("otra")])
+        r.ultima_traza = {"normas_nombradas": {"ley_472_1998": [2]}}
+        s = sistema(config, r, Decoder())
+        s.recuperar(ABIERTA)
+        self.assertEqual(r.expansiones, [None])
+        self.assertEqual(s.ultima_expansion["motivo"], "norma_nombrada")
+
+
+class Fragmentos:
+    def __init__(self):
+        self.consultas = []
+
+    def bm25(self, texto, k, doc_ids=None):
+        self.consultas.append(texto)
+        return [(1, 1.0)]
+
+    def filas(self, ids):
+        return []
+
+
+class PorOpcion(unittest.TestCase):
+    def ranking(self, entrada, **config):
+        from legalrag.retrieval.hibrido import RecuperadorHibrido
+
+        r = RecuperadorHibrido(".", {"bm25_top": 5, "denso_top": 5, "rrf_k": 60, "rerank_top": 5, "usar_denso": False,
+                                     "usar_reranker": False, **config})
+        r.fragmentos = Fragmentos()
+        r.ranking(entrada)
+        return r.fragmentos.consultas
+
+    def test_una_busqueda_por_opcion_en_cerradas(self):
+        cerrada = {**CERRADA, "pregunta": "¿Qué vicio configura?", "opciones": {"A": "Falsa motivación", "B": "Usurpación"}}
+        consultas = self.ranking(cerrada, recuperar_por_opcion=True)
+        self.assertEqual(len(consultas), 3)
+        self.assertIn("¿Qué vicio configura?\nFalsa motivación", consultas)
+        self.assertEqual(len(self.ranking(cerrada)), 1)
+        self.assertEqual(len(self.ranking(ABIERTA, recuperar_por_opcion=True)), 1)
+
+
+class VerificadorNLIFalso(unittest.TestCase):
+    def verificador(self, modo, puntajes):
+        from legalrag.citations.respaldo_nli import VerificadorNLI
+
+        v = VerificadorNLI({"modo": modo, "umbral_implica": 0.5, "umbral_contradice": 0.9})
+        v.puntuar = lambda oraciones, premisas: puntajes[:len(oraciones)]
+        return v
+
+    class Citas:
+        @staticmethod
+        def extract(texto):
+            return {("ley", "472", "1998")} if "Ley 472" in texto else set()
+
+    def respuesta(self):
+        return {"formato": "semi_open", "respuesta": "Procede la acción popular según la Ley 472 de 1998. "
+                "El plazo es de cinco años. La acción la conoce el juez civil.",
+                "palabras_clave": ["acción popular"], "referencia_legal": "Ley 472 de 1998"}
+
+    def test_registrar_no_cambia_la_respuesta(self):
+        r = self.respuesta()
+        v = self.verificador("registrar", [(0.9, 0.0, 1), (0.1, 0.95, 2), (0.2, 0.1, 3)])
+        registro = v.verificar(r, [pasaje("ley_472_1998")], self.Citas)
+        self.assertEqual(r, self.respuesta())
+        self.assertEqual((registro["oraciones"], registro["respaldadas"], registro["contradichas"]), (3, 1, 1))
+
+    def test_quita_contradichas_sin_tocar_citas(self):
+        r = self.respuesta()
+        # La primera oración (con cita) también sale contradicha, pero las citas no se tocan.
+        v = self.verificador("quitar_contradichas", [(0.1, 0.99, 1), (0.1, 0.95, 2), (0.2, 0.1, 3)])
+        registro = v.verificar(r, [pasaje("ley_472_1998")], self.Citas)
+        self.assertEqual(r["respuesta"], "Procede la acción popular según la Ley 472 de 1998. "
+                                         "La acción la conoce el juez civil.")
+        self.assertEqual(registro["quitadas"], ["El plazo es de cinco años."])
+
+
 if __name__ == "__main__":
     unittest.main()
