@@ -628,6 +628,11 @@ def _siguiente(numero, anterior):
     if "." in numero and "." in anterior:
         a, b = numero.split("."), anterior.split(".")
         if all(n.isdigit() for n in a + b):
+            # Numeración jerárquica de los decretos únicos: tras 1.2.1.23.17 viene 1.2.1.23.1.1 (subsección nueva,
+            # un nivel más adentro). Un cambio de profundidad dentro del mismo libro también continúa la secuencia;
+            # comparar solo como tuplas rechazaba la subsección entera (DUR 1625 de 2016: 713 de ~3.310 artículos).
+            if len(a) != len(b):
+                return a[0] == b[0] and a != b
             return tuple(map(int, a)) > tuple(map(int, b))
     return False
 
