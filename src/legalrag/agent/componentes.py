@@ -88,11 +88,22 @@ class Sistema:
         self.ultima_expansion = None
         if not rec.get("expansion") or entrada["formato"] == "multiple_choice":
             return pasajes
+        from legalrag.generation import politica
+
         agente = rec.get("agente_expansion", "hipotesis")
+        bloque = politica.bloque_pasajes(pasajes[:5], self.recuperador.evidencia, rec.get("max_caracteres_iterativo", 600)) \
+            if agente == "iterativo" or rec["expansion"] == "insuficiente" else None
+        suficiencia = None
+        if rec["expansion"] == "insuficiente":
+            # Contexto suficiente (Joren et al., ICLR 2025): solo se reformula si los primeros pasajes no bastan.
+            inicio = time.perf_counter()
+            suficiencia = self.decoder.probabilidad_si(pasos.mensajes_suficiencia(entrada, bloque))
+            self.tiempos["suficiencia"] = time.perf_counter() - inicio
+            if suficiencia >= rec.get("umbral_suficiencia", 0.5):
+                self.ultima_expansion = {"suficiencia": round(suficiencia, 3), "reformulo": False}
+                return pasajes
         if agente == "iterativo":
-            from legalrag.generation import politica
-            mensajes = pasos.mensajes_iterativo(entrada, politica.bloque_pasajes(
-                pasajes[:5], self.recuperador.evidencia, rec.get("max_caracteres_iterativo", 600)))
+            mensajes = pasos.mensajes_iterativo(entrada, bloque)
         elif agente == "normas":
             mensajes = pasos.mensajes_reformulador(entrada)
         else:
@@ -104,7 +115,8 @@ class Sistema:
         expandidos = self.recuperador.buscar(entrada, expansion=texto)
         self.tiempos["recuperacion_2"] = time.perf_counter() - inicio
         self.ultima_expansion = {"agente": agente, "hipotesis": texto, "docs_antes": [p["doc_id"] for p in pasajes],
-                                 "docs_despues": [p["doc_id"] for p in expandidos]}
+                                 "docs_despues": [p["doc_id"] for p in expandidos], "reformulo": True,
+                                 "suficiencia": None if suficiencia is None else round(suficiencia, 3)}
         return expandidos
 
     def responder(self, entrada, pasajes):

@@ -56,3 +56,20 @@ def mensajes_iterativo(entrada, bloque_pasajes):
                 "\n\nCon base en esos pasajes, responde en máximo tres oraciones y nombra la figura jurídica y las normas "
                 "colombianas que regulan el caso (tipo, número y año, y el artículo si aparece). Si los pasajes no "
                 "bastan, nombra la figura jurídica que habría que buscar.")}]
+
+
+SISTEMA_SUFICIENCIA = ("Eres un abogado colombiano que decide si unos pasajes bastan para responder una pregunta "
+                       "jurídica con fundamento. Respondes solo «Sí» o «No».")
+
+
+def mensajes_suficiencia(entrada, bloque_pasajes):
+    """Juicio de contexto suficiente (Joren et al., ICLR 2025, Google): ¿los pasajes contienen lo necesario para
+    responder? Decide si el reformulador actúa, como pide el enunciado: la iteración extra solo cuando la primera
+    recuperación resulte insuficiente. Se mide P(«Sí») del siguiente token, sin generar texto."""
+    opciones = "\n".join(f"{letra}) {texto}" for letra, texto in (entrada.get("opciones") or {}).items())
+    pregunta = entrada["pregunta"].strip() + ("\n" + opciones if opciones else "")
+    return [{"role": "system", "content": SISTEMA_SUFICIENCIA},
+            {"role": "user", "content": (
+                f"PASAJES\n{bloque_pasajes}\n\nPREGUNTA ({entrada.get('area', '')})\n{pregunta}\n\n¿Los pasajes "
+                "contienen la norma o la información jurídica necesaria para responder la pregunta con fundamento? "
+                "Responde solo «Sí» o «No».")}]

@@ -163,6 +163,18 @@ class DecoderTransformers:
             gancho.remove()
         return logits
 
+    def probabilidad_si(self, mensajes, si="Sí", no="No"):
+        """P(«Sí») frente a «No» como siguiente token de la respuesta (float32): un juicio sin generar texto."""
+        import torch
+
+        entrada_tokens = self._tokens(mensajes, "")
+        ids = [self.tokenizer.encode(palabra, add_special_tokens=False)[0] for palabra in (si, no)]
+
+        def calcular():
+            return torch.softmax(self._logits_precisos(entrada_tokens, ids), dim=0)[0].item()
+
+        return self._en_cache(["si_no_fp32", list(entrada_tokens), ids], calcular)
+
     def generar(self, entrada, pasajes, evidencia, prefijo="{", repetition_penalty=None, extra=None):
         """Objeto JSON de la respuesta. `repetition_penalty` reemplaza el de la configuración (reintento
         cuando el JSON salió inválido); `extra` es un bloque adicional del prompt."""

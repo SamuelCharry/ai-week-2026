@@ -1,5 +1,5 @@
 {
-  "notas": "Cerberus Mark 4: Mark 3 más velocidad, sin cambiar los agentes. BM25 sin palabras vacías, la segunda búsqueda del reformulador reutiliza los rankings y los puntajes del reranker de la primera, lotes de 16 en el reranker y tope de tokens por formato. Cada respuesta registra el tiempo de cada etapa.",
+  "notas": "Cerberus Mark 4: Mark 3 más juicio de contexto suficiente y velocidad. El reformulador solo actúa si Qwen3-8B juzga que los 5 primeros pasajes no bastan (Sufficient Context, Google, ICLR 2025; paso 3 del ciclo del enunciado). BM25 sin palabras vacías, la segunda búsqueda reutiliza los rankings y puntajes del reranker de la primera, lotes de 16 en el reranker y tope de tokens por formato. Cada respuesta registra el tiempo de cada etapa y P(contexto suficiente).",
   "implementacion": "legalrag.agent.componentes:Sistema",
   "entradas": {
     "sample": "data/oficial/data/sample_50.jsonl",
@@ -58,13 +58,14 @@
     "max_por_documento": 3,
     "min_normativos": 2,
     "ajustes_solo_texto_libre": true,
-    "expansion": "siempre",
+    "expansion": "insuficiente",
     "agente_expansion": "iterativo",
     "expansion_articulos": true,
     "max_tokens_hipotesis": 120,
     "reservar_expansion": 2,
     "bm25_sin_vacias": true,
-    "memo_recuperacion": true
+    "memo_recuperacion": true,
+    "umbral_suficiencia": 0.5
   },
   "generacion": {
     "decoder": {

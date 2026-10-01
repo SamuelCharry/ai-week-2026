@@ -62,6 +62,19 @@ class Expansion(unittest.TestCase):
         self.assertIn("PASAJES DE UNA PRIMERA BÚSQUEDA\n[1] Sentencia X", vistos[0])
         self.assertEqual(r.expansiones[1], "Acción popular, Ley 472 de 1998.")
 
+    def test_reformula_solo_si_el_contexto_no_alcanza(self):
+        config = {"recuperacion": {"expansion": "insuficiente", "agente_expansion": "iterativo",
+                                   "umbral_suficiencia": 0.5}, "generacion": {}}
+        for suficiencia, reformula in ((0.9, False), (0.2, True)):
+            r, d = Recuperador([pasaje("sentencia_x", tipo="sentencia")], [pasaje("ley_472_1998")]), Decoder()
+            d.probabilidad_si = lambda mensajes, p=suficiencia: p
+            with mock.patch("legalrag.generation.politica.bloque_pasajes", lambda p, e, n: "[1] Sentencia X"):
+                s = sistema(config, r, d)
+                s.recuperar(ABIERTA)
+            self.assertEqual(len(r.expansiones) == 2, reformula)
+            self.assertEqual(s.ultima_expansion["reformulo"], reformula)
+            self.assertEqual(s.ultima_expansion["suficiencia"], suficiencia)
+
     def test_siempre_y_cerradas(self):
         fuerte = [pasaje("ley_472_1998", score=4.0)]
         r = Recuperador(fuerte, [pasaje("otra")])

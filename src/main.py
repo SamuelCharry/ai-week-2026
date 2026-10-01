@@ -290,6 +290,13 @@ def tiempos(salida):
         for etapa, segundos in ((f.get("registro") or {}).get("tiempos") or {}).items():
             por_etapa.setdefault(etapa, []).append(segundos)
     lineas.append("  por formato: " + " · ".join(f"{k} {sum(v) / len(v):.1f} s" for k, v in sorted(por_formato.items())))
+    expansiones = [(f.get("registro") or {}).get("expansion") for f in filas]
+    expansiones = [e for e in expansiones if e]
+    if expansiones:
+        juzgadas = [e["suficiencia"] for e in expansiones if e.get("suficiencia") is not None]
+        lineas.append(f"  reformulador: actuó en {sum(1 for e in expansiones if e.get('reformulo', True))} de "
+                      f"{len(expansiones)} preguntas de texto libre"
+                      + (f" · P(contexto suficiente) promedio {sum(juzgadas) / len(juzgadas):.2f}" if juzgadas else ""))
     if por_etapa:
         lineas.append("  por etapa (promedio donde actúa): " +
                       " · ".join(f"{k} {sum(v) / len(v):.1f} s ({len(v)})" for k, v in por_etapa.items()))
