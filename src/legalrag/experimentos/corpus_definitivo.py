@@ -146,13 +146,16 @@ def chunk_rows(doc, text):
     for part in segmentar_documento(doc, text, max_chars=WINDOW_CHARS, solapamiento=OVERLAP_CHARS):
         if not part["apta_para_busqueda"] or not part["texto"].strip():
             continue
-        # La cabecera es señal de búsqueda, no se añade al pasaje literal.
-        header = " | ".join(str(x) for x in [doc["titulo"], part.get("seccion"),
-                                     "Artículo " + str(part["articulo"]) if part.get("articulo") else None] if x)
+        # La cabecera es señal de búsqueda, no se añade al pasaje literal. En Markdown (norma > sección >
+        # artículo) para que BM25 y el encoder vean la jerarquía del documento; el pasaje entregado sigue siendo
+        # el tramo literal del texto canónico (.txt), con sus posiciones.
+        header = "\n".join(x for x in [f"# {doc['titulo']}",
+                                       f"## {part['seccion']}" if part.get("seccion") else None,
+                                       f"### Artículo {part['articulo']}" if part.get("articulo") else None] if x)
         rows.append((doc["doc_id"], doc["titulo"], doc["tipo"], part.get("articulo"),
                      part.get("seccion"), part["unidad_id"], part["unidad_inicio"],
                      part["unidad_fin"], part["inicio"], part["fin"], part["texto"],
-                     header + "\n" + part["texto"], json.dumps(part["avisos"], ensure_ascii=False)))
+                     header + "\n\n" + part["texto"], json.dumps(part["avisos"], ensure_ascii=False)))
     return rows
 
 
