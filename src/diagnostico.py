@@ -52,6 +52,14 @@ def main():
             fila["letra"], fila["correcta"] = respuesta.get("respuesta_correcta"), ref.get("respuesta_correcta")
             probs = registro.get("probabilidades_letras") or {}
             fila["prob_correcta"] = round(probs.get(ref.get("respuesta_correcta"), 0), 2) if probs else None
+            # Margen entre las dos letras más probables: si las incorrectas tienen margen alto, el modelo se equivoca
+            # con seguridad y una segunda opinión pesa poco; si es bajo, es duda.
+            orden = sorted(probs.values(), reverse=True)
+            fila["margen"] = round(orden[0] - orden[1], 2) if len(orden) > 1 else None
+            segundo = registro.get("letras_segundo") or {}
+            fila["segundo"] = max(sorted(segundo), key=segundo.get) if segundo else None
+            juez = registro.get("juez_evidencia") or []
+            fila["juez_descarta"] = sum(j["si"] < 0.5 for j in juez) if juez else None
             fila["acierto"] = fila["letra"] == fila["correcta"]
         if not referencia:
             causa = "sin cita extraíble en el fundamento (doctrina o prosa)"
@@ -68,7 +76,8 @@ def main():
         filas.append(fila)
 
     for f in filas:
-        extra = (f" letra={f['letra']} correcta={f['correcta']} p(correcta)={f['prob_correcta']}"
+        extra = (f" letra={f['letra']} correcta={f['correcta']} p(correcta)={f['prob_correcta']} margen={f['margen']}"
+                 + (f" segundo={f['segundo']}" if f.get("segundo") else "")
                  if f["formato"] == "multiple_choice" else "")
         print(f"{f['id']:5} {f['formato']:15} {f['area']:24} ref_en_pasajes={str(f['ref_en_evidencia']):5} "
               f"ref_citada={str(f['ref_citada']):5}{extra}  [{f['problema']}]")

@@ -100,6 +100,20 @@ VERIFICADOR_NLI = {"modelo": {"repo_id": "MoritzLaurer/mDeBERTa-v3-base-xnli-mul
                               "licencia": "mit"},
                    "modo": "registrar", "umbral_implica": 0.5, "umbral_contradice": 0.9}
 
+# Segundos agentes (otra familia que Qwen, ≤ 8.000 M). Llama-3.1-8B pide aceptar su licencia en Hugging Face
+# (huggingface-cli login); Salamandra-7B no, y es nativo en español. Ambos los sugiere el enunciado (§3.1).
+SEGUNDOS = {
+    "llama31-8b": {"repo_id": "meta-llama/Llama-3.1-8B-Instruct", "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+                   "parametros": 8030261248, "licencia": "llama3.1",
+                   "admitido_por_enunciado": "§3.1 del enunciado: opción sugerida meta-llama/Llama-3.1-8B-Instruct"},
+    "salamandra-7b": DECODERS["salamandra-7b"],
+}
+
+
+def multiagente(segundo, juez=True, opinion=True):
+    return {**QWEN3_DIRECTA, "agentes": {"segundo": SEGUNDOS[segundo], "juez_evidencia": juez, "segunda_opinion": opinion}}
+
+
 # Expansión solo cuando el reranker no encontró nada convincente y la pregunta no nombra una norma del corpus
 # (Adaptive-RAG); en la corrida anterior el criterio "ambos" la activó en 26 de 35 preguntas de texto libre.
 CALIBRADA = {**QWEN3_DIRECTA, "recuperacion.expansion": "debil", "recuperacion.criterio_evidencia_debil": "puntaje",
@@ -140,6 +154,13 @@ VARIANTES_SISTEMA = {
                                         "generacion.verificador_nli": VERIFICADOR_NLI},
     "qwen3-8b-calibrada-opciones-rr06": {**CALIBRADA, "recuperacion.recuperar_por_opcion": True,
                                          "recuperacion.reranker": RERANKERS["qwen3-0.6b"]},
+    # Ronda 3: multiagente por etapas sobre qwen3-8b-letra-directa (agent.componentes.preparar_lote).
+    "multiagente-llama": multiagente("llama31-8b"),
+    "multiagente-llama-juez": multiagente("llama31-8b", opinion=False),
+    "multiagente-llama-opinion": multiagente("llama31-8b", juez=False),
+    "multiagente-salamandra": multiagente("salamandra-7b"),
+    "multiagente-salamandra-juez": multiagente("salamandra-7b", opinion=False),
+    "multiagente-salamandra-opinion": multiagente("salamandra-7b", juez=False),
     "mistral-7b": {"generacion.decoder": DECODERS["mistral-7b"]},
     "phi4-mini": {"generacion.decoder": DECODERS["phi4-mini"]},
     "gemma3-4b": {"generacion.decoder": DECODERS["gemma3-4b"]},
@@ -341,6 +362,11 @@ def informe(filas, detalles):
             texto_pasos.append(f"reintentos JSON {pasos['reintentos_json']} (mejoraron {pasos.get('reintento_mejoro', 0)})")
         if pasos.get("verificadas"):
             texto_pasos.append(f"verificadas {pasos['verificadas']} (aceptadas {pasos.get('verificacion_aceptada', 0)})")
+        if pasos.get("juzgadas"):
+            texto_pasos.append(f"juez: {pasos['juzgadas']} preguntas, descartó {pasos.get('pasajes_descartados', 0)} pasajes")
+        if pasos.get("segunda_opinion"):
+            texto_pasos.append(f"segunda opinión: {pasos['segunda_opinion']} cerradas, cambió la letra en "
+                               f"{pasos.get('opinion_cambio_letra', 0)}")
         if pasos.get("nli_oraciones"):
             texto_pasos.append(f"NLI: respaldadas {pasos.get('nli_respaldadas', 0)}/{pasos['nli_oraciones']} oraciones, "
                                f"contradichas {pasos.get('nli_contradichas', 0)}, quitadas {pasos.get('nli_quitadas', 0)}")
@@ -470,6 +496,16 @@ def comparar_sistema(config, variantes, ids, ragas, cache=True):
                                  if registro.get("reintento_json") else None)):
                 if actuo:
                     pasos[paso] = pasos.get(paso, 0) + 1
+            if registro.get("juez_evidencia"):
+                pasos["juzgadas"] = pasos.get("juzgadas", 0) + 1
+                pasos["pasajes_descartados"] = pasos.get("pasajes_descartados", 0) + sum(
+                    j["si"] < 0.5 for j in registro["juez_evidencia"])
+            if registro.get("letras_segundo") and registro.get("letras_principal"):
+                pasos["segunda_opinion"] = pasos.get("segunda_opinion", 0) + 1
+                principal = registro["letras_principal"]
+                final = registro.get("probabilidades_letras") or principal
+                if max(sorted(principal), key=principal.get) != max(sorted(final), key=final.get):
+                    pasos["opinion_cambio_letra"] = pasos.get("opinion_cambio_letra", 0) + 1
             nli = registro.get("verificacion_nli") or {}
             for clave in ("oraciones", "respaldadas", "contradichas"):
                 if nli.get(clave):

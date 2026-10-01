@@ -221,5 +221,85 @@ class VerificadorNLIFalso(unittest.TestCase):
         self.assertEqual(registro["quitadas"], ["El plazo es de cinco años."])
 
 
+class Multiagente(unittest.TestCase):
+    def test_orden_y_filtro_del_juez(self):
+        p = [pasaje(f"d{i}") for i in range(4)]
+        ordenados, aceptados = pasos.ordenar_por_juez(p, [0.2, 0.9, 0.6, 0.1])
+        self.assertEqual([x["doc_id"] for x in ordenados], ["d1", "d2", "d0", "d3"])
+        self.assertEqual([x["doc_id"] for x in aceptados], ["d1", "d2", "d0"])  # nunca menos de 3
+        _, aceptados = pasos.ordenar_por_juez(p, [0.7, 0.9, 0.6, 0.1])
+        self.assertEqual([x["doc_id"] for x in aceptados], ["d1", "d0", "d2"])
+
+    def test_combinacion_por_confianza(self):
+        combinada = pasos.combinar_probabilidades({"A": 0.6, "B": 0.4}, {"A": 0.2, "B": 0.8})
+        self.assertAlmostEqual(combinada["B"], (0.6 * 0.4 + 0.8 * 0.8) / 1.4)
+        self.assertGreater(combinada["B"], combinada["A"])  # el más seguro pesa más
+
+    def test_etapas_segundo_agente_antes_del_principal(self):
+        eventos = []
+
+        class Principal:
+            modelo = None
+
+            def abrir(self):
+                eventos.append("abre principal")
+                self.modelo = object()
+
+            def cerrar(self):
+                eventos.append("cierra principal")
+                self.modelo = None
+
+            def seleccionar(self, entrada, pasajes, evidencia):
+                self.vistos = [p["doc_id"] for p in pasajes]
+                return pasajes
+
+            def probabilidades_letras(self, entrada, pasajes, evidencia, prefijo=None):
+                return {"A": 0.6, "B": 0.4}
+
+            def generar(self, entrada, pasajes, evidencia, prefijo="{", **otros):
+                return prefijo + "x"
+
+        class Segundo:
+            def __init__(self, config):
+                eventos.append("crea segundo " + config["decoder"]["repo_id"])
+
+            def abrir(self):
+                eventos.append("abre segundo")
+
+            def cerrar(self):
+                eventos.append("cierra segundo")
+
+            def probabilidad_si(self, mensajes):
+                return 0.9 if "útil" in mensajes[-1]["content"] else 0.1
+
+            def seleccionar(self, entrada, pasajes, evidencia):
+                return pasajes
+
+            def probabilidades_letras(self, entrada, pasajes, evidencia):
+                return {"A": 0.1, "B": 0.9}
+
+        pasajes = [{**pasaje(f"d{i}"), "texto": "útil" if i == 3 else "ruido"} for i in range(4)]
+        config = {"recuperacion": {}, "generacion": {"politica": {}, "letra_por_probabilidad": True},
+                  "agentes": {"segundo": {"repo_id": "otro"}, "juez_evidencia": True, "segunda_opinion": True}}
+        s = sistema(config, Recuperador(pasajes, pasajes), Principal())
+        s.preparado = {}
+        cerrada = {**CERRADA, "opciones": {"A": "x", "B": "y"}}
+
+        def final(entrada, crudo, pasajes, evidencia, politica, validador):
+            return ({"id": entrada["id"], "formato": entrada["formato"], "respuesta_correcta": "A",
+                     "descarte_opciones": {"A": "-", "B": "-"}}, {"problema": None})
+
+        with mock.patch("legalrag.generation.decoder.DecoderTransformers", Segundo), \
+                mock.patch("legalrag.citations.verificacion.respuesta_final", final):
+            tiempos = s.preparar_lote([cerrada])
+            respuesta = s.responder(cerrada, s.recuperar(cerrada))
+        self.assertEqual(eventos, ["crea segundo otro", "abre segundo", "cierra segundo", "abre principal"])
+        self.assertIn(cerrada["id"], tiempos)
+        self.assertEqual(s.preparado[cerrada["id"]]["pasajes"][0]["doc_id"], "d3")  # el juez lo subió
+        self.assertEqual(s.decoder.vistos[0], "d3")
+        self.assertEqual(respuesta["respuesta_correcta"], "B")  # la segunda opinión, más segura, inclina la letra
+        self.assertEqual(s.ultimo_registro["letras_principal"], {"A": 0.6, "B": 0.4})
+
+
 if __name__ == "__main__":
     unittest.main()

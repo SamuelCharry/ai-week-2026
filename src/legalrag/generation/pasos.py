@@ -77,3 +77,45 @@ def bloque_verificacion(preguntas, respuestas):
     return ("VERIFICACIONES HECHAS SOBRE LOS PASAJES (si contradicen lo que ibas a responder, corrige; no "
             "agregues normas que no estén en los pasajes)\n" + "\n".join(f"- {p}" for p in preguntas) +
             "\n" + (respuestas or "").strip())
+
+
+# --------------------------------------------------------------------------- multiagente
+#
+# Un segundo modelo de otra familia (≤ 8.000 M) actúa antes que el decoder principal:
+#   juez de evidencia (MAIN-RAG, ACL 2025; L-MARS, 2025): ¿cada pasaje sirve para responder? Se juzga con
+#       P(«Sí») del siguiente token, sin generar texto; los pasajes se reordenan (lo útil primero, Lost in the
+#       Middle) y los que el juez descarta salen del prompt, no de la evidencia entregada.
+#   segunda opinión en cerradas (ReConcile, ACL 2024): sus probabilidades de A-D se combinan con las del
+#       principal, ponderadas por la confianza de cada uno. Elegir por probabilidades, no fusionar textos
+#       (The Selection Bottleneck, 2026).
+
+SISTEMA_JUEZ = ("Eres un abogado colombiano que evalúa si un pasaje sirve como fundamento para responder una "
+                "pregunta jurídica. Respondes solo «Sí» o «No».")
+
+
+def mensajes_juez(entrada, texto_pasaje, max_caracteres=1800):
+    opciones = "\n".join(f"{letra}) {texto}" for letra, texto in (entrada.get("opciones") or {}).items())
+    texto = texto_pasaje.strip()
+    if len(texto) > max_caracteres:
+        texto = texto[:max_caracteres].rsplit(" ", 1)[0] + " […]"
+    return [{"role": "system", "content": SISTEMA_JUEZ},
+            {"role": "user", "content": (
+                f"PREGUNTA ({entrada.get('area', '')})\n{entrada['pregunta'].strip()}" + (f"\n{opciones}" if opciones else "")
+                + f"\n\nPASAJE\n{texto}\n\n¿El pasaje contiene la norma o la información jurídica necesaria para "
+                  "responder la pregunta? Responde solo «Sí» o «No».")}]
+
+
+def ordenar_por_juez(pasajes, juicios, minimo=3, umbral=0.5):
+    """(ordenados, para_el_prompt): todos los pasajes ordenados por P(«Sí») (empates: orden del reranker), y
+    los que el juez acepta (P ≥ 0,5, la frontera natural entre «Sí» y «No»), nunca menos de `minimo`."""
+    orden = sorted(range(len(pasajes)), key=lambda i: (-juicios[i], i))
+    ordenados = [pasajes[i] for i in orden]
+    aceptados = [pasajes[i] for i in orden if juicios[i] >= umbral]
+    return ordenados, aceptados if len(aceptados) >= minimo else ordenados[:minimo]
+
+
+def combinar_probabilidades(*distribuciones):
+    """Promedio ponderado por la confianza de cada modelo (su probabilidad máxima), como ReConcile."""
+    pesos = [max(d.values()) for d in distribuciones]
+    letras = list(distribuciones[0])
+    return {l: sum(w * d.get(l, 0.0) for w, d in zip(pesos, distribuciones)) / sum(pesos) for l in letras}

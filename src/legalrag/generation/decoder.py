@@ -50,7 +50,16 @@ class DecoderTransformers:
             self.cache.execute("CREATE TABLE IF NOT EXISTS salidas (clave TEXT PRIMARY KEY, valor TEXT NOT NULL)")
 
     def cerrar(self):
+        """Libera la GPU (en el sistema por etapas otro modelo se carga después)."""
+        import gc
+
         self.modelo = None
+        gc.collect()
+        try:
+            import torch
+            torch.cuda.empty_cache()
+        except ImportError:
+            pass
         if self.cache is not None:
             self.cache.close()
             self.cache = None
@@ -132,6 +141,24 @@ class DecoderTransformers:
 
         probabilidades = self._en_cache(["letras", list(entrada_tokens), ids], calcular)
         return dict(zip(letras, probabilidades))
+
+    def probabilidad_si(self, mensajes, si="Sí", no="No"):
+        """P(«Sí») frente a «No» como siguiente token de la respuesta: un juicio sin generar texto."""
+        import torch
+
+        entrada_tokens = self._tokens(mensajes, "")
+        ids = [self.tokenizer.encode(palabra, add_special_tokens=False)[0] for palabra in (si, no)]
+
+        def calcular():
+            tokens = torch.tensor([entrada_tokens], device=self.config.get("dispositivo", "cuda"))
+            with torch.inference_mode():
+                try:
+                    logits = self.modelo(tokens, logits_to_keep=1).logits[0, -1].float()
+                except TypeError:
+                    logits = self.modelo(tokens).logits[0, -1].float()
+            return torch.softmax(logits[ids], dim=0)[0].item()
+
+        return self._en_cache(["si_no", list(entrada_tokens), ids], calcular)
 
     def generar(self, entrada, pasajes, evidencia, prefijo="{", repetition_penalty=None, extra=None):
         """Objeto JSON de la respuesta. `repetition_penalty` reemplaza el de la configuración (reintento

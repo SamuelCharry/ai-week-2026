@@ -26,6 +26,10 @@ Pasos opcionales del agente (configs/sistema.json, legalrag.generation.pasos), c
                                                  pequeño (citations.respaldo_nli); registra o quita las contradichas
     recuperacion.recuperar_por_opcion            en cerradas, una búsqueda más por opción (retrieval.hibrido)
 
+Multiagente por etapas (`agentes`, ver `preparar_lote` y generation.pasos): un segundo modelo de otra familia
+(≤ 8.000 M) juzga los pasajes (juez_evidencia) y da su probabilidad de cada letra en cerradas (segunda_opinion)
+antes de que el decoder principal responda.
+
 Requisitos del enunciado que dependen de esta clase:
 
     - Temperatura 0: la salida debe ser reproducible en la verificación en vivo.
@@ -62,6 +66,7 @@ class Sistema:
                                               config["generacion"].get("dispositivo", "cuda"))
         self.validador = None
         self.ultimo_problema = self.ultimo_registro = self.ultima_expansion = None
+        self.preparado = {}  # sistema por etapas: lo que dejó el segundo agente, por id de pregunta
 
     def abrir(self):
         """Carga índice, encoder, reranker y decoder. Se llama una vez antes de responder."""
@@ -71,7 +76,8 @@ class Sistema:
                              .read_text(encoding="utf-8"))
         self.validador = jsonschema.validators.validator_for(esquema)(esquema)
         self.recuperador.abrir()
-        self.decoder.abrir()
+        if not self.config.get("agentes"):  # por etapas, el principal se carga después del segundo agente
+            self.decoder.abrir()
         if self.verificador:
             self.verificador.abrir()
 
@@ -82,6 +88,74 @@ class Sistema:
             self.verificador.cerrar()
 
     def recuperar(self, entrada):
+        """Pasajes de la pregunta. Con `agentes`, los que dejó la etapa del segundo agente (ya juzgados)."""
+        if not self.config.get("agentes"):
+            return self._recuperar(entrada)
+        if entrada["id"] not in self.preparado:
+            self.preparar_lote([entrada])  # pregunta suelta (interfaz o verificación en vivo)
+        datos = self.preparado[entrada["id"]]
+        self.ultima_expansion = datos.get("expansion")
+        return datos["pasajes"]
+
+    def preparar_lote(self, entradas):
+        """Etapas del sistema multiagente, de a una pregunta por modelo (el resultado no depende del lote):
+
+            1. recuperación de todas las preguntas pendientes
+            2. segundo agente (otra familia, ≤ 8.000 M): juez de evidencia y segunda opinión en cerradas
+            3. se libera y se carga el decoder principal, que responde en `responder`
+
+        Cada modelo se carga una vez en bf16: los dos no caben juntos en 24 GB. Devuelve los segundos de
+        estas etapas por pregunta, que el pipeline suma al tiempo de cada respuesta."""
+        import time
+
+        from legalrag.citations.normas import EvidenciaCorpus
+        from legalrag.generation import pasos
+        from legalrag.generation.decoder import DecoderTransformers
+
+        agentes = self.config.get("agentes")
+        pendientes = [e for e in entradas if e["id"] not in self.preparado]
+        if not agentes or not pendientes:
+            if agentes and self.decoder.modelo is None:
+                self.decoder.abrir()
+            return {}
+        tiempos = {}
+        if self.config["recuperacion"].get("expansion") and self.decoder.modelo is None:
+            self.decoder.abrir()  # la expansión de consulta la escribe el decoder principal
+        for entrada in pendientes:
+            inicio = time.perf_counter()
+            pasajes = self._recuperar(entrada)
+            self.preparado[entrada["id"]] = {"pasajes": pasajes, "expansion": self.ultima_expansion}
+            tiempos[entrada["id"]] = time.perf_counter() - inicio
+        if self.decoder.modelo is not None:
+            self.decoder.cerrar()
+        gen = self.config["generacion"]
+        segundo = DecoderTransformers({**gen, "decoder": agentes["segundo"]})
+        segundo.abrir()
+        evidencia = self.recuperador.evidencia
+        try:
+            for entrada in pendientes:
+                inicio = time.perf_counter()
+                datos = self.preparado[entrada["id"]]
+                pasajes = datos["pasajes"][:10]
+                if agentes.get("juez_evidencia") and pasajes:
+                    juicios = [segundo.probabilidad_si(pasos.mensajes_juez(
+                        entrada, EvidenciaCorpus.texto_entregado(p), gen.get("max_caracteres_prompt", 1800)))
+                        for p in pasajes]
+                    ordenados, aceptados = pasos.ordenar_por_juez(pasajes, juicios)
+                    datos.update(pasajes=ordenados, para_prompt=aceptados,
+                                 juez=[{"doc_id": p["doc_id"], "articulo": p.get("articulo"), "si": round(j, 3)}
+                                       for p, j in zip(pasajes, juicios)])
+                if agentes.get("segunda_opinion") and entrada["formato"] == "multiple_choice":
+                    usados = segundo.seleccionar(entrada, datos.get("para_prompt") or datos["pasajes"], evidencia)
+                    if usados:
+                        datos["letras_segundo"] = segundo.probabilidades_letras(entrada, usados, evidencia)
+                tiempos[entrada["id"]] += time.perf_counter() - inicio
+        finally:
+            segundo.cerrar()
+        self.decoder.abrir()
+        return tiempos
+
+    def _recuperar(self, entrada):
         """Pasajes de la pregunta, ordenados por el reranker.
 
         Con `recuperacion.expansion` ("debil" o "siempre") el decoder escribe una hipótesis de respuesta
@@ -114,7 +188,10 @@ class Sistema:
         from legalrag.citations.verificacion import abstencion, justificacion_de, respuesta_final
 
         evidencia = self.recuperador.evidencia
-        usados = self.decoder.seleccionar(entrada, pasajes, evidencia)
+        etapa = self.preparado.get(entrada["id"], {}) if self.config.get("agentes") else {}
+        # Con juez de evidencia, el prompt lleva solo los pasajes que aceptó; la evidencia entregada sigue
+        # siendo la recuperada completa (máx. 10), ya ordenada por el juez.
+        usados = self.decoder.seleccionar(entrada, etapa.get("para_prompt") or pasajes, evidencia)
         if not usados:
             self.ultimo_problema = "sin_evidencia_en_contexto"
             return abstencion(entrada, pasajes)
@@ -130,7 +207,7 @@ class Sistema:
             probabilidades = self.decoder.probabilidades_letras(
                 entrada, usados, evidencia,
                 prefijo='{"justificacion": ' + json.dumps(razon, ensure_ascii=False) + ', "respuesta_correcta": "')
-            letra = max(sorted(probabilidades), key=probabilidades.get)
+            probabilidades, letra = self._con_segunda_opinion(etapa, probabilidades)
         elif entrada["formato"] == "multiple_choice" and modo:
             # La letra sale de comparar las opciones sin generar texto; el texto se genera ya con esa letra.
             if gen.get("permutar_opciones") or gen.get("descarte_mantener"):
@@ -143,14 +220,14 @@ class Sistema:
                 probabilidades = eleccion.get("final", eleccion["promedio"])
             else:
                 probabilidades = self.decoder.probabilidades_letras(entrada, usados, evidencia)
-                letra = max(sorted(probabilidades), key=probabilidades.get)
+            probabilidades, letra = self._con_segunda_opinion(etapa, probabilidades)
             prefijo = f'{{"respuesta_correcta": "{letra}", "justificacion": "'
             crudo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo)
         else:
             crudo = self.decoder.generar(entrada, usados, evidencia)
         # Con entregar_todos, la evidencia entregada son los pasajes recuperados completos (máx. 10), aunque el
         # prompt solo haya usado los que caben: el respaldo de citas y el fundamento se miden sobre ellos.
-        entregados = pasajes[:10] if gen.get("entregar_todos") else usados
+        entregados = pasajes[:10] if gen.get("entregar_todos") or etapa.get("para_prompt") else usados
 
         def final(texto):
             return respuesta_final(entrada, texto, entregados, evidencia, gen["politica"], self.validador)
@@ -187,8 +264,19 @@ class Sistema:
         self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades, "eleccion": eleccion,
                                 "pasajes_en_prompt": len(usados), "pasajes_entregados": len(entregados),
                                 "expansion": self.ultima_expansion, "verificacion": verificacion,
-                                "reintento_json": reintento, "verificacion_nli": nli}
+                                "reintento_json": reintento, "verificacion_nli": nli,
+                                "juez_evidencia": etapa.get("juez"), "letras_segundo": etapa.get("letras_segundo"),
+                                "letras_principal": etapa.get("letras_principal")}
         return respuesta
+
+    def _con_segunda_opinion(self, etapa, probabilidades):
+        """(probabilidades, letra): con segunda opinión, combinadas por confianza (generation.pasos)."""
+        from legalrag.generation.pasos import combinar_probabilidades
+
+        if etapa.get("letras_segundo"):
+            etapa["letras_principal"] = probabilidades
+            probabilidades = combinar_probabilidades(probabilidades, etapa["letras_segundo"])
+        return probabilidades, max(sorted(probabilidades), key=probabilidades.get)
 
     def _verificar(self, entrada, usados, evidencia, borrador):
         from legalrag.citations.verificacion import texto_citable
