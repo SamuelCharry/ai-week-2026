@@ -647,6 +647,24 @@
    "reemplaza": true,
    "solo_url": true,
    "motivo": "La versión del Senado trae pegada la sentencia C-274 de 2013: 719.842 caracteres y 215 menciones de magistrado ponente para 33 artículos."
+  },
+  {
+   "doc_id": "decreto_46_2024",
+   "titulo": "Decreto 46 de 2024",
+   "tipo": "decreto",
+   "numero": "46",
+   "anio": 2024,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=228530",
+   "areas": [
+    "Derecho comercial y sociedades"
+   ],
+   "origen": "cobertura_seed_targets",
+   "clave": "1074",
+   "min_caracteres": 1500,
+   "solo_url": true,
+   "motivo": "Lo usa el banco (seed_targets) y no estaba en el corpus."
   }
  ]
 }

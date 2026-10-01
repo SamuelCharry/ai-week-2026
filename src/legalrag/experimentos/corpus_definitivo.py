@@ -139,6 +139,15 @@ INSERT_CHUNK = ("INSERT INTO chunks(doc_id,titulo,tipo,articulo,seccion,unidad_i
                 "texto,texto_busqueda,avisos) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
 
+def titulo_busqueda(doc):
+    """Título con el nombre oficial de la norma cuando el título es descriptivo: «Decisión 486 de la Comisión de la
+    Comunidad Andina — Régimen común de propiedad industrial», «Ley 1712 de 2014 — Ley de Transparencia…»."""
+    from legalrag.citations.normas import nombre_numerado
+
+    titulo, nombre = doc["titulo"], nombre_numerado(doc)
+    return titulo if not nombre or nombre.lower() in titulo.lower() else f"{nombre} — {titulo}"
+
+
 def chunk_rows(doc, text):
     """Filas de `chunks` de un documento (también las usa ingestion.agregar_puntuales)."""
     from legalrag.preprocessing.ingesta import segmentar_documento
@@ -149,7 +158,7 @@ def chunk_rows(doc, text):
         # La cabecera es señal de búsqueda, no se añade al pasaje literal. En Markdown (norma > sección >
         # artículo) para que BM25 y el encoder vean la jerarquía del documento; el pasaje entregado sigue siendo
         # el tramo literal del texto canónico (.txt), con sus posiciones.
-        header = "\n".join(x for x in [f"# {doc['titulo']}",
+        header = "\n".join(x for x in [f"# {titulo_busqueda(doc)}",
                                        f"## {part['seccion']}" if part.get("seccion") else None,
                                        f"### Artículo {part['articulo']}" if part.get("articulo") else None] if x)
         rows.append((doc["doc_id"], doc["titulo"], doc["tipo"], part.get("articulo"),

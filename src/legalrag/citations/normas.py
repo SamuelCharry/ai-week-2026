@@ -34,6 +34,10 @@ def nombre_numerado(meta):
         return f"Sentencia {m.group(2).upper()}-{int(m.group(3))} de {m.group(4)}"
     if tipo == "constitucion":
         return NOMBRES["constitucion"]
+    if tipo == "decision" and numero:
+        # Decisiones de la Comunidad Andina: sin esto la Decisión 486 (23 ítems del banco) no tenía nombre de norma
+        # y su título («Régimen común de propiedad industrial») no la nombra.
+        return NOMBRES["decision_andina_486"] if str(numero) == "486" else f"Decisión {numero} de la Comunidad Andina"
     if tipo in TIPOS and numero and anio:
         return f"{TIPOS[tipo]} {numero} de {anio}"
     return None
