@@ -18,6 +18,9 @@ from legalrag.citations.evidencia import NOMBRES, TIPOS, EvidenciaV04, _priorida
 
 _SENTENCIA = re.compile(r"sentencia_(cc|csj|ce)_([a-z]+)(\d+)_(\d{4})")
 _TITULO_CODIGO = ("codigo", "código", "constitucion", "constitución", "estatuto", "decision", "decisión")
+# Siglas de sala que el extractor oficial lee como un código: «Sentencia CP-147 de 2014» (Sala Penal de la
+# Corte Suprema) salía como la Constitución Política. Con esas salas se usa el formato de la Corte, «CP147-2014».
+_SALAS_AMBIGUAS = {"cp", "cc", "cpp", "cst", "cpt", "cpts", "cgp", "cco", "et", "cpaca"}
 
 
 def nombre_numerado(meta):
@@ -26,6 +29,8 @@ def nombre_numerado(meta):
     numero, anio = meta.get("numero"), meta.get("anio")
     m = _SENTENCIA.fullmatch(meta.get("doc_id", ""))
     if m:
+        if m.group(1) != "cc" and m.group(2) in _SALAS_AMBIGUAS:
+            return f"Sentencia {m.group(2).upper()}{int(m.group(3))}-{m.group(4)}"
         return f"Sentencia {m.group(2).upper()}-{int(m.group(3))} de {m.group(4)}"
     if tipo == "constitucion":
         return NOMBRES["constitucion"]
