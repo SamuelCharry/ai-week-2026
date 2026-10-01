@@ -89,6 +89,7 @@ DECODERS = {
 QWEN3_DIRECTA = {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
                  "recuperacion.expansion": None, "recuperacion.agente_expansion": "hipotesis",
                  "recuperacion.expansion_articulos": False, "recuperacion.max_tokens_hipotesis": 160,
+                 "recuperacion.reservar_expansion": 0,
                  "generacion.calculadora": False, "generacion.normalizador_citas": False}
 
 RERANKERS = {
@@ -122,7 +123,8 @@ def multiagente(segundo, juez=True, opinion=True):
 # Agente reformulador: en cada pregunta de texto libre lista las normas aplicables; se buscan por nombre y sus
 # artículos entran como candidatos al reranker (auditoría: 58 y 247 se pierden antes del reranker).
 REFORMULADOR = {"recuperacion.expansion": "siempre", "recuperacion.agente_expansion": "normas",
-                "recuperacion.expansion_articulos": True, "recuperacion.max_tokens_hipotesis": 120}
+                "recuperacion.expansion_articulos": True, "recuperacion.max_tokens_hipotesis": 120,
+                "recuperacion.reservar_expansion": 2}
 
 # Expansión solo cuando el reranker no encontró nada convincente y la pregunta no nombra una norma del corpus
 # (Adaptive-RAG); en la corrida anterior el criterio "ambos" la activó en 26 de 35 preguntas de texto libre.

@@ -61,7 +61,8 @@
     "expansion": "siempre",
     "agente_expansion": "normas",
     "expansion_articulos": true,
-    "max_tokens_hipotesis": 120
+    "max_tokens_hipotesis": 120,
+    "reservar_expansion": 2
   },
   "generacion": {
     "decoder": {

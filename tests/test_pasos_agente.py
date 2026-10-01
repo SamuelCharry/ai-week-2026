@@ -196,6 +196,29 @@ class PorOpcion(unittest.TestCase):
         r.config["expansion_articulos"] = False
         self.assertNotIn(900, [f for f, _ in r.ranking(ABIERTA, expansion="Ley 472 de 1998, artículo 2")])
 
+    def test_norma_del_reformulador_reservada_en_la_evidencia(self):
+        from legalrag.retrieval.hibrido import RecuperadorHibrido
+
+        class Evidencia:
+            def normas_de(self, texto):
+                return {"ley_472_1998": set()} if "472" in texto else {}
+
+        class ConDocs(Fragmentos):
+            def bm25(self, texto, k, doc_ids=None):
+                return [(900, 1.0)] if doc_ids else [(1, 3.0), (2, 2.0), (3, 1.0)]
+
+            def filas(self, ids):
+                return [{"id": i, "doc_id": "ley_472_1998" if i == 900 else f"d{i}"} for i in ids]
+
+        r = RecuperadorHibrido(".", {"bm25_top": 5, "denso_top": 5, "rrf_k": 60, "rerank_top": 5, "usar_denso": False,
+                                     "usar_reranker": False, "reservar_expansion": 2})
+        r.fragmentos, r.evidencia = ConDocs(), Evidencia()
+        r.ranking(ABIERTA, expansion="Ley 472 de 1998, artículo 2")
+        self.assertEqual(r.ultima_traza["reservados"], [900])
+        r.config["reservar_expansion"] = 0
+        r.ranking(ABIERTA, expansion="Ley 472 de 1998, artículo 2")
+        self.assertEqual(r.ultima_traza["reservados"], [])
+
     def test_una_busqueda_por_opcion_en_cerradas(self):
         cerrada = {**CERRADA, "pregunta": "¿Qué vicio configura?", "opciones": {"A": "Falsa motivación", "B": "Usurpación"}}
         consultas = self.ranking(cerrada, recuperar_por_opcion=True)
