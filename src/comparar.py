@@ -14,6 +14,10 @@ Etapa 2 · sistema completo con el evaluador oficial (cerradas 20, citas 20, abs
     python3 src/comparar.py --sistema --variantes qwen25-7b qwen3-4b-2507
     python3 src/comparar.py --sistema --ids 51 79 140      # prueba corta
 
+Las variantes comparten un caché de generaciones (data/comparacion/cache_generaciones.sqlite): con greedy, el
+mismo modelo y el mismo prompt dan la misma salida, así que una variante solo genera las preguntas en las que
+su cambio altera el prompt (p. ej. la expansión, solo donde la evidencia era débil). --sin-cache lo apaga.
+
 Resultados en data/comparacion/: recuperacion.csv, sistema.csv y una carpeta por variante.
 Otros encoders solo se miden si su índice existe (E06 los construye en
 data/experimentos/corpus_definitivo/indices/<modelo>/).
@@ -221,12 +225,21 @@ def comparar_recuperacion(config, encoders, ids):
 
 # ----------------------------------------------------------------- etapa 2
 
-def comparar_sistema(config, variantes, ids, ragas):
+def comparar_sistema(config, variantes, ids, ragas, cache=True):
     from legalrag.agent.pipeline import responder_lote
 
     filas = []
     for nombre in variantes:
         variante = aplicar(config, VARIANTES_SISTEMA[nombre])
+        # Las respuestas guardadas se reutilizan solo si la configuración es la misma; con la huella del índice,
+        # ampliar el corpus (ingestion.agregar_puntuales) invalida las respuestas viejas sin borrar carpetas.
+        fragmentos = (RAIZ / variante["recuperacion"]["fragmentos"]).stat()
+        variante["recuperacion"]["huella_indice"] = f"{fragmentos.st_size}-{int(fragmentos.st_mtime)}"
+        if cache:
+            # Las variantes comparten las generaciones idénticas (mismo modelo y mismo prompt, greedy): cada una
+            # solo genera las preguntas en las que su cambio altera el prompt.
+            SALIDA.mkdir(parents=True, exist_ok=True)
+            variante["generacion"]["cache_generaciones"] = str(SALIDA / "cache_generaciones.sqlite")
         salida = SALIDA / nombre / "submissions.jsonl"
         print(f"\n===== {nombre}: {variante['generacion']['decoder']['repo_id']}", flush=True)
         inicio = time.perf_counter()
@@ -281,6 +294,8 @@ def main():
     ap.add_argument("--variantes", nargs="+", default=["qwen25-7b", "qwen3-4b-2507"], choices=list(VARIANTES_SISTEMA))
     ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas (prueba corta)")
     ap.add_argument("--ragas", action="store_true", help="incluye el juez de texto libre (OPENROUTER_API_KEY)")
+    ap.add_argument("--sin-cache", action="store_true",
+                    help="genera todo de nuevo en cada variante (por defecto reutiliza generaciones con el mismo prompt)")
     args = ap.parse_args()
     if not (args.recuperacion or args.sistema):
         ap.error("indicar --recuperacion, --sistema o ambas")
@@ -288,7 +303,7 @@ def main():
     if args.recuperacion:
         comparar_recuperacion(config, args.encoders, args.ids)
     if args.sistema:
-        comparar_sistema(config, args.variantes, args.ids, args.ragas)
+        comparar_sistema(config, args.variantes, args.ids, args.ragas, cache=not args.sin_cache)
 
 
 if __name__ == "__main__":

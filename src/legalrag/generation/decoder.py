@@ -12,6 +12,10 @@ En cerradas, `probabilidades_letras` elige la opción sin generar texto: con la 
 `generar` escribe la justificación con esa letra ya fijada en el prefijo. En el modo "razonada" el
 orden se invierte: primero se genera la justificación y luego se comparan las letras con ella escrita.
 """
+import hashlib
+import json
+import sqlite3
+
 from legalrag.generation import politica
 
 
@@ -26,7 +30,7 @@ class DecoderTransformers:
         if config["decoder"]["parametros"] > limite_de(config["decoder"], limite_parametros):
             raise ValueError("El decoder supera el límite de 8.000 millones de parámetros")
         self.config = config
-        self.tokenizer = self.modelo = None
+        self.tokenizer = self.modelo = self.cache = None
 
     def abrir(self):
         import torch
@@ -41,9 +45,32 @@ class DecoderTransformers:
         self.parametros_cargados = sum(p.numel() for p in self.modelo.parameters())
         if self.parametros_cargados > limite_de(ficha):
             raise ValueError(f"El decoder cargado tiene {self.parametros_cargados} parámetros (> 8.000 M)")
+        if self.config.get("cache_generaciones"):
+            self.cache = sqlite3.connect(self.config["cache_generaciones"])
+            self.cache.execute("CREATE TABLE IF NOT EXISTS salidas (clave TEXT PRIMARY KEY, valor TEXT NOT NULL)")
 
     def cerrar(self):
         self.modelo = None
+        if self.cache is not None:
+            self.cache.close()
+            self.cache = None
+
+    def _en_cache(self, datos, calcular):
+        """Solo para comparar variantes (`cache_generaciones`, lo pone src/comparar.py): con greedy, el mismo
+        modelo y los mismos tokens de entrada dan la misma salida, así que una variante no vuelve a generar
+        lo que otra ya generó con el mismo prompt. La entrega no lo usa: ahí siempre se genera."""
+        if self.cache is None:
+            return calcular()
+        ficha = self.config["decoder"]
+        clave = hashlib.sha256(json.dumps([ficha["repo_id"], ficha.get("revision"), self.config["dtype"], *datos])
+                               .encode()).hexdigest()
+        fila = self.cache.execute("SELECT valor FROM salidas WHERE clave = ?", (clave,)).fetchone()
+        if fila:
+            return json.loads(fila[0])
+        valor = calcular()
+        self.cache.execute("INSERT OR REPLACE INTO salidas VALUES (?, ?)", (clave, json.dumps(valor, ensure_ascii=False)))
+        self.cache.commit()
+        return valor
 
     def mensajes(self, entrada, pasajes, evidencia, extra=None):
         """Prompt v04/05; `extra` (p. ej. las verificaciones de CoVe) va justo antes de las instrucciones."""
@@ -91,15 +118,19 @@ class DecoderTransformers:
         import torch
 
         letras = list((entrada.get("opciones") or {}).keys())
-        tokens = torch.tensor([self._tokens(self.mensajes(entrada, pasajes, evidencia), prefijo)],
-                              device=self.config.get("dispositivo", "cuda"))
+        entrada_tokens = self._tokens(self.mensajes(entrada, pasajes, evidencia), prefijo)
         ids = [self._id_letra(prefijo, letra) for letra in letras]
-        with torch.inference_mode():
-            try:  # solo la última posición: con 10k tokens de contexto, todas pesarían ~3 GB en la GPU
-                logits = self.modelo(tokens, logits_to_keep=1).logits[0, -1].float()
-            except TypeError:
-                logits = self.modelo(tokens).logits[0, -1].float()
-        probabilidades = torch.softmax(logits[ids], dim=0).tolist()
+
+        def calcular():
+            tokens = torch.tensor([entrada_tokens], device=self.config.get("dispositivo", "cuda"))
+            with torch.inference_mode():
+                try:  # solo la última posición: con 10k tokens de contexto, todas pesarían ~3 GB en la GPU
+                    logits = self.modelo(tokens, logits_to_keep=1).logits[0, -1].float()
+                except TypeError:
+                    logits = self.modelo(tokens).logits[0, -1].float()
+            return torch.softmax(logits[ids], dim=0).tolist()
+
+        probabilidades = self._en_cache(["letras", list(entrada_tokens), ids], calcular)
         return dict(zip(letras, probabilidades))
 
     def generar(self, entrada, pasajes, evidencia, prefijo="{", repetition_penalty=None, extra=None):
@@ -115,9 +146,14 @@ class DecoderTransformers:
     def _continuar(self, mensajes, prefijo, max_nuevos, repetition_penalty=None):
         import torch
 
-        tokens = torch.tensor([self._tokens(mensajes, prefijo)], device=self.config.get("dispositivo", "cuda"))
+        entrada_tokens = self._tokens(mensajes, prefijo)
         penalizacion = repetition_penalty or self.config.get("repetition_penalty", 1.0)
-        with torch.inference_mode():
-            salida = self.modelo.generate(tokens, max_new_tokens=max_nuevos, do_sample=False,
-                                          repetition_penalty=penalizacion, pad_token_id=self.tokenizer.eos_token_id)
-        return self.tokenizer.decode(salida[0, tokens.shape[-1]:], skip_special_tokens=True)
+
+        def calcular():
+            tokens = torch.tensor([entrada_tokens], device=self.config.get("dispositivo", "cuda"))
+            with torch.inference_mode():
+                salida = self.modelo.generate(tokens, max_new_tokens=max_nuevos, do_sample=False,
+                                              repetition_penalty=penalizacion, pad_token_id=self.tokenizer.eos_token_id)
+            return self.tokenizer.decode(salida[0, tokens.shape[-1]:], skip_special_tokens=True)
+
+        return self._en_cache(["generar", list(entrada_tokens), max_nuevos, penalizacion], calcular)
