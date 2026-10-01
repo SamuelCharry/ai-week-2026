@@ -273,10 +273,20 @@ class Generator:
         payload = {"pregunta": question["pregunta"], "opciones": question.get("opciones"),
                    "evidencia": blocks}
         user_content = json.dumps(payload, ensure_ascii=False)
-        from legalrag.tools.legal_tools import tool_block
-        computed = tool_block(question["pregunta"], question.get("opciones"))
+        from legalrag.tools.legal_tools import tool_block, tool_block_v2
+        herramientas = tool_block_v2 if self.config.herramientas_v2 else tool_block
+        computed = herramientas(question["pregunta"], question.get("opciones"))
         if computed:
             user_content = user_content + "\n\n" + computed
+        if self.config.normalizador_citas:
+            # Mark 43: el banco trae leyes con el año equivocado («Ley 1564 de 2002» por la de 2012).
+            from legalrag.tools.normalizador import normalizador_del_corpus
+            opciones = question.get("opciones")
+            nota = normalizador_del_corpus(self.config).nota(
+                {"pregunta": question["pregunta"], "opciones": opciones if isinstance(opciones, dict) else {}})
+            if nota:
+                user_content = user_content + "\n\n" + nota
+        self.last_tools = computed
         messages = [
             {"role": "system", "content": system},
             {"role": "user", "content": user_content},

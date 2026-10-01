@@ -169,3 +169,89 @@ def tool_block(question_text: str, opciones: Optional[dict] = None) -> str:
     if not hits:
         return ""
     return "[DATOS CALCULADOS]\n" + "\n".join(hits)
+
+
+# ==================================================================
+# Herramientas v2 (Cerberus Mark 43, --herramientas-v2). tool_block queda igual para reproducir Mark 42.
+#   - SMLMV 2026 = $1.750.905 (Decreto 0159 de 2026; la tabla v1 tenía 1.500.000).
+#   - UVT 2015-2026 (resoluciones anuales de la DIAN).
+#   - Sin año en la pregunta: se calcula con los dos años más recientes en vez de suponer 2024; si la
+#     clasificación de cuantía coincide en ambos, se da una sola respuesta.
+#   - Los plazos de liquidación (art. 11 Ley 1150 de 2007) solo se agregan si la pregunta habla de liquidar
+#     un contrato: con cualquier «plazo» desorientaban preguntas de tutela, procesales o laborales.
+# ==================================================================
+SMLMV_V2: dict[int, int] = {**SMLMV, 2026: 1750905}
+UVT: dict[int, int] = {
+    2015: 28279, 2016: 29753, 2017: 31859, 2018: 33156, 2019: 34270, 2020: 35607,
+    2021: 36308, 2022: 38004, 2023: 42412, 2024: 47065, 2025: 49799, 2026: 52374,
+}
+_UVT_RE = re.compile(r"\buvt\b|unidad(?:es)?\s+de\s+valor\s+tributario", re.I)
+_CANTIDAD_UVT_RE = re.compile(r"(\d{1,3}(?:\.\d{3})*(?:,\d+)?|\d+)\s*(?:uvt\b|unidades\s+de\s+valor\s+tributario)", re.I)
+_LIQUIDACION_RE = re.compile(r"liquidaci[óo]n\s+(?:unilateral|bilateral|del\s+contrato|de\s+(?:los|el)\s+contratos?)"
+                             r"|liquidar\s+(?:el|los)\s+contratos?", re.I)
+
+
+def _anios_v2(text: str) -> list[int]:
+    m = _YEAR_RE.search(text)
+    if m and int(m.group(1)) in SMLMV_V2:
+        return [int(m.group(1))]
+    ultimo = max(SMLMV_V2)
+    return [ultimo, ultimo - 1]
+
+
+def _cop(valor: float) -> str:
+    return f"{valor:,.0f}".replace(",", ".")
+
+
+def _clase(smlmv: float) -> str:
+    return "minima" if smlmv <= CUANTIA_UMBRAL_MINIMA else "menor" if smlmv <= CUANTIA_UMBRAL_MENOR else "mayor"
+
+
+def tool_block_v2(question_text: str, opciones: Optional[dict] = None) -> str:
+    text = question_text
+    if opciones:
+        text = text + " " + " ".join(opciones.values() if isinstance(opciones, dict) else opciones)
+    hits: list[str] = []
+    anios = _anios_v2(text)
+    amount = _extract_amount_cop(text)
+
+    if _CUANTIA_RE.search(text) and amount:
+        clases = []
+        for anio in anios:
+            smlmv = round(amount / SMLMV_V2[anio], 2)
+            clases.append(_clase(smlmv))
+            hits.append(f"- Monto {_cop(amount)} COP equivale a {smlmv} SMLMV del ano {anio} "
+                        f"({_cop(SMLMV_V2[anio])} COP por SMLMV).")
+        hits.append(f"- Segun Art. 25 CGP: hasta {CUANTIA_UMBRAL_MINIMA} SMLMV = minima cuantia; hasta "
+                    f"{CUANTIA_UMBRAL_MENOR} SMLMV = menor cuantia; mas = mayor cuantia.")
+        if len(set(clases)) == 1:
+            hits.append(f"- Por tanto esta cuantia es de tipo **{clases[0]}**.")
+        else:
+            hits.append("- La clase depende del ano: " + "; ".join(f"{a}: {c}" for a, c in zip(anios, clases)) + ".")
+    elif _SMLMV_RE.search(text):
+        for anio in anios:
+            linea = f"- SMLMV del ano {anio} = {_cop(SMLMV_V2[anio])} COP"
+            hits.append(linea + (f"; {_cop(amount)} COP = {round(amount / SMLMV_V2[anio], 2)} SMLMV." if amount else "."))
+
+    if _UVT_RE.search(text):
+        cantidad = _CANTIDAD_UVT_RE.search(text)
+        for anio in anios:
+            linea = f"- UVT del ano {anio} = {_cop(UVT[anio])} COP"
+            if amount:
+                linea += f"; {_cop(amount)} COP = {round(amount / UVT[anio], 2)} UVT"
+            if cantidad:
+                n = float(cantidad.group(1).replace(".", "").replace(",", "."))
+                linea += f"; {cantidad.group(1)} UVT = {_cop(n * UVT[anio])} COP"
+            hits.append(linea + ".")
+
+    if _LIQUIDACION_RE.search(text):
+        hits.append("- Art. 11 Ley 1150 de 2007: liquidacion bilateral del contrato estatal = "
+                    "dentro de los 4 meses siguientes a la terminacion.")
+        hits.append("- Art. 11 Ley 1150 de 2007: liquidacion unilateral = "
+                    "dentro de los 2 meses siguientes al vencimiento del plazo para la bilateral.")
+        hits.append("- Art. 11 Ley 1150 de 2007: liquidacion por mutuo acuerdo despues de la unilateral = "
+                    "hasta 2 anos despues del vencimiento del plazo de liquidacion unilateral.")
+
+    if not hits:
+        return ""
+    return "[DATOS CALCULADOS]\n" + "\n".join(hits)

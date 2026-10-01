@@ -38,6 +38,9 @@ class Config:
     norm_hint: bool = False
     multi_query: bool = False
     multi_query_threshold: float = 0.4
+    # Cerberus Mark 43: herramientas corregidas (SMLMV 2026, UVT, años, liquidación) y normalizador de citas.
+    herramientas_v2: bool = False
+    normalizador_citas: bool = False
     max_params: int = 9_000_000_000
 
     @property

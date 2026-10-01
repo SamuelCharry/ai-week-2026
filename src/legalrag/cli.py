@@ -33,6 +33,11 @@ def main():
                      help="activa el modo 'thinking' de Qwen3 solo para preguntas cerradas")
     run.add_argument("--multi-query", action="store_true",
                      help="descompone la pregunta en sub-consultas cuando el retrieval es debil")
+    run.add_argument("--herramientas-v2", action="store_true",
+                     help="Mark 43: SMLMV 2026 correcto, UVT, dos años si la pregunta no trae año y plazos de "
+                          "liquidacion solo si se habla de liquidar un contrato")
+    run.add_argument("--normalizador", action="store_true",
+                     help="Mark 43: avisa si la pregunta u opcion cita una ley con el ano equivocado")
     run.add_argument("--augment-max", type=int, default=CONFIG.augment_max,
                      help="maximo de normas respaldadas que se agregan a la respuesta")
     run.add_argument("--threshold", type=float, default=CONFIG.min_reranker_score)
@@ -75,7 +80,8 @@ def main():
         config = replace(config, hybrid=args.hybrid, use_reranker=not args.no_reranker,
                          use_hyde=not args.no_hyde, min_reranker_score=args.threshold,
                          mc_thinking=args.mc_thinking, augment_max=args.augment_max,
-                         multi_query=args.multi_query)
+                         multi_query=args.multi_query, herramientas_v2=args.herramientas_v2,
+                         normalizador_citas=args.normalizador)
         run(config, args.questions, args.output or config.output_file, args.resume, args.expected_count)
     elif args.command == "evaluate":
         from legalrag.evaluation.evaluate import evaluate
