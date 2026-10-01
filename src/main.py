@@ -1,6 +1,11 @@
-"""Opción A de punta a punta, en un solo comando.
+"""Cerberus de punta a punta, en un solo comando: la configuración de entrega (configs/sistema.json).
 
-BM25 + BGE-M3 con RRF, reranker BGE-v2-m3 y Qwen2.5-7B-Instruct.
+BM25 + BGE-M3 con RRF, reranker BGE-v2-m3 y tres agentes alrededor de Qwen3-8B (agent.componentes).
+
+Para iterar sobre Cerberus con los datos ya en su lugar (sin caché: tiempos y respuestas reales):
+
+    python3 src/main.py --datos data                    # muestra + evaluador + cambios frente a la corrida anterior
+    python3 src/main.py --datos data --comparar-con data/comparacion/entrega/submissions.jsonl
 
     python3 src/main.py --datos datos --prueba          # 3 preguntas, para medir y revisar
     python3 src/main.py --datos datos                   # las 50 de muestra + evaluador oficial
@@ -246,7 +251,8 @@ def responder(config, split, ids):
     if not entrada.is_file():
         salir(f"No está {entrada}. Para el sábado, copiar ahí test_992.jsonl.")
     salida = RAIZ / ("data/reproduccion/prueba.jsonl" if ids else config["salidas"][split])
-    print("La primera vez descarga Qwen2.5-7B, BGE-M3 y el reranker (~20 GB).", flush=True)
+    print(f"La primera vez descarga {config['generacion']['decoder']['repo_id']}, BGE-M3 y el reranker (~20 GB).",
+          flush=True)
     resumen = responder_lote(RAIZ, entrada, salida, config, ids=ids)
     print(json.dumps({k: v for k, v in resumen.items() if k != "errores_esquema"}, ensure_ascii=False, indent=2))
     if resumen["errores_esquema"]:
@@ -268,6 +274,46 @@ def evaluar(salida, ragas):
     print("Reporte:", reporte)
 
 
+def iteracion(config, salida, comparar_con, aproximar_ragas):
+    """Resumen de la iteración: puntaje, cambios pregunta por pregunta frente a la corrida anterior y RAGAS≈."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("comparar", RAIZ / "src/comparar.py")
+    comparar = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(comparar)
+    ev = comparar.evaluador_oficial(config)
+    muestra = ev.read_jsonl(RAIZ / config["entradas"]["sample"])
+    reporte = json.loads(salida.with_name(salida.stem + "_reporte.json").read_text(encoding="utf-8"))
+    lineas = ["", "ITERACIÓN (muestra de 50, evaluador oficial)",
+              f"  total {reporte['total_automatico']['obtenidos']} · cerradas {reporte['cerradas']['aciertos']}/"
+              f"{reporte['cerradas']['n']} ({reporte['cerradas']['puntos']}) · citas {reporte['citas']['puntos']} "
+              f"(recall {reporte['citas']['recall_citas_ponderado']}) · abstención {reporte['abstencion']['puntos']}"]
+    actual = comparar.por_pregunta(ev, salida, muestra)
+    previo = comparar.por_pregunta(ev, comparar_con, muestra) if comparar_con and comparar_con.is_file() else None
+    if previo:
+        cambios = comparar.cambios(previo, actual)
+        lineas.append(f"  frente a {comparar_con.relative_to(RAIZ) if comparar_con.is_relative_to(RAIZ) else comparar_con}: "
+                      f"{sum(c[0] == '+' for c in cambios)} mejoras, {sum(c[0] == '-' for c in cambios)} empeoras")
+        lineas += [f"    {signo} {qid:>4} {formato:<11} {detalle}" for signo, qid, formato, detalle in cambios]
+    if aproximar_ragas:
+        from legalrag.evaluation.ragas_local import RagasLocal
+
+        juez = RagasLocal(comparar.VERIFICADOR_NLI["modelo"])
+        juez.abrir()
+        try:
+            def puntos(ruta):
+                return juez.evaluar({r["id"]: r for r in ev.read_jsonl(ruta)}, muestra)["puntos_aprox"]
+            texto = f"  RAGAS≈ {puntos(salida)} de 30"
+            if previo:
+                texto += f" (anterior {puntos(comparar_con)})"
+            lineas.append(texto + " · aproximación local; el juez oficial es --ragas")
+        finally:
+            juez.cerrar()
+    texto = "\n".join(lineas)
+    print(texto)
+    salida.with_name("iteracion.txt").write_text(texto + "\n", encoding="utf-8")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--datos", type=Path, default=RAIZ / "datos", help="carpeta donde se descomprimieron los datos")
@@ -279,6 +325,9 @@ def main():
     ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas")
     ap.add_argument("--solo-preparar", action="store_true", help="revisa entorno, datos e índice y termina")
     ap.add_argument("--ragas", action="store_true", help="evalúa también texto libre (OPENROUTER_API_KEY)")
+    ap.add_argument("--comparar-con", type=Path,
+                    help="entrega anterior para ver cambios pregunta por pregunta (por defecto, la corrida previa)")
+    ap.add_argument("--sin-ragas-local", action="store_true", help="no calcula la aproximación local de RAGAS")
     args = ap.parse_args()
 
     from legalrag.config import leer_config
@@ -300,9 +349,17 @@ def main():
         print("\nListo para responder.")
         return
     ids = args.ids or (PRUEBA if args.prueba else None)
+    comparar_con = args.comparar_con.resolve() if args.comparar_con else None
+    if args.split == "sample" and not ids and comparar_con is None:
+        # La corrida previa queda como referencia de la iteración.
+        previa = RAIZ / config["salidas"]["sample"]
+        if previa.is_file():
+            comparar_con = previa.with_name(previa.stem + "_anterior.jsonl")
+            shutil.copy2(previa, comparar_con)
     salida, resumen = responder(config, args.split, ids)
     if args.split == "sample" and not ids and resumen["respondidas"] == resumen["preguntas"]:
         evaluar(salida, args.ragas)
+        iteracion(config, salida, comparar_con, not args.sin_ragas_local and not args.ragas)
     elif args.split == "test":
         print(f"\nEntrega: {salida}. Revisar que 'respondidas' sea 992 y que no haya errores de esquema.")
 

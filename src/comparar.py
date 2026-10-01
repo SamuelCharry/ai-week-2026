@@ -484,8 +484,8 @@ def main():
     ap.add_argument("--recuperacion", action="store_true", help="etapa 1: recuperación sin decoder")
     ap.add_argument("--sistema", action="store_true", help="etapa 2: sistema completo con evaluador oficial")
     ap.add_argument("--encoders", nargs="+", default=list(ENCODERS), choices=list(ENCODERS))
-    ap.add_argument("--variantes", nargs="+", default=["entrega", "cerberus-mk3"], choices=list(VARIANTES_SISTEMA),
-                    help="por defecto: la entrega actual y Cerberus Mark 3 (máximo 2 por prueba)")
+    ap.add_argument("--variantes", nargs="+", default=["cerberus-mk2", "entrega"], choices=list(VARIANTES_SISTEMA),
+                    help="por defecto: Cerberus Mark 2 y la entrega actual (máximo 2 por prueba)")
     ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas (prueba corta)")
     ap.add_argument("--ragas", action="store_true", help="incluye el juez de texto libre (OPENROUTER_API_KEY)")
     ap.add_argument("--rerankers", nargs="+", choices=list(RERANKERS),

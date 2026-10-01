@@ -1,5 +1,5 @@
 {
-  "notas": "Configuración de entrega (Cerberus Mark 2): tres agentes sobre Qwen3-8B (sugerido en la §3.1). Recuperación BM25 + BGE-M3 con RRF, enrutamiento por norma nombrada y reranker BGE-v2-m3; el agente reformulador lista las normas aplicables y sus artículos entran como candidatos al reranker (texto libre); la calculadora convierte montos a SMMLV y UVT con los decretos del corpus; el normalizador avisa de leyes citadas con el año equivocado. Letra por probabilidad en float32 en cerradas, reintento de JSON inválido y fundamento con el respaldo completo de la evidencia. Ver agent.componentes y src/comparar.py (variante qwen3-8b-agentes).",
+  "notas": "Configuración de entrega: Cerberus Mark 3, tres agentes sobre Qwen3-8B (sugerido en la §3.1). Recuperación BM25 + BGE-M3 con RRF, enrutamiento por norma nombrada y reranker BGE-v2-m3. Agente reformulador anclado en los primeros pasajes (ITER-RETGEN): escribe con qué figura y normas se resuelve el caso, se vuelve a recuperar con eso y sus normas tienen lugares reservados (texto libre). Calculadora (montos en SMMLV y UVT con los decretos del corpus) y normalizador (leyes con el año equivocado); si dejan nota, en cerradas se razona antes de elegir la letra. Letra por probabilidad en float32, redacción directa alineada con la métrica de texto libre y reintento de JSON inválido. Mark 2 de referencia: src/comparar.py cerberus-mk2.",
   "implementacion": "legalrag.agent.componentes:Sistema",
   "entradas": {
     "sample": "data/oficial/data/sample_50.jsonl",
@@ -59,7 +59,7 @@
     "min_normativos": 2,
     "ajustes_solo_texto_libre": true,
     "expansion": "siempre",
-    "agente_expansion": "normas",
+    "agente_expansion": "iterativo",
     "expansion_articulos": true,
     "max_tokens_hipotesis": 120,
     "reservar_expansion": 2
@@ -87,7 +87,7 @@
     "regenerar_json": true,
     "calculadora": true,
     "normalizador_citas": true,
-    "razonar_con_herramienta": false,
-    "estilo": null
+    "razonar_con_herramienta": true,
+    "estilo": "directo"
   }
 }
