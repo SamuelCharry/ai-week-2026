@@ -86,6 +86,13 @@ VARIANTES_SISTEMA = {
     # Qwen3-8B sobre la mejor configuración (38,43): letra razonada y recuperación en texto libre.
     "qwen3-8b": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": "razonada"},
     "qwen3-8b-letra-directa": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True},
+    # Permutaciones de las opciones (sesgo por posición) y descarte POE sobre Qwen3-8B con letra directa.
+    "qwen3-8b-permutado": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
+                           "generacion.permutar_opciones": True},
+    "qwen3-8b-descarte": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
+                          "generacion.descarte_mantener": 2},
+    "qwen3-8b-permutado-descarte": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
+                                    "generacion.permutar_opciones": True, "generacion.descarte_mantener": 2},
     "mistral-7b": {"generacion.decoder": DECODERS["mistral-7b"]},
     "phi4-mini": {"generacion.decoder": DECODERS["phi4-mini"]},
     "gemma3-4b": {"generacion.decoder": DECODERS["gemma3-4b"]},

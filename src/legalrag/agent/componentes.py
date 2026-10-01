@@ -66,7 +66,7 @@ class Sistema:
         if not usados:
             self.ultimo_problema = "sin_evidencia_en_contexto"
             return abstencion(entrada, pasajes)
-        probabilidades = None
+        probabilidades = eleccion = None
         modo = self.config["generacion"].get("letra_por_probabilidad")
         if entrada["formato"] == "multiple_choice" and modo == "razonada":
             # Primero razona (justificación) y después se comparan las letras con ese razonamiento escrito.
@@ -77,9 +77,19 @@ class Sistema:
                 prefijo='{"justificacion": ' + json.dumps(razon, ensure_ascii=False) + ', "respuesta_correcta": "')
             letra = max(sorted(probabilidades), key=probabilidades.get)
         elif entrada["formato"] == "multiple_choice" and modo:
-            # La letra sale de comparar A-D en una pasada; el texto se genera ya con esa letra.
-            probabilidades = self.decoder.probabilidades_letras(entrada, usados, evidencia)
-            letra = max(sorted(probabilidades), key=probabilidades.get)
+            # La letra sale de comparar las opciones sin generar texto; el texto se genera ya con esa letra.
+            gen = self.config["generacion"]
+            if gen.get("permutar_opciones") or gen.get("descarte_mantener"):
+                # Permutaciones (quita el sesgo por posición) y descarte en dos pasos (generation.eleccion).
+                from legalrag.generation.eleccion import elegir
+                letra, eleccion = elegir(
+                    lambda opciones: self.decoder.probabilidades_letras({**entrada, "opciones": opciones}, usados,
+                                                                        evidencia),
+                    entrada["opciones"], gen.get("permutar_opciones", False), gen.get("descarte_mantener", 0))
+                probabilidades = eleccion.get("final", eleccion["promedio"])
+            else:
+                probabilidades = self.decoder.probabilidades_letras(entrada, usados, evidencia)
+                letra = max(sorted(probabilidades), key=probabilidades.get)
             crudo = self.decoder.generar(entrada, usados, evidencia,
                                          prefijo=f'{{"respuesta_correcta": "{letra}", "justificacion": "')
         else:
@@ -93,7 +103,7 @@ class Sistema:
             respuesta["respuesta_correcta"] = letra
             respuesta["descarte_opciones"] = {k: v for k, v in respuesta["descarte_opciones"].items() if k != letra}
         self.ultimo_problema = registro["problema"]
-        self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades,
+        self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades, "eleccion": eleccion,
                                 "pasajes_en_prompt": len(usados), "pasajes_entregados": len(entregados)}
         return respuesta
 
