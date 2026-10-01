@@ -84,7 +84,12 @@ DECODERS = {
                    "parametros": 3212749824, "licencia": "llama3.2"},
 }
 
-QWEN3_DIRECTA = {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True}
+# Base sin agentes: configs/sistema.json trae los tres agentes (configuración de entrega) y las variantes se
+# aplican sobre ella, así que la base los apaga de forma explícita para que las comparaciones sigan siendo válidas.
+QWEN3_DIRECTA = {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
+                 "recuperacion.expansion": None, "recuperacion.agente_expansion": "hipotesis",
+                 "recuperacion.expansion_articulos": False, "recuperacion.max_tokens_hipotesis": 160,
+                 "generacion.calculadora": False, "generacion.normalizador_citas": False}
 
 RERANKERS = {
     "bge": {"repo_id": "BAAI/bge-reranker-v2-m3", "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"},
@@ -131,14 +136,14 @@ VARIANTES_SISTEMA = {
     "qwen3-4b-2507": {"generacion.decoder": DECODERS["qwen3-4b-2507"]},
     "salamandra-7b": {"generacion.decoder": DECODERS["salamandra-7b"]},
     # Qwen3-8B sobre la mejor configuración (38,43): letra razonada y recuperación en texto libre.
-    "qwen3-8b": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": "razonada"},
-    "qwen3-8b-letra-directa": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True},
+    "qwen3-8b": {**QWEN3_DIRECTA, "generacion.letra_por_probabilidad": "razonada"},
+    "qwen3-8b-letra-directa": {**QWEN3_DIRECTA},
     # Permutaciones de las opciones (sesgo por posición) y descarte POE sobre Qwen3-8B con letra directa.
-    "qwen3-8b-permutado": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
+    "qwen3-8b-permutado": {**QWEN3_DIRECTA,
                            "generacion.permutar_opciones": True},
-    "qwen3-8b-descarte": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
+    "qwen3-8b-descarte": {**QWEN3_DIRECTA,
                           "generacion.descarte_mantener": 2},
-    "qwen3-8b-permutado-descarte": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
+    "qwen3-8b-permutado-descarte": {**QWEN3_DIRECTA,
                                     "generacion.permutar_opciones": True, "generacion.descarte_mantener": 2},
     # Pasos extra del agente sobre qwen3-8b-letra-directa (40,00): expansión HyDE/Query2doc activada como en
     # CRAG (solo texto libre), reintento de JSON inválido y verificación en cadena (CoVe). Ver generation.pasos.
@@ -164,8 +169,10 @@ VARIANTES_SISTEMA = {
     # Ronda 4 (tras la auditoría de fallas): herramientas y reformulador, sobre qwen3-8b-letra-directa.
     "qwen3-8b-normalizador": {**QWEN3_DIRECTA, "generacion.normalizador_citas": True},
     "qwen3-8b-reformulador": {**QWEN3_DIRECTA, **REFORMULADOR},
+    # Configuración de entrega (configs/sistema.json): los tres agentes.
     "qwen3-8b-agentes": {**QWEN3_DIRECTA, **REFORMULADOR, "generacion.calculadora": True,
                          "generacion.normalizador_citas": True},
+    "entrega": {},  # configs/sistema.json tal cual: debe dar lo mismo que qwen3-8b-agentes
     "qwen3-8b-agentes-cerradas": {**QWEN3_DIRECTA, **REFORMULADOR, "recuperacion.expansion_cerradas": True,
                                   "generacion.calculadora": True, "generacion.normalizador_citas": True},
     # Redacción alineada con la métrica de texto libre (politica.INSTRUCCIONES_DIRECTAS); se mide con RAGAS≈.

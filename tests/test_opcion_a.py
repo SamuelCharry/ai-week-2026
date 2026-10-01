@@ -312,11 +312,11 @@ class DecoderFalso(DecoderTransformers):
                           "max_nuevos_tokens": 10})
         self.tokenizer, self.crudo, self.vistos = TokenizadorFalso(), crudo, None
 
-    def generar(self, entrada, pasajes, evidencia, prefijo="{"):
+    def generar(self, entrada, pasajes, evidencia, prefijo="{", **otros):
         self.vistos, self.prefijo = pasajes, prefijo
         return self.crudo if prefijo == "{" else prefijo + self.crudo
 
-    def probabilidades_letras(self, entrada, pasajes, evidencia):
+    def probabilidades_letras(self, entrada, pasajes, evidencia, **otros):
         return {"A": 0.1, "B": 0.2, "C": 0.6, "D": 0.1}
 
 

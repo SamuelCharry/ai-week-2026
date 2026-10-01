@@ -4,6 +4,14 @@ El pipeline por lotes, el servicio de la interfaz y la reproducción solo hablan
 esta clase. Otra implementación se declara en `configs/sistema.json`
 (`implementacion: "modulo:Clase"`) con los mismos métodos.
 
+Configuración de entrega (configs/sistema.json): tres agentes alrededor de Qwen3-8B.
+
+    agente reformulador   lista las normas y artículos que regulan el caso (generation.pasos.mensajes_reformulador);
+                          se buscan por nombre y sus artículos entran como candidatos al reranker (texto libre)
+    agente calculadora    convierte los montos de la pregunta a SMMLV y UVT con los decretos del corpus
+                          (generation.calculadora)
+    agente normalizador   avisa si la pregunta u opción cita una ley con el año equivocado (citations.normalizador)
+
 Recorrido de una pregunta:
 
     recuperar  legalrag.retrieval.hibrido     BM25 + denso (+ búsqueda dentro de la norma que nombra la
