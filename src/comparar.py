@@ -430,7 +430,8 @@ def main():
     if args.recuperacion:
         comparar_recuperacion(config, args.encoders, args.ids)
     if args.sistema:
-        comparar_sistema(config, args.variantes, args.ids, args.ragas, cache=not args.sin_cache)
+        # Una variante repetida en el comando se corre una sola vez.
+        comparar_sistema(config, list(dict.fromkeys(args.variantes)), args.ids, args.ragas, cache=not args.sin_cache)
 
 
 if __name__ == "__main__":
