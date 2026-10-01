@@ -80,6 +80,12 @@ INSTRUCCIONES_DIRECTAS = {
     ),
 }
 
+# Estilo "directo_semi" (Mark 4): directo solo en semiabiertas, cuyas respuestas esperadas son cortas (mediana de 77
+# palabras); las abiertas conservan las instrucciones originales porque sus respuestas esperadas son largas (mediana
+# de 324) y acortarlas resta afirmaciones esperadas y citas (Mark 3, pregunta 253: citas 2/3 → 1/3).
+INSTRUCCIONES_DIRECTAS_SEMI = {**INSTRUCCIONES, "semi_open": INSTRUCCIONES_DIRECTAS["semi_open"]}
+ESTILOS = {"directo": INSTRUCCIONES_DIRECTAS, "directo_semi": INSTRUCCIONES_DIRECTAS_SEMI}
+
 LONGITUDES = {
     "justificacion": 900, "descarte": 220, "respuesta": 1100, "palabra": 50,
     "referencia_legal": 250, "marco_normativo": 700, "analisis": 1600,
@@ -141,7 +147,7 @@ def mensajes(entrada, pasajes, evidencia, max_caracteres=1800, estilo=None):
     partes += [f"PREGUNTA ({tipo}, {entrada.get('area', '')})", entrada["pregunta"].strip()]
     for letra, opcion in (entrada.get("opciones") or {}).items():
         partes.append(f"{letra}) {opcion}")
-    instrucciones = INSTRUCCIONES_DIRECTAS if estilo == "directo" else INSTRUCCIONES
+    instrucciones = ESTILOS.get(estilo, INSTRUCCIONES)
     partes += ["", "INSTRUCCIONES", instrucciones[formato],
                "Responde solo con el objeto JSON, con las claves: " + ", ".join(
                    k for k in esquema(formato, list((entrada.get("opciones") or {"A": 0}).keys()))["properties"]) + "."]
