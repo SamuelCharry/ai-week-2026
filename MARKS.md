@@ -1,6 +1,7 @@
 # Cerberus: iteraciones (marks)
 
-Cada mark se corre sobre la muestra de 50 y se compara con el anterior con `scripts/comparar_salidas.py`
+Cada mark se corre con `python3 src/main.py --mark N` (comprueba datos e índice, responde la muestra de 50 y pasa
+el evaluador oficial). Para comparar dos salidas pregunta por pregunta: `scripts/comparar_salidas.py`. Cada mark se corre sobre la muestra de 50 y se compara con el anterior con `scripts/comparar_salidas.py`
 (evaluador oficial, cambios pregunta por pregunta y RAGAS≈). Las opciones nuevas de cada mark se agregan sin
 cambiar el comportamiento de los anteriores: sin ellas, el sistema reproduce el mark previo.
 
