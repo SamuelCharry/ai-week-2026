@@ -45,8 +45,13 @@ class DecoderTransformers:
     def cerrar(self):
         self.modelo = None
 
-    def mensajes(self, entrada, pasajes, evidencia):
-        return politica.mensajes(entrada, pasajes, evidencia, self.config.get("max_caracteres_prompt", 1800))
+    def mensajes(self, entrada, pasajes, evidencia, extra=None):
+        """Prompt v04/05; `extra` (p. ej. las verificaciones de CoVe) va justo antes de las instrucciones."""
+        mensajes = politica.mensajes(entrada, pasajes, evidencia, self.config.get("max_caracteres_prompt", 1800))
+        if extra:
+            usuario = mensajes[-1]["content"].replace("\nINSTRUCCIONES\n", f"\n{extra}\n\nINSTRUCCIONES\n", 1)
+            mensajes = mensajes[:-1] + [{**mensajes[-1], "content": usuario}]
+        return mensajes
 
     def _tokens(self, mensajes, prefijo="{"):
         opciones = {"tokenize": True, "add_generation_prompt": True, "return_dict": False}
@@ -97,13 +102,22 @@ class DecoderTransformers:
         probabilidades = torch.softmax(logits[ids], dim=0).tolist()
         return dict(zip(letras, probabilidades))
 
-    def generar(self, entrada, pasajes, evidencia, prefijo="{"):
+    def generar(self, entrada, pasajes, evidencia, prefijo="{", repetition_penalty=None, extra=None):
+        """Objeto JSON de la respuesta. `repetition_penalty` reemplaza el de la configuración (reintento
+        cuando el JSON salió inválido); `extra` es un bloque adicional del prompt."""
+        return prefijo + self._continuar(self.mensajes(entrada, pasajes, evidencia, extra), prefijo,
+                                         self.config["max_nuevos_tokens"], repetition_penalty)
+
+    def redactar(self, mensajes, max_nuevos):
+        """Texto libre, sin JSON (hipótesis para la búsqueda, preguntas y respuestas de verificación)."""
+        return self._continuar(mensajes, "", max_nuevos).strip()
+
+    def _continuar(self, mensajes, prefijo, max_nuevos, repetition_penalty=None):
         import torch
 
-        tokens = torch.tensor([self._tokens(self.mensajes(entrada, pasajes, evidencia), prefijo)],
-                              device=self.config.get("dispositivo", "cuda"))
+        tokens = torch.tensor([self._tokens(mensajes, prefijo)], device=self.config.get("dispositivo", "cuda"))
+        penalizacion = repetition_penalty or self.config.get("repetition_penalty", 1.0)
         with torch.inference_mode():
-            salida = self.modelo.generate(tokens, max_new_tokens=self.config["max_nuevos_tokens"], do_sample=False,
-                                          repetition_penalty=self.config.get("repetition_penalty", 1.0),
-                                          pad_token_id=self.tokenizer.eos_token_id)
-        return prefijo + self.tokenizer.decode(salida[0, tokens.shape[-1]:], skip_special_tokens=True)
+            salida = self.modelo.generate(tokens, max_new_tokens=max_nuevos, do_sample=False,
+                                          repetition_penalty=penalizacion, pad_token_id=self.tokenizer.eos_token_id)
+        return self.tokenizer.decode(salida[0, tokens.shape[-1]:], skip_special_tokens=True)

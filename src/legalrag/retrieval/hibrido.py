@@ -217,15 +217,19 @@ class RecuperadorHibrido:
         except ImportError:
             pass
 
-    def ranking(self, entrada):
+    def ranking(self, entrada, expansion=None):
+        """`expansion`: texto extra de búsqueda (hipótesis del decoder, generation.pasos). Suma sus
+        rankings BM25 y denso a la fusión, y una búsqueda dentro de las normas que nombra; el reranker
+        sigue puntuando contra la pregunta."""
         c = self.config
         texto = consulta(entrada, c.get("consulta_con_tema", False))
         rankings = []
-        if c.get("usar_bm25", True):
-            rankings.append(self.fragmentos.bm25(texto, c["bm25_top"]))
-        if c.get("usar_denso", True) and self.indice is not None:
-            puntajes, posiciones = self.indice.search(self.encoder.codificar(texto), c["denso_top"])
-            rankings.append([(int(i) + 1, float(s)) for i, s in zip(posiciones[0], puntajes[0]) if i >= 0])
+        for busqueda in [texto] + ([expansion] if expansion else []):
+            if c.get("usar_bm25", True):
+                rankings.append(self.fragmentos.bm25(busqueda, c["bm25_top"]))
+            if c.get("usar_denso", True) and self.indice is not None:
+                puntajes, posiciones = self.indice.search(self.encoder.codificar(busqueda), c["denso_top"])
+                rankings.append([(int(i) + 1, float(s)) for i, s in zip(posiciones[0], puntajes[0]) if i >= 0])
         fijos, ruta, nombradas = [], [], {}
         if c.get("enrutar_normas", False):
             nombradas = self.evidencia.normas_de(entrada["pregunta"] + " " + " ".join((entrada.get("opciones") or {}).values()))
@@ -234,6 +238,11 @@ class RecuperadorHibrido:
                 rankings.append(ruta)
                 fijos = [f for doc_id, articulos in nombradas.items() for a in sorted(articulos)
                          for f in self.fragmentos.por_articulo(doc_id, a, 2)][:c.get("max_fijos", 3)]
+        if expansion:
+            # Normas que solo nombra la hipótesis: candidatos, sin lugar fijo ni reservado.
+            de_hipotesis = [d for d in self.evidencia.normas_de(expansion) if d not in nombradas]
+            if de_hipotesis:
+                rankings.append(self.fragmentos.bm25(texto + " " + expansion, c["bm25_top"], doc_ids=de_hipotesis))
         reservar = c.get("reservar_nombradas", 0) if nombradas else 0
         # Con reserva, los mejores de la búsqueda dentro de la norma nombrada entran siempre al reranker.
         de_ruta = [f for f, _ in ruta[:max(5, 2 * reservar)]] if reservar else []
@@ -249,9 +258,9 @@ class RecuperadorHibrido:
             docs = {f["id"]: f["doc_id"] for f in filas}
         # El artículo nombrado va primero; después, si se pide, los mejores pasajes de la norma nombrada.
         reservados = [x[0] for x in orden if x[0] not in fijos and docs.get(x[0]) in nombradas][:reservar]
-        if c.get("enrutar_normas", False):
+        if c.get("enrutar_normas", False) or expansion:
             self.ultima_traza = {"normas_nombradas": {k: sorted(v) for k, v in nombradas.items()}, "fijos": fijos,
-                                 "reservados": reservados}
+                                 "reservados": reservados, "expansion": expansion}
         primeros = fijos + reservados
         return [x for f in primeros for x in orden if x[0] == f] + [x for x in orden if x[0] not in primeros]
 
@@ -321,12 +330,12 @@ class RecuperadorHibrido:
             pasaje["encabezado"] = self.evidencia.encabezado(pasaje)
         return pasaje
 
-    def buscar(self, entrada):
+    def buscar(self, entrada, expansion=None):
         c = self.config
         if c.get("ajustes_solo_texto_libre") and entrada.get("formato") == "multiple_choice":
             # En la 4090 los ajustes subieron citas pero cambiaron la evidencia de una cerrada que se acertaba.
             self.config = {**c, "reservar_nombradas": 0, "max_por_documento": None, "min_normativos": 0}
         try:
-            return self.pasajes(self.ranking(entrada))
+            return self.pasajes(self.ranking(entrada, expansion))
         finally:
             self.config = c

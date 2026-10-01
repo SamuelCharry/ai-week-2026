@@ -14,6 +14,15 @@ Recorrido de una pregunta:
                                               respaldo quitadas (no se anula la respuesta), fundamento
                                               desde la evidencia; abstención solo sin evidencia
 
+Pasos opcionales del agente (configs/sistema.json, legalrag.generation.pasos), cada uno medible en src/comparar.py:
+
+    recuperacion.expansion = "debil"|"siempre"   hipótesis del decoder como consulta extra (HyDE/Query2doc),
+                                                 solo con evidencia débil (CRAG); texto libre salvo expansion_cerradas
+    generacion.regenerar_json                    un reintento con otra penalización de repetición si el JSON salió
+                                                 inválido o incompleto; se queda con la mejor de las dos
+    generacion.verificar                         CoVe: preguntas de verificación, respuestas solo con los pasajes y
+                                                 respuesta otra vez con ellas a la vista
+
 Requisitos del enunciado que dependen de esta clase:
 
     - Temperatura 0: la salida debe ser reproducible en la verificación en vivo.
@@ -27,6 +36,13 @@ import json
 from pathlib import Path
 
 
+def gravedad(problema):
+    """Qué tan mala salió una respuesta, para decidir si un reintento o una verificación la mejora."""
+    if str(problema).startswith("esquema_oficial"):
+        return 3  # se entrega como abstención
+    return {"json_invalido": 2, "campos_rellenados": 1}.get(problema, 0)
+
+
 class Sistema:
     def __init__(self, raiz, config):
         from legalrag.generation.decoder import DecoderTransformers
@@ -37,7 +53,7 @@ class Sistema:
         self.recuperador = RecuperadorHibrido(self.raiz, config["recuperacion"])
         self.decoder = DecoderTransformers(config["generacion"])
         self.validador = None
-        self.ultimo_problema = self.ultimo_registro = None
+        self.ultimo_problema = self.ultimo_registro = self.ultima_expansion = None
 
     def abrir(self):
         """Carga índice, encoder, reranker y decoder. Se llama una vez antes de responder."""
@@ -54,8 +70,27 @@ class Sistema:
         self.recuperador.cerrar()
 
     def recuperar(self, entrada):
-        """Pasajes de la pregunta, ordenados por el reranker."""
-        return self.recuperador.buscar(entrada)
+        """Pasajes de la pregunta, ordenados por el reranker.
+
+        Con `recuperacion.expansion` ("debil" o "siempre") el decoder escribe una hipótesis de respuesta
+        y se vuelve a buscar con ella (generation.pasos: HyDE/Query2doc, activado como en CRAG)."""
+        from legalrag.generation import pasos
+
+        rec = self.config["recuperacion"]
+        pasajes = self.recuperador.buscar(entrada)
+        self.ultima_expansion = None
+        modo = rec.get("expansion")
+        if not modo or (entrada["formato"] == "multiple_choice" and not rec.get("expansion_cerradas")):
+            return pasajes
+        debil, motivo = pasos.evidencia_debil(pasajes, rec.get("umbral_evidencia_debil"))
+        self.ultima_expansion = {"motivo": motivo, "puntaje_maximo": max((p["score"] for p in pasajes), default=None)}
+        if modo == "debil" and not debil:
+            return pasajes
+        hipotesis = self.decoder.redactar(pasos.mensajes_hipotesis(entrada), rec.get("max_tokens_hipotesis", 160))
+        expandidos = self.recuperador.buscar(entrada, expansion=hipotesis)
+        self.ultima_expansion.update(hipotesis=hipotesis, docs_antes=[p["doc_id"] for p in pasajes],
+                                     docs_despues=[p["doc_id"] for p in expandidos])
+        return expandidos
 
     def responder(self, entrada, pasajes):
         """Objeto de entrega con el mismo id y formato. `ultimo_problema` resume los arreglos."""
@@ -67,10 +102,13 @@ class Sistema:
             self.ultimo_problema = "sin_evidencia_en_contexto"
             return abstencion(entrada, pasajes)
         probabilidades = eleccion = None
-        modo = self.config["generacion"].get("letra_por_probabilidad")
+        gen = self.config["generacion"]
+        modo = gen.get("letra_por_probabilidad")
+        prefijo = "{"
         if entrada["formato"] == "multiple_choice" and modo == "razonada":
             # Primero razona (justificación) y después se comparan las letras con ese razonamiento escrito.
-            crudo = self.decoder.generar(entrada, usados, evidencia, prefijo='{"justificacion": "')
+            prefijo = '{"justificacion": "'
+            crudo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo)
             razon = justificacion_de(crudo)
             probabilidades = self.decoder.probabilidades_letras(
                 entrada, usados, evidencia,
@@ -78,7 +116,6 @@ class Sistema:
             letra = max(sorted(probabilidades), key=probabilidades.get)
         elif entrada["formato"] == "multiple_choice" and modo:
             # La letra sale de comparar las opciones sin generar texto; el texto se genera ya con esa letra.
-            gen = self.config["generacion"]
             if gen.get("permutar_opciones") or gen.get("descarte_mantener"):
                 # Permutaciones (quita el sesgo por posición) y descarte en dos pasos (generation.eleccion).
                 from legalrag.generation.eleccion import elegir
@@ -90,22 +127,61 @@ class Sistema:
             else:
                 probabilidades = self.decoder.probabilidades_letras(entrada, usados, evidencia)
                 letra = max(sorted(probabilidades), key=probabilidades.get)
-            crudo = self.decoder.generar(entrada, usados, evidencia,
-                                         prefijo=f'{{"respuesta_correcta": "{letra}", "justificacion": "')
+            prefijo = f'{{"respuesta_correcta": "{letra}", "justificacion": "'
+            crudo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo)
         else:
             crudo = self.decoder.generar(entrada, usados, evidencia)
         # Con entregar_todos, la evidencia entregada son los pasajes recuperados completos (máx. 10), aunque el
         # prompt solo haya usado los que caben: el respaldo de citas y el fundamento se miden sobre ellos.
-        entregados = pasajes[:10] if self.config["generacion"].get("entregar_todos") else usados
-        respuesta, registro = respuesta_final(entrada, crudo, entregados, evidencia,
-                                              self.config["generacion"]["politica"], self.validador)
+        entregados = pasajes[:10] if gen.get("entregar_todos") else usados
+
+        def final(texto):
+            return respuesta_final(entrada, texto, entregados, evidencia, gen["politica"], self.validador)
+
+        respuesta, registro = final(crudo)
+        verificacion = None
+        if gen.get("verificar") and entrada["formato"] in gen.get("verificar_formatos", ["semi_open", "open_ended"]) \
+                and registro["problema"] != "json_invalido":
+            # CoVe factorizado: preguntas desde el borrador, respuestas solo con los pasajes, y respuesta de nuevo.
+            verificacion = self._verificar(entrada, usados, evidencia, respuesta)
+            nuevo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo, extra=verificacion["bloque"])
+            respuesta_v, registro_v = final(nuevo)
+            verificacion["aceptada"] = gravedad(registro_v["problema"]) <= gravedad(registro["problema"])
+            if verificacion["aceptada"]:
+                crudo, respuesta, registro = nuevo, respuesta_v, registro_v
+        reintento = None
+        if gen.get("regenerar_json") and gravedad(registro["problema"]) >= 1:
+            # Greedy repite la misma salida: el reintento cambia la penalización de repetición (los JSON
+            # inválidos casi siempre son bucles que agotan los tokens).
+            nuevo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo,
+                                         repetition_penalty=gen.get("repetition_penalty_reintento", 1.3))
+            respuesta_r, registro_r = final(nuevo)
+            reintento = {"problema_antes": registro["problema"], "problema_despues": registro_r["problema"]}
+            if gravedad(registro_r["problema"]) < gravedad(registro["problema"]):
+                crudo, respuesta, registro = nuevo, respuesta_r, registro_r
         if probabilidades and not respuesta.get("abstencion"):
             respuesta["respuesta_correcta"] = letra
             respuesta["descarte_opciones"] = {k: v for k, v in respuesta["descarte_opciones"].items() if k != letra}
         self.ultimo_problema = registro["problema"]
         self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades, "eleccion": eleccion,
-                                "pasajes_en_prompt": len(usados), "pasajes_entregados": len(entregados)}
+                                "pasajes_en_prompt": len(usados), "pasajes_entregados": len(entregados),
+                                "expansion": self.ultima_expansion, "verificacion": verificacion,
+                                "reintento_json": reintento}
         return respuesta
+
+    def _verificar(self, entrada, usados, evidencia, borrador):
+        from legalrag.citations.verificacion import texto_citable
+        from legalrag.generation import pasos, politica
+
+        gen = self.config["generacion"]
+        maximo = gen.get("verificar_preguntas", 3)
+        preguntas = pasos.preguntas_de(
+            self.decoder.redactar(pasos.mensajes_preguntas(entrada, texto_citable(borrador), maximo), 120), maximo)
+        bloque = politica.bloque_pasajes(usados, evidencia, gen.get("max_caracteres_prompt", 1800))
+        respuestas = self.decoder.redactar(pasos.mensajes_respuestas(entrada, preguntas, bloque), 60 * len(preguntas) + 40) \
+            if preguntas else ""
+        return {"preguntas": preguntas, "respuestas": respuestas,
+                "bloque": pasos.bloque_verificacion(preguntas, respuestas) if preguntas else None}
 
     def __enter__(self):
         self.abrir()

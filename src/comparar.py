@@ -78,6 +78,8 @@ DECODERS = {
                    "parametros": 3212749824, "licencia": "llama3.2"},
 }
 
+QWEN3_DIRECTA = {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True}
+
 # Variantes del sistema: rutas "seccion.clave" sobre configs/sistema.json.
 VARIANTES_SISTEMA = {
     "qwen25-7b": {},
@@ -93,6 +95,18 @@ VARIANTES_SISTEMA = {
                           "generacion.descarte_mantener": 2},
     "qwen3-8b-permutado-descarte": {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
                                     "generacion.permutar_opciones": True, "generacion.descarte_mantener": 2},
+    # Pasos extra del agente sobre qwen3-8b-letra-directa (40,00): expansión HyDE/Query2doc activada como en
+    # CRAG (solo texto libre), reintento de JSON inválido y verificación en cadena (CoVe). Ver generation.pasos.
+    "qwen3-8b-expansion-debil": {**QWEN3_DIRECTA, "recuperacion.expansion": "debil",
+                                 "recuperacion.umbral_evidencia_debil": 0.0},
+    "qwen3-8b-expansion-siempre": {**QWEN3_DIRECTA, "recuperacion.expansion": "siempre"},
+    "qwen3-8b-regenerar-json": {**QWEN3_DIRECTA, "generacion.regenerar_json": True},
+    "qwen3-8b-cove": {**QWEN3_DIRECTA, "generacion.verificar": True},
+    "qwen3-8b-mejoras": {**QWEN3_DIRECTA, "recuperacion.expansion": "debil", "recuperacion.umbral_evidencia_debil": 0.0,
+                         "generacion.regenerar_json": True},
+    "qwen3-8b-mejoras-cove": {**QWEN3_DIRECTA, "recuperacion.expansion": "debil",
+                              "recuperacion.umbral_evidencia_debil": 0.0, "generacion.regenerar_json": True,
+                              "generacion.verificar": True},
     "mistral-7b": {"generacion.decoder": DECODERS["mistral-7b"]},
     "phi4-mini": {"generacion.decoder": DECODERS["phi4-mini"]},
     "gemma3-4b": {"generacion.decoder": DECODERS["gemma3-4b"]},
@@ -221,11 +235,24 @@ def comparar_sistema(config, variantes, ids, ragas):
                 "errores": len(resumen["errores"]), "errores_esquema": len(resumen["errores_esquema"] or []),
                 "s_por_pregunta": round(resumen["segundos_promedio"] or 0, 1),
                 "minutos": round((time.perf_counter() - inicio) / 60, 1)}
-        problemas = {}
+        problemas, pasos = {}, {}
         for archivo in salida.with_name(salida.stem + "_respuestas").glob("*.json"):
-            problema = (json.loads(archivo.read_text(encoding="utf-8")).get("problema") or "limpia").split(":")[0]
+            guardada = json.loads(archivo.read_text(encoding="utf-8"))
+            problema = (guardada.get("problema") or "limpia").split(":")[0]
             problemas[problema] = problemas.get(problema, 0) + 1
+            registro = guardada.get("registro") or {}
+            # Cuántas veces actuó cada paso del agente (generation.pasos) y cuántas cambió la respuesta.
+            for paso, actuo in (("expandidas", (registro.get("expansion") or {}).get("hipotesis")),
+                                ("verificadas", registro.get("verificacion")),
+                                ("verificacion_aceptada", (registro.get("verificacion") or {}).get("aceptada")),
+                                ("reintentos_json", registro.get("reintento_json")),
+                                ("reintento_mejoro", (registro.get("reintento_json") or {}).get("problema_despues")
+                                 != (registro.get("reintento_json") or {}).get("problema_antes")
+                                 if registro.get("reintento_json") else None)):
+                if actuo:
+                    pasos[paso] = pasos.get(paso, 0) + 1
         fila["problemas"] = json.dumps(problemas, ensure_ascii=False)
+        fila["pasos"] = json.dumps(pasos, ensure_ascii=False)
         if not ids:
             reporte = salida.with_name("reporte.json")
             subprocess.run([sys.executable, str(RAIZ / config["oficial"] / "scripts/evaluate.py"), "--submission",
@@ -241,7 +268,7 @@ def comparar_sistema(config, variantes, ids, ragas):
         escribir_csv(SALIDA / "sistema.csv", filas)
     print("\nSistema")
     imprimir(filas, ["variante", "total", "posibles", "cerradas", "aciertos_cerradas", "citas", "recall_citas",
-                     "sin_respaldo", "abstencion", "ragas", "abstenciones", "s_por_pregunta", "problemas"])
+                     "sin_respaldo", "abstencion", "ragas", "abstenciones", "s_por_pregunta", "problemas", "pasos"])
 
 
 def main():
