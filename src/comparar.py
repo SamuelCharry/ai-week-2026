@@ -12,7 +12,7 @@ Etapa 2 · sistema completo con el evaluador oficial (cerradas 20, citas 20, abs
 --ragas también texto libre 30). Cada variante guarda sus respuestas y se reanuda si se corta.
 
     python3 src/comparar.py --sistema
-    python3 src/comparar.py --sistema --variantes qwen25-7b qwen3-4b-2507
+    python3 src/comparar.py --sistema --variantes entrega cerberus-mk3
     python3 src/comparar.py --sistema --ids 51 79 140      # prueba corta
 
 Las variantes comparten un caché de generaciones (data/comparacion/cache_generaciones.sqlite): con greedy, el
@@ -84,144 +84,48 @@ DECODERS = {
                    "parametros": 3212749824, "licencia": "llama3.2"},
 }
 
-# Base sin agentes: configs/sistema.json trae los tres agentes (configuración de entrega) y las variantes se
-# aplican sobre ella, así que la base los apaga de forma explícita para que las comparaciones sigan siendo válidas.
+# Base sin agentes: configs/sistema.json trae los agentes (configuración de entrega) y las variantes se aplican
+# sobre ella, así que la base los apaga de forma explícita para que las comparaciones sigan siendo válidas.
 QWEN3_DIRECTA = {"generacion.decoder": DECODERS["qwen3-8b"], "generacion.letra_por_probabilidad": True,
                  "recuperacion.expansion": None, "recuperacion.agente_expansion": "hipotesis",
                  "recuperacion.expansion_articulos": False, "recuperacion.max_tokens_hipotesis": 160,
-                 "recuperacion.reservar_expansion": 0,
-                 "generacion.calculadora": False, "generacion.normalizador_citas": False}
+                 "recuperacion.reservar_expansion": 0, "generacion.calculadora": False,
+                 "generacion.normalizador_citas": False, "generacion.razonar_con_herramienta": False,
+                 "generacion.estilo": None}
 
 RERANKERS = {
     "bge": {"repo_id": "BAAI/bge-reranker-v2-m3", "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"},
     "qwen3-0.6b": {"repo_id": "Qwen/Qwen3-Reranker-0.6B", "revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
                    "parametros": 595776512, "licencia": "apache-2.0"},
-    # ~8 GB en bf16: no cabe junto a Qwen3-8B en bf16 en 24 GB; se mide primero solo en recuperación.
+    # ~8 GB en bf16: no cabe junto a Qwen3-8B en bf16 en 24 GB; se mide solo en recuperación (--rerankers).
     "qwen3-4b": {"repo_id": "Qwen/Qwen3-Reranker-4B", "revision": "22e683669bc0f0bd69640a1354a6d0aebcfeede5",
                  "parametros": 4021784576, "licencia": "apache-2.0"},
 }
 
+# Modelo NLI de la aproximación local de RAGAS (legalrag.evaluation.ragas_local).
 VERIFICADOR_NLI = {"modelo": {"repo_id": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
                               "revision": "b5113eb38ab63efdd7f280f8c144ea8b13f978ce", "parametros": 278812163,
-                              "licencia": "mit"},
-                   "modo": "registrar", "umbral_implica": 0.5, "umbral_contradice": 0.9}
+                              "licencia": "mit"}}
 
-# Segundos agentes (otra familia que Qwen, ≤ 8.000 M). Llama-3.1-8B pide aceptar su licencia en Hugging Face
-# (huggingface-cli login); Salamandra-7B no, y es nativo en español. Ambos los sugiere el enunciado (§3.1).
-SEGUNDOS = {
-    "llama31-8b": {"repo_id": "meta-llama/Llama-3.1-8B-Instruct", "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
-                   "parametros": 8030261248, "licencia": "llama3.1",
-                   "admitido_por_enunciado": "§3.1 del enunciado: opción sugerida meta-llama/Llama-3.1-8B-Instruct"},
-    "salamandra-7b": DECODERS["salamandra-7b"],
-}
-
-
-def multiagente(segundo, juez=True, opinion=True):
-    return {**QWEN3_DIRECTA, "agentes": {"segundo": SEGUNDOS[segundo], "juez_evidencia": juez, "segunda_opinion": opinion}}
-
-
-# Agente reformulador: en cada pregunta de texto libre lista las normas aplicables; se buscan por nombre y sus
-# artículos entran como candidatos al reranker (auditoría: 58 y 247 se pierden antes del reranker).
-REFORMULADOR = {"recuperacion.expansion": "siempre", "recuperacion.agente_expansion": "normas",
+# Cerberus Mark 2: reformulador que lista normas de memoria (sus normas reservadas en la evidencia), calculadora y
+# normalizador. Medido: = base en el puntaje determinista, RAGAS≈ 10,63 → 12,58; el reformulador inventó normas.
+CERBERUS_MK2 = {"recuperacion.expansion": "siempre", "recuperacion.agente_expansion": "normas",
                 "recuperacion.expansion_articulos": True, "recuperacion.max_tokens_hipotesis": 120,
-                "recuperacion.reservar_expansion": 2}
+                "recuperacion.reservar_expansion": 2, "generacion.calculadora": True,
+                "generacion.normalizador_citas": True, "generacion.razonar_con_herramienta": False,
+                "generacion.estilo": None}
+# Cerberus Mark 3: reformulador anclado en los primeros pasajes (ITER-RETGEN), razonar antes de la letra cuando
+# las herramientas dejan una nota (528) y redacción directa alineada con la métrica de texto libre.
+CERBERUS_MK3 = {**CERBERUS_MK2, "recuperacion.agente_expansion": "iterativo",
+                "generacion.razonar_con_herramienta": True, "generacion.estilo": "directo"}
 
-# Expansión solo cuando el reranker no encontró nada convincente y la pregunta no nombra una norma del corpus
-# (Adaptive-RAG); en la corrida anterior el criterio "ambos" la activó en 26 de 35 preguntas de texto libre.
-CALIBRADA = {**QWEN3_DIRECTA, "recuperacion.expansion": "debil", "recuperacion.criterio_evidencia_debil": "puntaje",
-             "recuperacion.umbral_evidencia_debil": 0.0, "recuperacion.expansion_sin_norma_nombrada": True,
-             "generacion.regenerar_json": True}
-
-# Variantes del sistema: rutas "seccion.clave" sobre configs/sistema.json.
+# Variantes del sistema: rutas "seccion.clave" sobre configs/sistema.json. Máximo 2 por prueba.
 VARIANTES_SISTEMA = {
-    "qwen25-7b": {},
-    "qwen3-4b-2507": {"generacion.decoder": DECODERS["qwen3-4b-2507"]},
-    "salamandra-7b": {"generacion.decoder": DECODERS["salamandra-7b"]},
-    # Qwen3-8B sobre la mejor configuración (38,43): letra razonada y recuperación en texto libre.
-    "qwen3-8b": {**QWEN3_DIRECTA, "generacion.letra_por_probabilidad": "razonada"},
-    "qwen3-8b-letra-directa": {**QWEN3_DIRECTA},
-    # Permutaciones de las opciones (sesgo por posición) y descarte POE sobre Qwen3-8B con letra directa.
-    "qwen3-8b-permutado": {**QWEN3_DIRECTA,
-                           "generacion.permutar_opciones": True},
-    "qwen3-8b-descarte": {**QWEN3_DIRECTA,
-                          "generacion.descarte_mantener": 2},
-    "qwen3-8b-permutado-descarte": {**QWEN3_DIRECTA,
-                                    "generacion.permutar_opciones": True, "generacion.descarte_mantener": 2},
-    # Pasos extra del agente sobre qwen3-8b-letra-directa (40,00): expansión HyDE/Query2doc activada como en
-    # CRAG (solo texto libre), reintento de JSON inválido y verificación en cadena (CoVe). Ver generation.pasos.
-    "qwen3-8b-expansion-debil": {**QWEN3_DIRECTA, "recuperacion.expansion": "debil",
-                                 "recuperacion.umbral_evidencia_debil": 0.0},
-    "qwen3-8b-expansion-siempre": {**QWEN3_DIRECTA, "recuperacion.expansion": "siempre"},
-    "qwen3-8b-regenerar-json": {**QWEN3_DIRECTA, "generacion.regenerar_json": True},
-    "qwen3-8b-cove": {**QWEN3_DIRECTA, "generacion.verificar": True},
-    "qwen3-8b-mejoras": {**QWEN3_DIRECTA, "recuperacion.expansion": "debil", "recuperacion.umbral_evidencia_debil": 0.0,
-                         "generacion.regenerar_json": True},
-    "qwen3-8b-mejoras-cove": {**QWEN3_DIRECTA, "recuperacion.expansion": "debil",
-                              "recuperacion.umbral_evidencia_debil": 0.0, "generacion.regenerar_json": True,
-                              "generacion.verificar": True},
-    # Ronda 2: expansión calibrada, recuperación por opción en cerradas, verificador NLI y reranker Qwen3.
-    "qwen3-8b-calibrada": CALIBRADA,
-    "qwen3-8b-calibrada-opciones": {**CALIBRADA, "recuperacion.recuperar_por_opcion": True},
-    "qwen3-8b-calibrada-opciones-nli": {**CALIBRADA, "recuperacion.recuperar_por_opcion": True,
-                                        "generacion.verificador_nli": VERIFICADOR_NLI},
-    "qwen3-8b-calibrada-opciones-rr06": {**CALIBRADA, "recuperacion.recuperar_por_opcion": True,
-                                         "recuperacion.reranker": RERANKERS["qwen3-0.6b"]},
-    # Agente calculadora (generation.calculadora): montos de la pregunta en SMMLV y UVT con los decretos del corpus.
-    "qwen3-8b-calculadora": {**QWEN3_DIRECTA, "generacion.calculadora": True},
-    # Ronda 4 (tras la auditoría de fallas): herramientas y reformulador, sobre qwen3-8b-letra-directa.
-    "qwen3-8b-normalizador": {**QWEN3_DIRECTA, "generacion.normalizador_citas": True},
-    "qwen3-8b-reformulador": {**QWEN3_DIRECTA, **REFORMULADOR},
-    # Configuración de entrega (configs/sistema.json): los tres agentes.
-    "qwen3-8b-agentes": {**QWEN3_DIRECTA, **REFORMULADOR, "generacion.calculadora": True,
-                         "generacion.normalizador_citas": True},
-    "entrega": {},  # configs/sistema.json tal cual: debe dar lo mismo que qwen3-8b-agentes
-    # Entrega con Qwen3-Reranker-0.6B (1,2 GB: cabe junto a Qwen3-8B). MMTEB-R 66 frente a 58 de BGE-v2-m3.
+    "qwen3-8b-letra-directa": {**QWEN3_DIRECTA},             # base sin agentes (40,00 antes del índice corregido)
+    "cerberus-mk2": {**QWEN3_DIRECTA, **CERBERUS_MK2},
+    "cerberus-mk3": {**QWEN3_DIRECTA, **CERBERUS_MK3},
+    "entrega": {},                                           # configs/sistema.json tal cual
     "entrega-qwen3-reranker": {"recuperacion.reranker": RERANKERS["qwen3-0.6b"]},
-    # v2: reformulador anclado en los primeros pasajes (ITER-RETGEN) y razonar antes de la letra cuando hay cálculo.
-    "entrega-v2": {"recuperacion.agente_expansion": "iterativo", "generacion.razonar_con_herramienta": True},
-    "qwen3-8b-agentes-cerradas": {**QWEN3_DIRECTA, **REFORMULADOR, "recuperacion.expansion_cerradas": True,
-                                  "generacion.calculadora": True, "generacion.normalizador_citas": True},
-    # Redacción alineada con la métrica de texto libre (politica.INSTRUCCIONES_DIRECTAS); se mide con RAGAS≈.
-    "qwen3-8b-agentes-directo": {**QWEN3_DIRECTA, **REFORMULADOR, "generacion.calculadora": True,
-                                 "generacion.normalizador_citas": True, "generacion.estilo": "directo",
-                                 "generacion.politica.maximo_abiertas": 3},
-    # Ronda 3: multiagente por etapas sobre qwen3-8b-letra-directa (agent.componentes.preparar_lote).
-    "multiagente-llama": multiagente("llama31-8b"),
-    "multiagente-llama-juez": multiagente("llama31-8b", opinion=False),
-    "multiagente-llama-opinion": multiagente("llama31-8b", juez=False),
-    "multiagente-salamandra": multiagente("salamandra-7b"),
-    "multiagente-salamandra-juez": multiagente("salamandra-7b", opinion=False),
-    "multiagente-salamandra-opinion": multiagente("salamandra-7b", juez=False),
-    "mistral-7b": {"generacion.decoder": DECODERS["mistral-7b"]},
-    "phi4-mini": {"generacion.decoder": DECODERS["phi4-mini"]},
-    "gemma3-4b": {"generacion.decoder": DECODERS["gemma3-4b"]},
-    "llama32-3b": {"generacion.decoder": DECODERS["llama32-3b"]},
-    # Evidencia completa: los 10 pasajes recuperados se entregan siempre; con más contexto el modelo los lee todos.
-    "todos10": {"generacion.entregar_todos": True},
-    "todos10-ctx10k": {"generacion.entregar_todos": True, "generacion.contexto": 10240},
-    "todos10-ctx10k-recuperacion": {"generacion.entregar_todos": True, "generacion.contexto": 10240,
-                                    "recuperacion.reservar_nombradas": 2, "recuperacion.max_por_documento": 3,
-                                    "recuperacion.min_normativos": 2},
-    # Letra razonada (explícita, no depende de configs/sistema.json) con los ajustes de recuperación solo en texto libre.
-    "razonada-recuperacion-texto-libre": {"generacion.letra_por_probabilidad": "razonada",
-                                          "recuperacion.reservar_nombradas": 2, "recuperacion.max_por_documento": 3,
-                                          "recuperacion.min_normativos": 2, "recuperacion.ajustes_solo_texto_libre": True},
-    "qwen25-7b-sin-enrutar": {"recuperacion.enrutar_normas": False},
-    # Fundamento con las normas dueñas de los pasajes, sin las que los pasajes mencionan (corrida de 30,75).
-    "qwen25-7b-citar-todas": {"generacion.politica": {"citar_evidencia": "todas", "abstener_libre": "sin_evidencia",
-                                                      "saneo": "cita"}},
-    # Fundamento solo con las normas que el modelo nombró (la política de la primera corrida en la 4090: 29,07).
-    "qwen25-7b-citar-usadas": {"generacion.politica": {"citar_evidencia": "usadas", "abstener_libre": "sin_evidencia",
-                                                       "saneo": "cita"}},
-    "qwen3-4b-2507-citar-usadas": {"generacion.decoder": DECODERS["qwen3-4b-2507"],
-                                   "generacion.politica": {"citar_evidencia": "usadas", "abstener_libre": "sin_evidencia",
-                                                           "saneo": "cita"}},
-    # Razona primero (justificación) y elige la letra después, comparando A-D con ese razonamiento escrito.
-    "qwen25-7b-letra-razonada": {"generacion.letra_por_probabilidad": "razonada"},
-    "qwen3-4b-2507-letra-razonada": {"generacion.decoder": DECODERS["qwen3-4b-2507"],
-                                     "generacion.letra_por_probabilidad": "razonada"},
-    "qwen25-7b-saneo-oracion": {"generacion.politica": {"citar_evidencia": "todas", "abstener_libre": "sin_evidencia",
-                                                        "saneo": "oracion"}},
 }
 
 
@@ -388,19 +292,13 @@ def informe(filas, detalles):
         pasos = json.loads(f["pasos"])
         texto_pasos = []
         if pasos.get("expandidas"):
-            texto_pasos.append(f"expandidas {pasos['expandidas']}")
+            texto_pasos.append(f"reformuladas {pasos['expandidas']}")
+        if pasos.get("con_nota"):
+            texto_pasos.append(f"con nota de herramientas {pasos['con_nota']}")
+        if pasos.get("razonadas"):
+            texto_pasos.append(f"razonadas {pasos['razonadas']}")
         if pasos.get("reintentos_json"):
             texto_pasos.append(f"reintentos JSON {pasos['reintentos_json']} (mejoraron {pasos.get('reintento_mejoro', 0)})")
-        if pasos.get("verificadas"):
-            texto_pasos.append(f"verificadas {pasos['verificadas']} (aceptadas {pasos.get('verificacion_aceptada', 0)})")
-        if pasos.get("juzgadas"):
-            texto_pasos.append(f"juez: {pasos['juzgadas']} preguntas, descartó {pasos.get('pasajes_descartados', 0)} pasajes")
-        if pasos.get("segunda_opinion"):
-            texto_pasos.append(f"segunda opinión: {pasos['segunda_opinion']} cerradas, cambió la letra en "
-                               f"{pasos.get('opinion_cambio_letra', 0)}")
-        if pasos.get("nli_oraciones"):
-            texto_pasos.append(f"NLI: respaldadas {pasos.get('nli_respaldadas', 0)}/{pasos['nli_oraciones']} oraciones, "
-                               f"contradichas {pasos.get('nli_contradichas', 0)}, quitadas {pasos.get('nli_quitadas', 0)}")
         delta = None
         if f.get("total") is not None and base.get("total") is not None and f is not base:
             delta = f"{f['total'] - base['total']:+.2f}"
@@ -542,32 +440,16 @@ def comparar_sistema(config, variantes, ids, ragas, cache=True, aproximar_ragas=
             problema = (guardada.get("problema") or "limpia").split(":")[0]
             problemas[problema] = problemas.get(problema, 0) + 1
             registro = guardada.get("registro") or {}
-            # Cuántas veces actuó cada paso del agente (generation.pasos) y cuántas cambió la respuesta.
+            # Cuántas veces actuó cada agente y cuántas mejoró el reintento de JSON.
+            reintento = registro.get("reintento_json") or {}
             for paso, actuo in (("expandidas", (registro.get("expansion") or {}).get("hipotesis")),
-                                ("verificadas", registro.get("verificacion")),
-                                ("verificacion_aceptada", (registro.get("verificacion") or {}).get("aceptada")),
-                                ("reintentos_json", registro.get("reintento_json")),
-                                ("reintento_mejoro", (registro.get("reintento_json") or {}).get("problema_despues")
-                                 != (registro.get("reintento_json") or {}).get("problema_antes")
-                                 if registro.get("reintento_json") else None)):
+                                ("con_nota", registro.get("calculadora")),
+                                ("razonadas", registro.get("modo_letra") == "razonada"),
+                                ("reintentos_json", bool(reintento)),
+                                ("reintento_mejoro", reintento and reintento.get("problema_despues")
+                                 != reintento.get("problema_antes"))):
                 if actuo:
                     pasos[paso] = pasos.get(paso, 0) + 1
-            if registro.get("juez_evidencia"):
-                pasos["juzgadas"] = pasos.get("juzgadas", 0) + 1
-                pasos["pasajes_descartados"] = pasos.get("pasajes_descartados", 0) + sum(
-                    j["si"] < 0.5 for j in registro["juez_evidencia"])
-            if registro.get("letras_segundo") and registro.get("letras_principal"):
-                pasos["segunda_opinion"] = pasos.get("segunda_opinion", 0) + 1
-                principal = registro["letras_principal"]
-                final = registro.get("probabilidades_letras") or principal
-                if max(sorted(principal), key=principal.get) != max(sorted(final), key=final.get):
-                    pasos["opinion_cambio_letra"] = pasos.get("opinion_cambio_letra", 0) + 1
-            nli = registro.get("verificacion_nli") or {}
-            for clave in ("oraciones", "respaldadas", "contradichas"):
-                if nli.get(clave):
-                    pasos[f"nli_{clave}"] = pasos.get(f"nli_{clave}", 0) + nli[clave]
-            if nli.get("quitadas"):
-                pasos["nli_quitadas"] = pasos.get("nli_quitadas", 0) + len(nli["quitadas"])
         fila["problemas"] = json.dumps(problemas, ensure_ascii=False)
         fila["pasos"] = json.dumps(pasos, ensure_ascii=False)
         if not ids:
@@ -602,8 +484,8 @@ def main():
     ap.add_argument("--recuperacion", action="store_true", help="etapa 1: recuperación sin decoder")
     ap.add_argument("--sistema", action="store_true", help="etapa 2: sistema completo con evaluador oficial")
     ap.add_argument("--encoders", nargs="+", default=list(ENCODERS), choices=list(ENCODERS))
-    ap.add_argument("--variantes", nargs="+", default=["qwen3-8b-letra-directa", "entrega"], choices=list(VARIANTES_SISTEMA),
-                    help="por defecto: la base sin agentes y la configuración de entrega (máximo 2 por prueba)")
+    ap.add_argument("--variantes", nargs="+", default=["entrega", "cerberus-mk3"], choices=list(VARIANTES_SISTEMA),
+                    help="por defecto: la entrega actual y Cerberus Mark 3 (máximo 2 por prueba)")
     ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas (prueba corta)")
     ap.add_argument("--ragas", action="store_true", help="incluye el juez de texto libre (OPENROUTER_API_KEY)")
     ap.add_argument("--rerankers", nargs="+", choices=list(RERANKERS),

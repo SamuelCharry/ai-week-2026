@@ -50,23 +50,10 @@ def responder_lote(raiz, entrada, salida, config, sistema=None, reanudar=True, i
         sistema.abrir()
     respuestas, latencias, errores = [], [], []
 
-    def firma_de(pregunta):
-        return _firma({"config": firma_config, "entrada": pregunta})
-
-    def guardada_valida(pregunta):
-        destino = carpeta / f"{pregunta['id']}.json"
-        return reanudar and destino.is_file() and \
-            json.loads(destino.read_text(encoding="utf-8")).get("firma") == firma_de(pregunta)
-
     try:
-        # Sistemas por etapas (agent.componentes con `agentes`): cada modelo recorre todas las preguntas
-        # pendientes una vez, de a una, antes de que responda el decoder principal.
-        previos = {}
-        if hasattr(sistema, "preparar_lote"):
-            previos = sistema.preparar_lote([p for p in entradas if not guardada_valida(p)]) or {}
         for n, pregunta in enumerate(entradas, 1):
             destino = carpeta / f"{pregunta['id']}.json"
-            firma = firma_de(pregunta)
+            firma = _firma({"config": firma_config, "entrada": pregunta})
             if reanudar and destino.is_file():
                 guardada = json.loads(destino.read_text(encoding="utf-8"))
                 if guardada.get("firma") == firma:
@@ -86,7 +73,7 @@ def responder_lote(raiz, entrada, salida, config, sistema=None, reanudar=True, i
                 errores.append({"id": pregunta["id"], "error": type(error).__name__, "detalle": str(error)})
                 print(f"{n}/{len(entradas)} id={pregunta['id']}: {type(error).__name__}: {error}", flush=True)
                 continue
-            segundos = time.perf_counter() - inicio + previos.get(pregunta["id"], 0.0)
+            segundos = time.perf_counter() - inicio
             guardar_json(destino, {"firma": firma, "respuesta": respuesta, "segundos": segundos,
                                    "problema": getattr(sistema, "ultimo_problema", None),
                                    "registro": getattr(sistema, "ultimo_registro", None),

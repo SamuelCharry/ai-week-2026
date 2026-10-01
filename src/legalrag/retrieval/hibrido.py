@@ -20,7 +20,8 @@ activable en `configs/sistema.json` para poder medirlo:
     min_normativos     pasajes mínimos de leyes, decretos, códigos o Constitución cuando hay candidatos.
     ajustes_solo_texto_libre  los tres anteriores solo en semiabiertas y abiertas (las cerradas conservan su
                        evidencia).
-    recuperar_por_opcion en cerradas, una búsqueda BM25 + densa más por opción (pregunta + opción).
+    reservar_expansion   N lugares de la evidencia para las normas que nombra el agente reformulador.
+    expansion_articulos  los artículos que nombra el agente entran como candidatos al reranker.
 
 El reranker es BGE-v2-m3 o Qwen3-Reranker (0.6B/4B), según `reranker.repo_id`.
 """
@@ -278,12 +279,7 @@ class RecuperadorHibrido:
         c = self.config
         texto = consulta(entrada, c.get("consulta_con_tema", False))
         rankings = []
-        busquedas = [texto] + ([expansion] if expansion else [])
-        if c.get("recuperar_por_opcion") and entrada.get("opciones"):
-            # Options-aware retrieval (2025): una búsqueda por opción, con la pregunta, para traer la evidencia que
-            # distingue entre las opciones; el reranker sigue puntuando contra la pregunta completa.
-            busquedas += [entrada["pregunta"].strip() + "\n" + opcion for opcion in entrada["opciones"].values()]
-        for busqueda in busquedas:
+        for busqueda in [texto] + ([expansion] if expansion else []):
             if c.get("usar_bm25", True):
                 rankings.append(self.fragmentos.bm25(busqueda, c["bm25_top"]))
             if c.get("usar_denso", True) and self.indice is not None:

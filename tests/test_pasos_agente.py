@@ -1,4 +1,4 @@
-"""Pasos extra del agente: expansión con evidencia débil, reintento de JSON y verificación (sin modelos)."""
+"""Cerberus: reformulador, herramientas, reintento de JSON y verificador NLI (sin modelos)."""
 import unittest
 from unittest import mock
 
@@ -40,6 +40,7 @@ def sistema(config, recuperador, decoder):
     s = Sistema.__new__(Sistema)
     s.config, s.recuperador, s.decoder, s.validador = config, recuperador, decoder, None
     s.ultimo_problema = s.ultimo_registro = s.ultima_expansion = None
+    s.calculadora = s.normalizador = None
     return s
 
 
@@ -47,36 +48,9 @@ ABIERTA = {"id": 1, "formato": "open_ended", "pregunta": "¿Procede la acción p
 CERRADA = {"id": 2, "formato": "multiple_choice", "pregunta": "¿Cuál?", "opciones": {"A": "x", "B": "y"}}
 
 
-class EvidenciaDebil(unittest.TestCase):
-    def test_puntaje_bajo_o_sin_normas(self):
-        self.assertEqual(pasos.evidencia_debil([], 0.0), (True, "sin_pasajes"))
-        self.assertTrue(pasos.evidencia_debil([pasaje("a", score=-1.2)], 0.0)[0])
-        self.assertTrue(pasos.evidencia_debil([pasaje("a", tipo="sentencia")] * 3 + [pasaje("b")], 0.0)[0])
-        self.assertEqual(pasos.evidencia_debil([pasaje("a", tipo="sentencia"), pasaje("b")], 0.0), (False, None))
-        # Sin umbral solo cuenta que haya normas entre los primeros.
-        self.assertFalse(pasos.evidencia_debil([pasaje("a", score=-5)], None)[0])
-
-    def test_preguntas_de(self):
-        texto = "Preguntas:\n1. ¿Qué artículo aplica?\n2) ¿Cuál es el plazo?\n- ¿Quién decide?\n4. ¿Otra más?"
-        self.assertEqual(pasos.preguntas_de(texto, 3), ["¿Qué artículo aplica?", "¿Cuál es el plazo?", "¿Quién decide?"])
-
-
 class Expansion(unittest.TestCase):
     def config(self, modo):
         return {"recuperacion": {"expansion": modo, "umbral_evidencia_debil": 0.0}, "generacion": {}}
-
-    def test_solo_con_evidencia_debil(self):
-        fuerte = [pasaje("ley_472_1998", score=4.0)]
-        r, d = Recuperador(fuerte, [pasaje("otra")]), Decoder()
-        self.assertEqual(sistema(self.config("debil"), r, d).recuperar(ABIERTA), fuerte)
-        self.assertEqual(r.expansiones, [None])
-
-        debil, nuevos = [pasaje("sentencia_x", tipo="sentencia", score=-2.0)], [pasaje("ley_472_1998")]
-        r, d = Recuperador(debil, nuevos), Decoder()
-        s = sistema(self.config("debil"), r, d)
-        self.assertEqual(s.recuperar(ABIERTA), nuevos)
-        self.assertTrue(r.expansiones[1])  # se buscó con la hipótesis del decoder
-        self.assertEqual(s.ultima_expansion["docs_despues"], ["ley_472_1998"])
 
     def test_reformulador_iterativo_lee_los_primeros_pasajes(self):
         r, d = Recuperador([pasaje("sentencia_x", tipo="sentencia")], [pasaje("ley_472_1998")]), Decoder()
@@ -105,7 +79,7 @@ def final_falso(problemas):
     return final
 
 
-class ReintentoYVerificacion(unittest.TestCase):
+class ReintentoYHerramientas(unittest.TestCase):
     CONFIG = {"recuperacion": {}, "generacion": {"politica": {}, "regenerar_json": True,
                                                  "repetition_penalty_reintento": 1.3}}
 
@@ -129,16 +103,6 @@ class ReintentoYVerificacion(unittest.TestCase):
     def test_sin_problema_no_reintenta(self):
         _, s = self.responder(["bueno"], {"bueno": "citas_saneadas"})
         self.assertEqual(len(s.decoder.llamadas), 1)
-
-    def test_verificacion_genera_con_el_bloque(self):
-        config = {"recuperacion": {}, "generacion": {"politica": {}, "verificar": True}}
-        with mock.patch("legalrag.citations.verificacion.texto_citable", lambda r: r["texto"]), \
-                mock.patch("legalrag.generation.politica.bloque_pasajes", lambda *a: "[1] Ley 472 de 1998"):
-            respuesta, s = self.responder(["borrador", "verificada"], {"borrador": None, "verificada": None}, config)
-        self.assertEqual(respuesta["texto"], "verificada")
-        self.assertEqual([l[0] for l in s.decoder.llamadas], ["generar", "redactar", "redactar", "generar"])
-        self.assertTrue(s.decoder.llamadas[-1][2])  # la segunda generación lleva las verificaciones
-        self.assertTrue(s.ultimo_registro["verificacion"]["aceptada"])
 
     def test_razona_antes_de_la_letra_si_hay_nota_de_herramienta(self):
         class Calculadora:
@@ -174,25 +138,6 @@ class ReintentoYVerificacion(unittest.TestCase):
         self.assertEqual(gravedad(None), gravedad("citas_saneadas"))
 
 
-class Calibracion(unittest.TestCase):
-    def test_criterio_puntaje_ignora_normas(self):
-        sin_normas = [pasaje("s", tipo="sentencia", score=2.0)] * 3
-        self.assertTrue(pasos.evidencia_debil(sin_normas, 0.0, criterio="ambos")[0])
-        self.assertFalse(pasos.evidencia_debil(sin_normas, 0.0, criterio="puntaje")[0])
-        self.assertTrue(pasos.evidencia_debil([pasaje("s", score=-1.0)], 0.0, criterio="puntaje")[0])
-
-    def test_no_expande_si_la_pregunta_nombra_una_norma(self):
-        config = {"recuperacion": {"expansion": "debil", "umbral_evidencia_debil": 0.0,
-                                   "criterio_evidencia_debil": "puntaje", "expansion_sin_norma_nombrada": True},
-                  "generacion": {}}
-        r = Recuperador([pasaje("ley_472_1998", score=-3.0)], [pasaje("otra")])
-        r.ultima_traza = {"normas_nombradas": {"ley_472_1998": [2]}}
-        s = sistema(config, r, Decoder())
-        s.recuperar(ABIERTA)
-        self.assertEqual(r.expansiones, [None])
-        self.assertEqual(s.ultima_expansion["motivo"], "norma_nombrada")
-
-
 class Fragmentos:
     def __init__(self):
         self.consultas = []
@@ -205,7 +150,7 @@ class Fragmentos:
         return []
 
 
-class PorOpcion(unittest.TestCase):
+class ReformuladorEnRecuperacion(unittest.TestCase):
     def ranking(self, entrada, **config):
         from legalrag.retrieval.hibrido import RecuperadorHibrido
 
@@ -257,15 +202,6 @@ class PorOpcion(unittest.TestCase):
         r.ranking(ABIERTA, expansion="Ley 472 de 1998, artículo 2")
         self.assertEqual(r.ultima_traza["reservados"], [])
 
-    def test_una_busqueda_por_opcion_en_cerradas(self):
-        cerrada = {**CERRADA, "pregunta": "¿Qué vicio configura?", "opciones": {"A": "Falsa motivación", "B": "Usurpación"}}
-        consultas = self.ranking(cerrada, recuperar_por_opcion=True)
-        self.assertEqual(len(consultas), 3)
-        self.assertIn("¿Qué vicio configura?\nFalsa motivación", consultas)
-        self.assertEqual(len(self.ranking(cerrada)), 1)
-        self.assertEqual(len(self.ranking(ABIERTA, recuperar_por_opcion=True)), 1)
-
-
 class VerificadorNLIFalso(unittest.TestCase):
     def verificador(self, modo, puntajes):
         from legalrag.citations.respaldo_nli import VerificadorNLI
@@ -299,86 +235,6 @@ class VerificadorNLIFalso(unittest.TestCase):
         self.assertEqual(r["respuesta"], "Procede la acción popular según la Ley 472 de 1998. "
                                          "La acción la conoce el juez civil.")
         self.assertEqual(registro["quitadas"], ["El plazo es de cinco años."])
-
-
-class Multiagente(unittest.TestCase):
-    def test_orden_y_filtro_del_juez(self):
-        p = [pasaje(f"d{i}") for i in range(4)]
-        ordenados, aceptados = pasos.ordenar_por_juez(p, [0.2, 0.9, 0.6, 0.1])
-        self.assertEqual([x["doc_id"] for x in ordenados], ["d1", "d2", "d0", "d3"])
-        self.assertEqual([x["doc_id"] for x in aceptados], ["d1", "d2", "d0"])  # nunca menos de 3
-        _, aceptados = pasos.ordenar_por_juez(p, [0.7, 0.9, 0.6, 0.1])
-        self.assertEqual([x["doc_id"] for x in aceptados], ["d1", "d0", "d2"])
-
-    def test_combinacion_por_confianza(self):
-        combinada = pasos.combinar_probabilidades({"A": 0.6, "B": 0.4}, {"A": 0.2, "B": 0.8})
-        self.assertAlmostEqual(combinada["B"], (0.6 * 0.4 + 0.8 * 0.8) / 1.4)
-        self.assertGreater(combinada["B"], combinada["A"])  # el más seguro pesa más
-
-    def test_etapas_segundo_agente_antes_del_principal(self):
-        eventos = []
-
-        class Principal:
-            modelo = None
-
-            def abrir(self):
-                eventos.append("abre principal")
-                self.modelo = object()
-
-            def cerrar(self):
-                eventos.append("cierra principal")
-                self.modelo = None
-
-            def seleccionar(self, entrada, pasajes, evidencia):
-                self.vistos = [p["doc_id"] for p in pasajes]
-                return pasajes
-
-            def probabilidades_letras(self, entrada, pasajes, evidencia, prefijo=None):
-                return {"A": 0.6, "B": 0.4}
-
-            def generar(self, entrada, pasajes, evidencia, prefijo="{", **otros):
-                return prefijo + "x"
-
-        class Segundo:
-            def __init__(self, config):
-                eventos.append("crea segundo " + config["decoder"]["repo_id"])
-
-            def abrir(self):
-                eventos.append("abre segundo")
-
-            def cerrar(self):
-                eventos.append("cierra segundo")
-
-            def probabilidad_si(self, mensajes):
-                return 0.9 if "útil" in mensajes[-1]["content"] else 0.1
-
-            def seleccionar(self, entrada, pasajes, evidencia):
-                return pasajes
-
-            def probabilidades_letras(self, entrada, pasajes, evidencia):
-                return {"A": 0.1, "B": 0.9}
-
-        pasajes = [{**pasaje(f"d{i}"), "texto": "útil" if i == 3 else "ruido"} for i in range(4)]
-        config = {"recuperacion": {}, "generacion": {"politica": {}, "letra_por_probabilidad": True},
-                  "agentes": {"segundo": {"repo_id": "otro"}, "juez_evidencia": True, "segunda_opinion": True}}
-        s = sistema(config, Recuperador(pasajes, pasajes), Principal())
-        s.preparado = {}
-        cerrada = {**CERRADA, "opciones": {"A": "x", "B": "y"}}
-
-        def final(entrada, crudo, pasajes, evidencia, politica, validador):
-            return ({"id": entrada["id"], "formato": entrada["formato"], "respuesta_correcta": "A",
-                     "descarte_opciones": {"A": "-", "B": "-"}}, {"problema": None})
-
-        with mock.patch("legalrag.generation.decoder.DecoderTransformers", Segundo), \
-                mock.patch("legalrag.citations.verificacion.respuesta_final", final):
-            tiempos = s.preparar_lote([cerrada])
-            respuesta = s.responder(cerrada, s.recuperar(cerrada))
-        self.assertEqual(eventos, ["crea segundo otro", "abre segundo", "cierra segundo", "abre principal"])
-        self.assertIn(cerrada["id"], tiempos)
-        self.assertEqual(s.preparado[cerrada["id"]]["pasajes"][0]["doc_id"], "d3")  # el juez lo subió
-        self.assertEqual(s.decoder.vistos[0], "d3")
-        self.assertEqual(respuesta["respuesta_correcta"], "B")  # la segunda opinión, más segura, inclina la letra
-        self.assertEqual(s.ultimo_registro["letras_principal"], {"A": 0.6, "B": 0.4})
 
 
 if __name__ == "__main__":

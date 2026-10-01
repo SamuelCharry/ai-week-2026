@@ -1,5 +1,5 @@
 {
-  "notas": "Configuración de entrega: tres agentes sobre Qwen3-8B (sugerido en la §3.1). Recuperación BM25 + BGE-M3 con RRF, enrutamiento por norma nombrada y reranker BGE-v2-m3; el agente reformulador lista las normas aplicables y sus artículos entran como candidatos al reranker (texto libre); la calculadora convierte montos a SMMLV y UVT con los decretos del corpus; el normalizador avisa de leyes citadas con el año equivocado. Letra por probabilidad en float32 en cerradas, reintento de JSON inválido y fundamento con el respaldo completo de la evidencia. Ver agent.componentes y src/comparar.py (variante qwen3-8b-agentes).",
+  "notas": "Configuración de entrega (Cerberus Mark 2): tres agentes sobre Qwen3-8B (sugerido en la §3.1). Recuperación BM25 + BGE-M3 con RRF, enrutamiento por norma nombrada y reranker BGE-v2-m3; el agente reformulador lista las normas aplicables y sus artículos entran como candidatos al reranker (texto libre); la calculadora convierte montos a SMMLV y UVT con los decretos del corpus; el normalizador avisa de leyes citadas con el año equivocado. Letra por probabilidad en float32 en cerradas, reintento de JSON inválido y fundamento con el respaldo completo de la evidencia. Ver agent.componentes y src/comparar.py (variante qwen3-8b-agentes).",
   "implementacion": "legalrag.agent.componentes:Sistema",
   "entradas": {
     "sample": "data/oficial/data/sample_50.jsonl",
@@ -86,6 +86,8 @@
     "letra_por_probabilidad": true,
     "regenerar_json": true,
     "calculadora": true,
-    "normalizador_citas": true
+    "normalizador_citas": true,
+    "razonar_con_herramienta": false,
+    "estilo": null
   }
 }
