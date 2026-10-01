@@ -1,0 +1,219 @@
+{
+  "resumen": {
+    "corpus_actual": 28117,
+    "seeds_total": 186,
+    "seeds_presentes": 175,
+    "seeds_faltantes": 11,
+    "items_del_banco_en_juego_si_cerramos_brecha": 12
+  },
+  "por_fuente": {
+    "suin": {
+      "n": 9,
+      "items": 10
+    },
+    "corte_constitucional": {
+      "n": 2,
+      "items": 2
+    }
+  },
+  "por_area": {
+    "Derecho laboral": 3,
+    "Derecho procesal": 2,
+    "Derecho administrativo": 2,
+    "Derecho constitucional": 2,
+    "Derecho de los mercados [competencia, consumidor, datos personales y propiedad intelectual]": 1,
+    "Derecho tributario": 1,
+    "Derecho comercial y sociedades": 1
+  },
+  "missing": [
+    {
+      "canonico": [
+        "decreto",
+        "1563",
+        "2012"
+      ],
+      "keys": [
+        "decreto:1563:2012"
+      ],
+      "norma": "Decreto 1563 de 2012",
+      "items_del_banco": 2,
+      "areas": [
+        "Derecho procesal"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Decreto%201563%20de%202012",
+      "fuente": "suin"
+    },
+    {
+      "canonico": [
+        "decreto",
+        "875",
+        "2008"
+      ],
+      "keys": [
+        "decreto:875:2008"
+      ],
+      "norma": "Decreto 875 de 2008",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho laboral"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Decreto%20875%20de%202008",
+      "fuente": "suin"
+    },
+    {
+      "canonico": [
+        "jurisprudencia",
+        "SL-1972",
+        "2025"
+      ],
+      "keys": [
+        "sentencia:1972:2025",
+        "sentencia:1972:2025"
+      ],
+      "norma": "Sentencia SL-1972 de 2025",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho laboral"
+      ],
+      "donde_buscar": "https://www.corteconstitucional.gov.co/relatoria/?q=Sentencia%20SL-1972%20de%202025",
+      "fuente": "corte_constitucional"
+    },
+    {
+      "canonico": [
+        "jurisprudencia",
+        "SU-6",
+        "1991"
+      ],
+      "keys": [
+        "sentencia:6:1991",
+        "sentencia:6:1991"
+      ],
+      "norma": "Sentencia SU-6 de 1991",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho administrativo"
+      ],
+      "donde_buscar": "https://www.corteconstitucional.gov.co/relatoria/?q=Sentencia%20SU-6%20de%201991",
+      "fuente": "corte_constitucional"
+    },
+    {
+      "canonico": [
+        "ley",
+        "1150",
+        "2005"
+      ],
+      "keys": [
+        "ley:1150:2005"
+      ],
+      "norma": "Ley 1150 de 2005",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho administrativo"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Ley%201150%20de%202005",
+      "fuente": "suin"
+    },
+    {
+      "canonico": [
+        "ley",
+        "11500",
+        "2007"
+      ],
+      "keys": [
+        "ley:11500:2007"
+      ],
+      "norma": "Ley 11500 de 2007",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho constitucional"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Ley%2011500%20de%202007",
+      "fuente": "suin"
+    },
+    {
+      "canonico": [
+        "ley",
+        "116",
+        "2006"
+      ],
+      "keys": [
+        "ley:116:2006"
+      ],
+      "norma": "Ley 116 de 2006",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho de los mercados [competencia, consumidor, datos personales y propiedad intelectual]"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Ley%20116%20de%202006",
+      "fuente": "suin"
+    },
+    {
+      "canonico": [
+        "ley",
+        "1692",
+        "2017"
+      ],
+      "keys": [
+        "ley:1692:2017"
+      ],
+      "norma": "Ley 1692 de 2017",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho tributario"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Ley%201692%20de%202017",
+      "fuente": "suin"
+    },
+    {
+      "canonico": [
+        "ley",
+        "23",
+        "1961"
+      ],
+      "keys": [
+        "ley:23:1961"
+      ],
+      "norma": "Ley 23 de 1961",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho constitucional"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Ley%2023%20de%201961",
+      "fuente": "suin"
+    },
+    {
+      "canonico": [
+        "ley",
+        "2737",
+        "1989"
+      ],
+      "keys": [
+        "ley:2737:1989"
+      ],
+      "norma": "Ley 2737 de 1989",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho laboral"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Ley%202737%20de%201989",
+      "fuente": "suin"
+    },
+    {
+      "canonico": [
+        "ley",
+        "964",
+        "2006"
+      ],
+      "keys": [
+        "ley:964:2006"
+      ],
+      "norma": "Ley 964 de 2006",
+      "items_del_banco": 1,
+      "areas": [
+        "Derecho comercial y sociedades"
+      ],
+      "donde_buscar": "https://www.suin-juriscol.gov.co/legislacion/?q=Ley%20964%20de%202006",
+      "fuente": "suin"
+    }
+  ]
+}

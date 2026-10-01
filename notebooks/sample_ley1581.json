@@ -1,0 +1,484 @@
+{
+  "description": "20 artículos reales del fixture local, con 32 consultas y juicios de relevancia escritos para el laboratorio; no son un benchmark externo.",
+  "documents": [
+    {
+      "doc_id": "art01",
+      "article": 1,
+      "title": "Objeto",
+      "section": "TÍTULO I OBJETO, ÁMBITO DE APLICACIÓN Y DEFINICIONES",
+      "text": "Artículo 1°. Objeto. La presente ley tiene por objeto desarrollar el derecho constitucional que tienen todas las personas a conocer, actualizar y rectificar las informaciones que se hayan recogido sobre ellas en bases de datos o archivos, y los demás derechos, libertades y garantías constitucionales a que se refiere el artículo 15 de la Constitución Política; así como el derecho a la información consagrado en el artículo 20 de la misma.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 395,
+      "source_end": 835
+    },
+    {
+      "doc_id": "art02",
+      "article": 2,
+      "title": "Ámbito de aplicación",
+      "section": "TÍTULO I OBJETO, ÁMBITO DE APLICACIÓN Y DEFINICIONES",
+      "text": "Artículo 2°. Ámbito de aplicación. Los principios y disposiciones contenidas en la presente ley serán aplicables a los datos personales registrados en cualquier base de datos que los haga susceptibles de tratamiento por entidades de naturaleza pública o privada.\n\nLa presente ley aplicará al tratamiento de datos personales efectuado en territorio colombiano o cuando al Responsable del Tratamiento o Encargado del Tratamiento no establecido en territorio nacional le sea aplicable la legislación colombiana en virtud de normas y tratados internacionales.\n\nEl régimen de protección de datos personales que se establece en la presente ley no será de aplicación:\n\na) A las bases de datos o archivos mantenidos en un ámbito exclusivamente personal o doméstico.\n\nCuando estas bases de datos o archivos vayan a ser suministrados a terceros se deberá, de manera previa, informar al Titular y solicitar su autorización. En este caso los Responsables y Encargados de las bases de datos y archivos quedarán sujetos a las disposiciones contenidas en la presente ley;\n\nb) A las bases de datos y archivos que tengan por finalidad la seguridad y defensa nacional, así como la prevención, detección, monitoreo y control del lavado de activos y el financiamiento del terrorismo;\n\nc) A las Bases de datos que tengan como fin y contengan información de inteligencia y contrainteligencia;\n\nd) A las bases de datos y archivos de información periodística y otros contenidos editoriales;\n\ne) A las bases de datos y archivos regulados por la Ley 1266 de 2008;\n\nf) A las bases de datos y archivos regulados por la Ley 79 de 1993.\n\nParágrafo. Los principios sobre protección de datos serán aplicables a todas las bases de datos, incluidas las exceptuadas en el presente artículo, con los límites dispuestos en la presente ley y sin reñir con los datos que tienen características de estar amparados por la reserva legal. En el evento que la normatividad especial que regule las bases de datos exceptuadas prevea principios que tengan en consideración la naturaleza especial de datos, los mismos aplicarán de manera concurrente a los previstos en la presente ley.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 837,
+      "source_end": 2974
+    },
+    {
+      "doc_id": "art03",
+      "article": 3,
+      "title": "Definiciones",
+      "section": "TÍTULO I OBJETO, ÁMBITO DE APLICACIÓN Y DEFINICIONES",
+      "text": "Artículo 3°. Definiciones. Para los efectos de la presente ley, se entiende por:\n\na) Autorización: Consentimiento previo, expreso e informado del Titular para llevar a cabo el Tratamiento de datos personales;\n\nb) Base de Datos: Conjunto organizado de datos personales que sea objeto de Tratamiento;\n\nc) Dato personal: Cualquier información vinculada o que pueda asociarse a una o varias personas naturales determinadas o determinables;\n\nd) Encargado del Tratamiento: Persona natural o jurídica, pública o privada, que por sí misma o en asocio con otros, realice el Tratamiento de datos personales por cuenta del Responsable del Tratamiento;\n\ne) Responsable del Tratamiento: Persona natural o jurídica, pública o privada, que por sí misma o en asocio con otros, decida sobre la base de datos y/o el Tratamiento de los datos;\n\nf) Titular: Persona natural cuyos datos personales sean objeto de Tratamiento;\n\ng) Tratamiento: Cualquier operación o conjunto de operaciones sobre datos personales, tales como la recolección, almacenamiento, uso, circulación o supresión.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 2976,
+      "source_end": 4039
+    },
+    {
+      "doc_id": "art04",
+      "article": 4,
+      "title": "Principios para el Tratamiento de datos personales",
+      "section": "TÍTULO II PRINCIPIOS RECTORES",
+      "text": "Artículo 4°. Principios para el Tratamiento de datos personales.\n\nEn el desarrollo, interpretación y aplicación de la presente ley, se aplicarán, de manera armónica e integral, los siguientes principios:\n\na) Principio de legalidad en materia de Tratamiento de datos: El Tratamiento a que se refiere la presente ley es una actividad reglada que debe sujetarse a lo establecido en ella y en las demás disposiciones que la desarrollen;\n\nb) Principio de finalidad: El Tratamiento debe obedecer a una finalidad legítima de acuerdo con la Constitución y la Ley, la cual debe ser informada al Titular;\n\nc) Principio de libertad: El Tratamiento sólo puede ejercerse con el consentimiento, previo, expreso e informado del Titular. Los datos personales no podrán ser obtenidos o divulgados sin previa autorización, o en ausencia de mandato legal o judicial que releve el consentimiento;\n\nd) Principio de veracidad o calidad: La información sujeta a Tratamiento debe ser veraz, completa, exacta, actualizada, comprobable y comprensible. Se prohíbe el Tratamiento de datos parciales, incompletos, fraccionados o que induzcan a error;\n\ne) Principio de transparencia: En el Tratamiento debe garantizarse el derecho del Titular a obtener del Responsable del Tratamiento o del Encargado del Tratamiento, en cualquier momento y sin restricciones, información acerca de la existencia de datos que le conciernan;\n\nf) Principio de acceso y circulación restringida: El Tratamiento se sujeta a los límites que se derivan de la naturaleza de los datos personales, de las disposiciones de la presente ley y la Constitución. En este sentido, el Tratamiento sólo podrá hacerse por personas autorizadas por el Titular y/o por las personas previstas en la presente ley;\n\nLos datos personales, salvo la información pública, no podrán estar disponibles en Internet u otros medios de divulgación o comunicación masiva, salvo que el acceso sea técnicamente controlable para brindar un conocimiento restringido sólo a los Titulares o terceros autorizados conforme a la presente ley;\n\ng) Principio de seguridad: La información sujeta a Tratamiento por el Responsable del Tratamiento o Encargado del Tratamiento a que se refiere la presente ley, se deberá manejar con las medidas técnicas, humanas y administrativas que sean necesarias para otorgar seguridad a los registros evitando su adulteración, pérdida, consulta, uso o acceso no autorizado o fraudulento;\n\nh) Principio de confidencialidad: Todas las personas que intervengan en el Tratamiento de datos personales que no tengan la naturaleza de públicos están obligadas a garantizar la reserva de la información, inclusive después de finalizada su relación con alguna de las labores que comprende el Tratamiento, pudiendo sólo realizar suministro o comunicación de datos personales cuando ello corresponda al desarrollo de las actividades autorizadas en la presente ley y en los términos de la misma.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 4073,
+      "source_end": 6994
+    },
+    {
+      "doc_id": "art05",
+      "article": 5,
+      "title": "Datos sensibles",
+      "section": "TÍTULO III CATEGORÍAS ESPECIALES DE DATOS",
+      "text": "Artículo 5°. Datos sensibles. Para los propósitos de la presente ley, se entiende por datos sensibles aquellos que afectan la intimidad del Titular o cuyo uso indebido puede generar su discriminación, tales como aquellos que revelen el origen racial o étnico, la orientación política, las convicciones religiosas o filosóficas, la pertenencia a sindicatos, organizaciones sociales, de derechos humanos o que promueva intereses de cualquier partido político o que garanticen los derechos y garantías de partidos políticos de oposición así como los datos relativos a la salud, a la vida sexual y los datos biométricos.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 7040,
+      "source_end": 7656
+    },
+    {
+      "doc_id": "art06",
+      "article": 6,
+      "title": "Tratamiento de datos sensibles",
+      "section": "TÍTULO III CATEGORÍAS ESPECIALES DE DATOS",
+      "text": "Artículo 6°. Tratamiento de datos sensibles. Se prohíbe el Tratamiento de datos sensibles, excepto cuando:\n\na) El Titular haya dado su autorización explícita a dicho Tratamiento, salvo en los casos que por ley no sea requerido el otorgamiento de dicha autorización;\n\nb) El Tratamiento sea necesario para salvaguardar el interés vital del Titular y este se encuentre física o jurídicamente incapacitado. En estos eventos, los representantes legales deberán otorgar su autorización;\n\nc) El Tratamiento sea efectuado en el curso de las actividades legítimas y con las debidas garantías por parte de una fundación, ONG, asociación o cualquier otro organismo sin ánimo de lucro, cuya finalidad sea política, filosófica, religiosa o sindical, siempre que se refieran exclusivamente a sus miembros o a las personas que mantengan contactos regulares por razón de su finalidad. En estos eventos, los datos no se podrán suministrar a terceros sin la autorización del Titular;\n\nd) El Tratamiento se refiera a datos que sean necesarios para el reconocimiento, ejercicio o defensa de un derecho en un proceso judicial;\n\ne) El Tratamiento tenga una finalidad histórica, estadística o científica. En este evento deberán adoptarse las medidas conducentes a la supresión de identidad de los Titulares.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 7658,
+      "source_end": 8942
+    },
+    {
+      "doc_id": "art07",
+      "article": 7,
+      "title": "Derechos de los niños, niñas y adolescentes",
+      "section": "TÍTULO III CATEGORÍAS ESPECIALES DE DATOS",
+      "text": "Artículo 7°. Derechos de los niños, niñas y adolescentes.\n\nEn el Tratamiento se asegurará el respeto a los derechos prevalentes de los niños, niñas y adolescentes.\n\nQueda proscrito el Tratamiento de datos personales de niños, niñas y adolescentes, salvo aquellos datos que sean de naturaleza pública.\n\nEs tarea del Estado y las entidades educativas de todo tipo proveer información y capacitar a los representantes legales y tutores sobre los eventuales riesgos a los que se enfrentan los niños, niñas y adolescentes respecto del Tratamiento indebido de sus datos personales, y proveer de conocimiento acerca del uso responsable y seguro por parte de niños, niñas y adolescentes de sus datos personales, su derecho a la privacidad y protección de su información personal y la de los demás. El Gobierno Nacional reglamentará la materia, dentro de los seis (6) meses siguientes a la promulgación de esta ley.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 8944,
+      "source_end": 9850
+    },
+    {
+      "doc_id": "art08",
+      "article": 8,
+      "title": "Derechos de los Titulares",
+      "section": "TÍTULO IV DERECHOS Y CONDICIONES DE LEGALIDAD PARA EL TRATAMIENTO DE DATOS",
+      "text": "Artículo 8°. Derechos de los Titulares. El Titular de los datos personales tendrá los siguientes derechos:\n\na) Conocer, actualizar y rectificar sus datos personales frente a los Responsables del Tratamiento o Encargados del Tratamiento. Este derecho se podrá ejercer, entre otros frente a datos parciales, inexactos, incompletos, fraccionados, que induzcan a error, o aquellos cuyo Tratamiento esté expresamente prohibido o no haya sido autorizado;\n\nb) Solicitar prueba de la autorización otorgada al Responsable del Tratamiento salvo cuando expresamente se exceptúe como requisito para el Tratamiento, de conformidad con lo previsto en el artículo 10 de la presente ley;\n\nc) Ser informado por el Responsable del Tratamiento o el Encargado del Tratamiento, previa solicitud, respecto del uso que le ha dado a sus datos personales;\n\nd) Presentar ante la Superintendencia de Industria y Comercio quejas por infracciones a lo dispuesto en la presente ley y las demás normas que la modifiquen, adicionen o complementen;\n\ne) Revocar la autorización y/o solicitar la supresión del dato cuando en el Tratamiento no se respeten los principios, derechos y garantías constitucionales y legales. La revocatoria y/o supresión procederá cuando la Superintendencia de Industria y Comercio haya determinado que en el Tratamiento el Responsable o Encargado han incurrido en conductas contrarias a esta ley y a la Constitución;\n\nf) Acceder en forma gratuita a sus datos personales que hayan sido objeto de Tratamiento.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 9929,
+      "source_end": 11430
+    },
+    {
+      "doc_id": "art09",
+      "article": 9,
+      "title": "Autorización del Titular",
+      "section": "TÍTULO IV DERECHOS Y CONDICIONES DE LEGALIDAD PARA EL TRATAMIENTO DE DATOS",
+      "text": "Artículo 9°. Autorización del Titular. Sin perjuicio de las excepciones previstas en la ley, en el Tratamiento se requiere la autorización previa e informada del Titular, la cual deberá ser obtenida por cualquier medio que pueda ser objeto de consulta posterior.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 11432,
+      "source_end": 11694
+    },
+    {
+      "doc_id": "art10",
+      "article": 10,
+      "title": "Casos en que no es necesaria la autorización",
+      "section": "TÍTULO IV DERECHOS Y CONDICIONES DE LEGALIDAD PARA EL TRATAMIENTO DE DATOS",
+      "text": "Artículo 10. Casos en que no es necesaria la autorización. La autorización del Titular no será necesaria cuando se trate de:\n\na) Información requerida por una entidad pública o administrativa en ejercicio de sus funciones legales o por orden judicial;\n\nb) Datos de naturaleza pública;\n\nc) Casos de urgencia médica o sanitaria;\n\nd) Tratamiento de información autorizado por la ley para fines históricos, estadísticos o científicos;\n\ne) Datos relacionados con el Registro Civil de las Personas.\n\nQuien acceda a los datos personales sin que medie autorización previa deberá en todo caso cumplir con las disposiciones contenidas en la presente ley.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 11696,
+      "source_end": 12340
+    },
+    {
+      "doc_id": "art11",
+      "article": 11,
+      "title": "Suministro de la información",
+      "section": "TÍTULO IV DERECHOS Y CONDICIONES DE LEGALIDAD PARA EL TRATAMIENTO DE DATOS",
+      "text": "Artículo 11. Suministro de la información. La información solicitada podrá ser suministrada por cualquier medio, incluyendo los electrónicos, según lo requiera el Titular. La información deberá ser de fácil lectura, sin barreras técnicas que impidan su acceso y deberá corresponder en un todo a aquella que repose en la base de datos.\n\nEl Gobierno Nacional establecerá la forma en la cual los Responsables del Tratamiento y Encargados del Tratamiento deberán suministrar la información del Titular, atendiendo a la naturaleza del dato personal, Esta reglamentación deberá darse a más tardar dentro del año siguiente a la promulgación de la presente ley.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 12342,
+      "source_end": 12995
+    },
+    {
+      "doc_id": "art12",
+      "article": 12,
+      "title": "Deber de informar al Titular",
+      "section": "TÍTULO IV DERECHOS Y CONDICIONES DE LEGALIDAD PARA EL TRATAMIENTO DE DATOS",
+      "text": "Artículo 12. Deber de informar al Titular. El Responsable del Tratamiento, al momento de solicitar al Titular la autorización, deberá informarle de manera clara y expresa lo siguiente:\n\na) El Tratamiento al cual serán sometidos sus datos personales y la finalidad del mismo;\n\nb) El carácter facultativo de la respuesta a las preguntas que le sean hechas, cuando estas versen sobre datos sensibles o sobre los datos de las niñas, niños y adolescentes;\n\nc) Los derechos que le asisten como Titular;\n\nd) La identificación, dirección física o electrónica y teléfono del Responsable del Tratamiento.\n\nParágrafo. El Responsable del Tratamiento deberá conservar prueba del cumplimiento de lo previsto en el presente artículo y, cuando el Titular lo solicite, entregarle copia de esta.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 12997,
+      "source_end": 13774
+    },
+    {
+      "doc_id": "art13",
+      "article": 13,
+      "title": "Personas a quienes se les puede suministrar la información",
+      "section": "TÍTULO IV DERECHOS Y CONDICIONES DE LEGALIDAD PARA EL TRATAMIENTO DE DATOS",
+      "text": "Artículo 13. Personas a quienes se les puede suministrar la información. La información que reúna las condiciones establecidas en la presente ley podrá suministrarse a las siguientes personas:\n\na) A los Titulares, sus causahabientes o sus representantes legales;\n\nb) A las entidades públicas o administrativas en ejercicio de sus funciones legales o por orden judicial;\n\nc) A los terceros autorizados por el Titular o por la ley.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 13776,
+      "source_end": 14205
+    },
+    {
+      "doc_id": "art14",
+      "article": 14,
+      "title": "Consultas",
+      "section": "TÍTULO V PROCEDIMIENTOS",
+      "text": "Artículo 14. Consultas. Los Titulares o sus causahabientes podrán consultar la información personal del Titular que repose en cualquier base de datos, sea esta del sector público o privado. El Responsable del Tratamiento o Encargado del Tratamiento deberán suministrar a estos toda la información contenida en el registro individual o que esté vinculada con la identificación del Titular.\n\nLa consulta se formulará por el medio habilitado por el Responsable del Tratamiento o Encargado del Tratamiento, siempre y cuando se pueda mantener prueba de esta.\n\nLa consulta será atendida en un término máximo de diez (10) días hábiles contados a partir de la fecha de recibo de la misma. Cuando no fuere posible atender la consulta dentro de dicho término, se informará al interesado, expresando los motivos de la demora y señalando la fecha en que se atenderá su consulta, la cual en ningún caso podrá superar los cinco (5) días hábiles siguientes al vencimiento del primer término.\n\nParágrafo. Las disposiciones contenidas en leyes especiales o los reglamentos expedidos por el Gobierno Nacional podrán establecer términos inferiores, atendiendo a la naturaleza del dato personal.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 14233,
+      "source_end": 15408
+    },
+    {
+      "doc_id": "art15",
+      "article": 15,
+      "title": "Reclamos",
+      "section": "TÍTULO V PROCEDIMIENTOS",
+      "text": "Artículo 15. Reclamos. El Titular o sus causahabientes que consideren que la información contenida en una base de datos debe ser objeto de corrección, actualización o supresión, o cuando adviertan el presunto incumplimiento de cualquiera de los deberes contenidos en esta ley, podrán presentar un reclamo ante el Responsable del Tratamiento o el Encargado del Tratamiento el cual será tramitado bajo las siguientes reglas:\n\n1. El reclamo se formulará mediante solicitud dirigida al Responsable del Tratamiento o al Encargado del Tratamiento, con la identificación del Titular, la descripción de los hechos que dan lugar al reclamo, la dirección, y acompañando los documentos que se quiera hacer valer. Si el reclamo resulta incompleto, se requerirá al interesado dentro de los cinco (5) días siguientes a la recepción del reclamo para que subsane las fallas. Transcurridos dos (2) meses desde la fecha del requerimiento, sin que el solicitante presente la información requerida, se entenderá que ha desistido del reclamo.\n\nEn caso de que quien reciba el reclamo no sea competente para resolverlo, dará traslado a quien corresponda en un término máximo de dos (2) días hábiles e informará de la situación al interesado.\n\n2. Una vez recibido el reclamo completo, se incluirá en la base de datos una leyenda que diga \"reclamo en trámite\" y el motivo del mismo, en un término no mayor a dos (2) días hábiles. Dicha leyenda deberá mantenerse hasta que el reclamo sea decidido.\n\n3. El término máximo para atender el reclamo será de quince (15) días hábiles contados a partir del día siguiente a la fecha de su recibo. Cuando no fuere posible atender el reclamo dentro de dicho término, se informará al interesado los motivos de la demora y la fecha en que se atenderá su reclamo, la cual en ningún caso podrá superar los ocho (8) días hábiles siguientes al vencimiento del primer término.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 15410,
+      "source_end": 17292
+    },
+    {
+      "doc_id": "art16",
+      "article": 16,
+      "title": "Requisito de procedibilidad",
+      "section": "TÍTULO V PROCEDIMIENTOS",
+      "text": "Artículo 16. Requisito de procedibilidad. El Titular o causahabiente sólo podrá elevar queja ante la Superintendencia de Industria y Comercio una vez haya agotado el trámite de consulta o reclamo ante el Responsable del Tratamiento o Encargado del Tratamiento.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 17294,
+      "source_end": 17554
+    },
+    {
+      "doc_id": "art17",
+      "article": 17,
+      "title": "Deberes de los Responsables del Tratamiento",
+      "section": "TÍTULO VI DEBERES DE LOS RESPONSABLES DEL TRATAMIENTO Y ENCARGADOS DEL TRATAMIENTO",
+      "text": "Artículo 17. Deberes de los Responsables del Tratamiento. Los Responsables del Tratamiento deberán cumplir los siguientes deberes, sin perjuicio de las demás disposiciones previstas en la presente ley y en otras que rijan su actividad:\n\na) Garantizar al Titular, en todo tiempo, el pleno y efectivo ejercicio del derecho de hábeas data;\n\nb) Solicitar y conservar, en las condiciones previstas en la presente ley, copia de la respectiva autorización otorgada por el Titular;\n\nc) Informar debidamente al Titular sobre la finalidad de la recolección y los derechos que le asisten por virtud de la autorización otorgada;\n\nd) Conservar la información bajo las condiciones de seguridad necesarias para impedir su adulteración, pérdida, consulta, uso o acceso no autorizado o fraudulento;\n\ne) Garantizar que la información que se suministre al Encargado del Tratamiento sea veraz, completa, exacta, actualizada, comprobable y comprensible;\n\nf) Actualizar la información, comunicando de forma oportuna al Encargado del Tratamiento, todas las novedades respecto de los datos que previamente le haya suministrado y adoptar las demás medidas necesarias para que la información suministrada a este se mantenga actualizada;\n\ng) Rectificar la información cuando sea incorrecta y comunicar lo pertinente al Encargado del Tratamiento;\n\nh) Suministrar al Encargado del Tratamiento, según el caso, únicamente datos cuyo Tratamiento esté previamente autorizado de conformidad con lo previsto en la presente ley;\n\ni) Exigir al Encargado del Tratamiento en todo momento, el respeto a las condiciones de seguridad y privacidad de la información del Titular;\n\nj) Tramitar las consultas y reclamos formulados en los términos señalados en la presente ley;\n\nk) Adoptar un manual interno de políticas y procedimientos para garantizar el adecuado cumplimiento de la presente ley y en especial, para la atención de consultas y reclamos;\n\nl) Informar al Encargado del Tratamiento cuando determinada información se encuentra en discusión por parte del Titular, una vez se haya presentado la reclamación y no haya finalizado el trámite respectivo;\n\nm) Informar a solicitud del Titular sobre el uso dado a sus datos;\n\nn) Informar a la autoridad de protección de datos cuando se presenten violaciones a los códigos de seguridad y existan riesgos en la administración de la información de los Titulares.\n\no) Cumplir las instrucciones y requerimientos que imparta la Superintendencia de Industria y Comercio.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 17641,
+      "source_end": 20113
+    },
+    {
+      "doc_id": "art18",
+      "article": 18,
+      "title": "Deberes de los Encargados del Tratamiento",
+      "section": "TÍTULO VI DEBERES DE LOS RESPONSABLES DEL TRATAMIENTO Y ENCARGADOS DEL TRATAMIENTO",
+      "text": "Artículo 18. Deberes de los Encargados del Tratamiento. Los Encargados del Tratamiento deberán cumplir los siguientes deberes, sin perjuicio de las demás disposiciones previstas en la presente ley y en otras que rijan su actividad:\n\na) Garantizar al Titular, en todo tiempo, el pleno y efectivo ejercicio del derecho de hábeas data;\n\nb) Conservar la información bajo las condiciones de seguridad necesarias para impedir su adulteración, pérdida, consulta, uso o acceso no autorizado o fraudulento;\n\nc) Realizar oportunamente la actualización, rectificación o supresión de los datos en los términos de la presente ley;\n\nd) Actualizar la información reportada por los Responsables del Tratamiento dentro de los cinco (5) días hábiles contados a partir de su recibo;\n\ne) Tramitar las consultas y los reclamos formulados por los Titulares en los términos señalados en la presente ley;\n\nf) Adoptar un manual interno de políticas y procedimientos para garantizar el adecuado cumplimiento de la presente ley y, en especial, para la atención de consultas y reclamos por parte de los Titulares;\n\ng) Registrar en la base de datos las leyenda \"reclamo en trámite\" en la forma en que se regula en la presente ley;\n\nh) Insertar en la base de datos la leyenda \"información en discusión judicial\" una vez notificado por parte de la autoridad competente sobre procesos judiciales relacionados con la calidad del dato personal;\n\ni) Abstenerse de circular información que esté siendo controvertida por el Titular y cuyo bloqueo haya sido ordenado por la Superintendencia de Industria y Comercio;\n\nj) Permitir el acceso a la información únicamente a las personas que pueden tener acceso a ella;\n\nk) Informar a la Superintendencia de Industria y Comercio cuando se presenten violaciones a los códigos de seguridad y existan riesgos en la administración de la información de los Titulares;\n\nl) Cumplir las instrucciones y requerimientos que imparta la Superintendencia de Industria y Comercio.\n\nParágrafo. En el evento en que concurran las calidades de Responsable del Tratamiento y Encargado del Tratamiento en la misma persona, le será exigible el cumplimiento de los deberes previstos para cada uno.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 20115,
+      "source_end": 22296
+    },
+    {
+      "doc_id": "art19",
+      "article": 19,
+      "title": "Autoridad de Protección de Datos",
+      "section": "TÍTULO VII DE LOS MECANISMOS DE VIGILANCIA Y SANCIÓN / CAPÍTULO I De la autoridad de protección de datos",
+      "text": "Artículo 19. Autoridad de Protección de Datos. La Superintendencia de Industria y Comercio, a través de una Delegatura para la Protección de Datos Personales, ejercerá la vigilancia para garantizar que en el Tratamiento de datos personales se respeten los principios, derechos, garantías y procedimientos previstos en la presente ley.\n\nParágrafo 1°. El Gobierno Nacional en el plazo de seis (6) meses contados a partir de la fecha de entrada en vigencia de la presente ley incorporará dentro de la estructura de la Superintendencia de Industria y Comercio un despacho de Superintendente Delegado para ejercer las funciones de Autoridad de Protección de Datos.\n\nParágrafo 2°. La vigilancia del tratamiento de los datos personales regulados en la Ley 1266 de 2008 se sujetará a lo previsto en dicha norma.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 22405,
+      "source_end": 23208
+    },
+    {
+      "doc_id": "art20",
+      "article": 20,
+      "title": "Recursos para el ejercicio de sus funciones",
+      "section": "TÍTULO VII DE LOS MECANISMOS DE VIGILANCIA Y SANCIÓN / CAPÍTULO I De la autoridad de protección de datos",
+      "text": "Artículo 20. Recursos para el ejercicio de sus funciones. La Superintendencia de Industria y Comercio contará con los siguientes recursos para ejercer las funciones que le son atribuidas por la presente ley:\n\na) Los recursos que le sean destinados en el Presupuesto General de la Nación.",
+      "source": "Ley 1581 de 2012",
+      "source_file": "tests/fixtures/ley_1581_2012.txt",
+      "source_start": 23210,
+      "source_end": 23497
+    }
+  ],
+  "queries": [
+    {
+      "query_id": "q01",
+      "question": "¿Cuál es el objeto de la Ley 1581 de 2012?",
+      "relevant_doc_ids": [
+        "art01"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q02",
+      "question": "¿A qué bases de datos se aplica la Ley 1581 y cuáles están exceptuadas?",
+      "relevant_doc_ids": [
+        "art02"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q03",
+      "question": "¿Qué significa dato personal y quién es el encargado del tratamiento?",
+      "relevant_doc_ids": [
+        "art03"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q04",
+      "question": "¿Cuáles son los principios de finalidad y libertad en el tratamiento de datos?",
+      "relevant_doc_ids": [
+        "art04"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q05",
+      "question": "¿Qué datos se consideran sensibles, incluidos los biométricos?",
+      "relevant_doc_ids": [
+        "art05"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q06",
+      "question": "¿En qué casos se permite tratar datos sensibles?",
+      "relevant_doc_ids": [
+        "art06"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q07",
+      "question": "¿Cómo protege la ley los datos de niños, niñas y adolescentes?",
+      "relevant_doc_ids": [
+        "art07"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q08",
+      "question": "¿Qué derechos tiene el titular para conocer, actualizar y rectificar sus datos?",
+      "relevant_doc_ids": [
+        "art08"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q09",
+      "question": "¿Qué características debe tener la autorización del titular?",
+      "relevant_doc_ids": [
+        "art09"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q10",
+      "question": "¿Cuándo no es necesaria la autorización del titular?",
+      "relevant_doc_ids": [
+        "art10"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q11",
+      "question": "¿En qué forma se puede suministrar la información solicitada?",
+      "relevant_doc_ids": [
+        "art11"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q12",
+      "question": "¿Qué debe informar el responsable al titular al pedir autorización?",
+      "relevant_doc_ids": [
+        "art12"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q13",
+      "question": "¿A quiénes se les puede suministrar información personal?",
+      "relevant_doc_ids": [
+        "art13"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q14",
+      "question": "¿Cómo se tramitan las consultas y cuál es su plazo de respuesta?",
+      "relevant_doc_ids": [
+        "art14"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q15",
+      "question": "¿Cómo se presentan los reclamos de corrección o supresión de datos?",
+      "relevant_doc_ids": [
+        "art15"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q16",
+      "question": "¿Cuál es el requisito antes de acudir a la Superintendencia por una queja?",
+      "relevant_doc_ids": [
+        "art16"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q17",
+      "question": "¿Cuáles son los deberes del responsable del tratamiento?",
+      "relevant_doc_ids": [
+        "art17"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q18",
+      "question": "¿Cuáles son los deberes del encargado del tratamiento?",
+      "relevant_doc_ids": [
+        "art18"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q19",
+      "question": "¿Qué autoridad ejerce la vigilancia de protección de datos?",
+      "relevant_doc_ids": [
+        "art19"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q20",
+      "question": "¿Con qué recursos cuenta la Superintendencia para ejercer sus funciones?",
+      "relevant_doc_ids": [
+        "art20"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q21",
+      "question": "¿Puede quedar fuera del régimen una agenda de contactos usada solo en casa?",
+      "relevant_doc_ids": [
+        "art02"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q22",
+      "question": "Si una empresa almacena huellas digitales, ¿maneja información especialmente protegida?",
+      "relevant_doc_ids": [
+        "art05"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q23",
+      "question": "¿Existe una excepción para analizar información médica con fines científicos sin identificar personas?",
+      "relevant_doc_ids": [
+        "art06"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q24",
+      "question": "Encontré un dato equivocado sobre mí en una base; ¿qué facultad tengo?",
+      "relevant_doc_ids": [
+        "art08"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q25",
+      "question": "Una autoridad solicita información para ejercer una función legal; ¿se exige permiso del titular?",
+      "relevant_doc_ids": [
+        "art10"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q26",
+      "question": "¿Cómo puedo acceder a mis datos y cuánto pueden tardar en contestar?",
+      "relevant_doc_ids": [
+        "art14"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q27",
+      "question": "¿Qué procedimiento sigo para pedir que corrijan un registro inexacto?",
+      "relevant_doc_ids": [
+        "art15"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q28",
+      "question": "¿Qué obligaciones tienen quien decide sobre la base y quien la procesa por su cuenta?",
+      "relevant_doc_ids": [
+        "art17",
+        "art18"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q29",
+      "question": "¿Cómo se llama la persona que trata datos por cuenta de quien decide sobre la base?",
+      "relevant_doc_ids": [
+        "art03"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q30",
+      "question": "¿Qué personas pueden recibir los datos de un titular?",
+      "relevant_doc_ids": [
+        "art13"
+      ],
+      "split": "dev"
+    },
+    {
+      "query_id": "q31",
+      "question": "¿Cuál entidad puede vigilar el cumplimiento de las reglas sobre privacidad?",
+      "relevant_doc_ids": [
+        "art19"
+      ],
+      "split": "test"
+    },
+    {
+      "query_id": "q32",
+      "question": "¿Qué debe hacer el proveedor que administra una base cuando recibe novedades sobre un dato?",
+      "relevant_doc_ids": [
+        "art18"
+      ],
+      "split": "dev"
+    }
+  ]
+}

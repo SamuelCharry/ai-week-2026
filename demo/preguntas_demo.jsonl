@@ -1,0 +1,3 @@
+{"id": 1, "formato": "semi_open", "pregunta": "¿En qué casos no es necesaria la autorización del Titular para el tratamiento de sus datos personales?"}
+{"id": 2, "formato": "multiple_choice", "pregunta": "Según la Ley 1581 de 2012, ¿cuál es el término máximo para atender un reclamo del Titular, contado a partir del día siguiente a la fecha de su recibo?", "opciones": {"A": "Cinco (5) días hábiles", "B": "Diez (10) días hábiles", "C": "Quince (15) días hábiles", "D": "Treinta (30) días calendario"}}
+{"id": 3, "formato": "open_ended", "pregunta": "Una empresa privada colombiana quiere transferir la base de datos de sus clientes a un proveedor ubicado en un país que no ofrece un nivel adecuado de protección de datos. ¿Puede hacerlo y bajo qué condiciones?"}

@@ -1,0 +1,2 @@
+[console_scripts]
+legalrag = legalrag.cli:main

@@ -1,0 +1,1 @@
+"""Inventario, perfilado y cobertura."""

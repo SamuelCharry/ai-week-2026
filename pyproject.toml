@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "legalrag-colombia"
+version = "1.0.0"
+description = "Preguntas jurídicas con evidencia del corpus colombiano"
+requires-python = ">=3.10,<3.11"
+
+[project.scripts]
+legalrag = "legalrag.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"legalrag.ingestion" = ["base_additions.jsonl"]

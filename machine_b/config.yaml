@@ -1,0 +1,64 @@
+# Parámetros del pipeline Machine B. Todos los scripts cargan este archivo.
+
+paths:
+  input: ..                              # raíz del repo con corpus_manifest.json y data/oficial/data/seed_targets.json
+  output: ./process
+  cache: ./process/.cache                # evita re-descargar y re-convertir
+
+download:
+  user_agent: "Hackathon2026-P34K/1.0 (academic; contact rf.manrique@uniandes.edu.co)"
+  rate_limit_seconds: 1.0                # entre requests al mismo host
+  retries: 3
+  retry_backoff: 2.0                     # 1s, 2s, 4s
+  timeout: 30
+  max_concurrent_hosts: 4
+  respect_robots: true
+
+sources:
+  corte_constitucional:
+    base: "https://www.corteconstitucional.gov.co/relatoria/"
+    pattern_sentencia: "{sala}-{numero} de {anio}"
+  suin:
+    base: "https://www.suin-juriscol.gov.co/legislacion/"
+  senado:
+    base: "http://www.secretariasenado.gov.co/senado/basedoc/"
+  dian:
+    base: "https://normograma.dian.gov.co/"
+  sic:
+    base: "https://www.sic.gov.co/"
+
+chunking:
+  window_tokens: 512
+  overlap_tokens: 64
+  min_chunk_tokens: 30
+  split_by: article                      # article | parent | paragraph
+
+enrichment:                               # Contextual Retrieval
+  enabled: true
+  model: "Qwen/Qwen3-8B"
+  revision: "b968826d9c46dd6066d109eabc6255188de91218"
+  dtype: "bfloat16"
+  max_new_tokens: 80
+  prompt: |
+    Eres un asistente que agrega una línea de contexto a un fragmento de una norma colombiana.
+    El contexto debe situar el fragmento dentro del documento completo (norma, libro, título,
+    tema general), en una sola oración de máximo 25 palabras, sin inventar hechos ni citas.
+  only_new: false                         # true = enriquecer solo chunks que no están en index actual
+  batch_size: 4
+
+embedding:
+  model: "BAAI/bge-m3"
+  revision: "5617a9f61b028005a4858fdac845db406aefb181"
+  max_tokens: 1024
+  batch_size: 8
+  normalize: true
+
+index:
+  type: "IndexFlatIP"                     # exact search
+  partitions: ["nucleo"]                  # para empalmar fácil con index/
+  merge_with: null                        # path al índice actual si querés unir; null = empezar de cero
+
+manifest:
+  version: "v2"
+  team: "P34K"
+  license: "CC-BY-4.0"

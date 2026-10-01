@@ -1,0 +1,48 @@
+{
+  "equipo": "exp_multiquery",
+  "split": "sample",
+  "validacion": {
+    "errores": 0,
+    "detalle": []
+  },
+  "cerradas": {
+    "n": 15,
+    "aciertos": 13,
+    "accuracy": 0.8666666666666667,
+    "referencia": 0.905,
+    "puntos": 17.33
+  },
+  "citas": {
+    "items_evaluados": 41,
+    "n_ref": 49,
+    "n_citadas": 274,
+    "aciertos": 41,
+    "aciertos_respaldados": 41,
+    "aciertos_sin_respaldo": 0,
+    "incorrectas": 233,
+    "citas_sin_respaldo": 0,
+    "recall_citas_ponderado": 0.8367,
+    "tasa_sin_respaldo": 0.0,
+    "indice": 0.8367,
+    "puntos": 16.73
+  },
+  "abstencion": {
+    "items_evaluados": 43,
+    "abstuvo_bien": 0,
+    "abstuvo_de_mas": 0,
+    "respondio_bien": 38,
+    "respondio_mal": 5,
+    "calibracion": 0.8837,
+    "puntos": 8.84
+  },
+  "correccion_ragas": {
+    "estado": "pendiente (correr con --ragas)",
+    "puntos": null
+  },
+  "total_automatico": {
+    "obtenidos": 42.9,
+    "posibles": 50.0,
+    "de_100_del_ranking": 80.0,
+    "nota": "los 20 pts restantes son interfaz grafica, bitacora de corpus, video y reproducibilidad"
+  }
+}

@@ -1,0 +1,33 @@
+.venv/
+.venv-profile/
+.env
+**/.env
+.cache/
+models/
+index/
+reports/
+data/data/
+data/processed/
+data/releases/
+data/reports/
+data/raw/
+corpus viejo/
+*.trace.jsonl
+*.run.json
+*.tmp
+*.sqlite
+*.faiss
+*.safetensors
+*.gguf
+*.zip
+__pycache__/
+*.pyc
+.pytest_cache/
+# Corpus descargado, texto procesado e índice: se publican aparte (README, "Corpus e índice")
+corpus/raw/
+corpus/processed/
+indice/
+salidas/
+notebooks/artefactos_lab/
+# Artefactos de playwright-cli (snapshots, capturas) al verificar la interfaz
+.playwright-cli/
