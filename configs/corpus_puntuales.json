@@ -665,6 +665,24 @@
    "min_caracteres": 1500,
    "solo_url": true,
    "motivo": "Lo usa el banco (seed_targets) y no estaba en el corpus."
+  },
+  {
+   "doc_id": "decision_486_2000",
+   "titulo": "Régimen común de propiedad industrial",
+   "tipo": "decision",
+   "numero": "486",
+   "anio": 2000,
+   "organo_emisor": "Comisión de la Comunidad Andina",
+   "fuente": "Comisión de Regulación de Agua Potable y Saneamiento Básico - Normograma",
+   "url": "https://normas.cra.gov.co/gestor/docs/decision_comisioncandina_dec486.htm",
+   "areas": [
+    "Derecho de los mercados"
+   ],
+   "origen": "cobertura_seed_targets",
+   "clave": "propiedad\\s+industrial",
+   "min_caracteres": 20000,
+   "solo_url": true,
+   "motivo": "23 ítems del banco (seed_targets). Si ya está en el corpus, agregar_puntuales lo salta."
   }
  ]
 }
