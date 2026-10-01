@@ -65,8 +65,10 @@ class SistemaTest(unittest.TestCase):
         config = leer_config()
         sistema = cargar(RAIZ, config)
         self.assertIs(type(sistema), Sistema)
-        self.assertEqual(config["generacion"]["decoder"]["repo_id"], "Qwen/Qwen2.5-7B-Instruct")
-        self.assertLessEqual(config["generacion"]["decoder"]["parametros"], 8_000_000_000)
+        self.assertEqual(config["generacion"]["decoder"]["repo_id"], "Qwen/Qwen3-8B")
+        # Qwen3-8B tiene 8.190 M: solo pasa del límite porque la §3.1 del enunciado lo sugiere por nombre.
+        from legalrag.generation.decoder import limite_de
+        self.assertLessEqual(config["generacion"]["decoder"]["parametros"], limite_de(config["generacion"]["decoder"]))
 
     def test_lote_escribe_en_orden_sin_filtrar_respuestas(self):
         sistema = Falso()

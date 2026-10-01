@@ -1,5 +1,5 @@
 {
-  "notas": "Sistema de la mejor corrida en la 4090 (38,43/50 deterministas en la muestra): BM25 + BGE-M3 con RRF, reranker BGE-v2-m3, pasajes encabezados con su norma, reserva/tope/mínimo normativo solo en texto libre, Qwen2.5-7B-Instruct con letra razonada y fundamento con el respaldo completo de la evidencia.",
+  "notas": "Sistema de la mejor corrida en la 4090 (40,00/50 deterministas en la muestra): BM25 + BGE-M3 con RRF, reranker BGE-v2-m3, pasajes encabezados con su norma, reserva/tope/mínimo normativo solo en texto libre, Qwen3-8B (sugerido en la §3.1) con letra por probabilidad en float32, reintento de JSON inválido y fundamento con el respaldo completo de la evidencia. El multiagente (sección `agentes`) se está realineando; ver src/comparar.py.",
   "implementacion": "legalrag.agent.componentes:Sistema",
   "entradas": {
     "sample": "data/oficial/data/sample_50.jsonl",
@@ -61,10 +61,11 @@
   },
   "generacion": {
     "decoder": {
-      "repo_id": "Qwen/Qwen2.5-7B-Instruct",
-      "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
-      "parametros": 7615616512,
-      "licencia": "apache-2.0"
+      "repo_id": "Qwen/Qwen3-8B",
+      "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "parametros": 8190735360,
+      "licencia": "apache-2.0",
+      "admitido_por_enunciado": "§3.1 del enunciado: opción sugerida Qwen/Qwen3-8B"
     },
     "dtype": "bfloat16",
     "contexto": 6144,
@@ -77,6 +78,7 @@
       "saneo": "cita",
       "maximo_abiertas": 6
     },
-    "letra_por_probabilidad": "razonada"
+    "letra_por_probabilidad": true,
+    "regenerar_json": true
   }
 }
