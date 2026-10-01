@@ -60,11 +60,21 @@ def rrf(*rankings, k=100, constante=60):
     return sorted(fusion.items(), key=lambda x: (-x[1], x[0]))[:k]
 
 
+# Palabras vacías del español: en una consulta OR de FTS5, «de», «la» o «que» aparecen en casi todos los 1,7
+# millones de fragmentos y SQLite tiene que puntuarlos todos; su idf es casi nulo, así que no cambian el orden.
+VACIAS = frozenset("""a al algo algunas algunos ante antes como cual cuales cuando de del desde donde durante e el
+ella ellas ellos en entre era es esa esas ese eso esos esta estas este esto estos fue ha han hasta hay la las le les
+lo los mas me mi mis muy ni no nos o os otra otras otro otros para pero por porque que quien quienes se ser si sin
+sobre son su sus tambien te tiene tienen todo todos tu tus un una uno unos y ya yo cómo cuál cuáles dónde él más qué
+quién sí también según debe deben puede pueden""".split())
+
+
 class Fragmentos:
     """Acceso de solo lectura a chunks.sqlite."""
 
-    def __init__(self, ruta):
+    def __init__(self, ruta, sin_vacias=False):
         self.ruta = Path(ruta)
+        self.sin_vacias = sin_vacias
         if not self.ruta.is_file():
             raise FileNotFoundError(self.ruta)
 
@@ -77,9 +87,10 @@ class Fragmentos:
         with closing(self._conexion()) as c:
             return c.execute("SELECT COUNT(*) FROM chunks").fetchone()[0]
 
-    @staticmethod
-    def _expresion(texto):
+    def _expresion(self, texto):
         terminos = dict.fromkeys(re.findall(r"\w+", texto.casefold()))
+        if self.sin_vacias:
+            terminos = [t for t in terminos if t not in VACIAS] or list(terminos)
         return " OR ".join('"' + t.replace('"', "") + '"' for t in terminos)
 
     def bm25(self, texto, k, doc_ids=None):
@@ -231,6 +242,7 @@ class RecuperadorHibrido:
         self.fragmentos = self.indice = self.encoder = self.reordenador = self.citaciones = None
         self.evidencia = None
         self.ultima_traza = {}
+        self._memo = {}
 
     def _ruta(self, clave):
         return self.raiz / self.config[clave]
@@ -241,7 +253,7 @@ class RecuperadorHibrido:
         from legalrag.evaluation.oficial import cargar_citaciones
 
         c = self.config
-        self.fragmentos = Fragmentos(self._ruta("fragmentos"))
+        self.fragmentos = Fragmentos(self._ruta("fragmentos"), c.get("bm25_sin_vacias", False))
         self.citaciones = cargar_citaciones(self.raiz)
         manifiesto = json.loads(self._ruta("manifiesto").read_text(encoding="utf-8"))
         self.evidencia = EvidenciaCorpus(self.citaciones, manifiesto)
@@ -278,13 +290,24 @@ class RecuperadorHibrido:
         sigue puntuando contra la pregunta."""
         c = self.config
         texto = consulta(entrada, c.get("consulta_con_tema", False))
+        # La segunda búsqueda del reformulador repite la consulta de la pregunta: sus rankings y los puntajes del
+        # reranker ya calculados se reutilizan (solo se puntúan los candidatos nuevos). El memo es por pregunta.
+        if self._memo.get("texto") != texto or not c.get("memo_recuperacion"):
+            self._memo = {"texto": texto, "rankings": {}, "reranker": {}}
         rankings = []
         for busqueda in [texto] + ([expansion] if expansion else []):
             if c.get("usar_bm25", True):
-                rankings.append(self.fragmentos.bm25(busqueda, c["bm25_top"]))
+                clave = ("bm25", busqueda)
+                if clave not in self._memo["rankings"]:
+                    self._memo["rankings"][clave] = self.fragmentos.bm25(busqueda, c["bm25_top"])
+                rankings.append(self._memo["rankings"][clave])
             if c.get("usar_denso", True) and self.indice is not None:
-                puntajes, posiciones = self.indice.search(self.encoder.codificar(busqueda), c["denso_top"])
-                rankings.append([(int(i) + 1, float(s)) for i, s in zip(posiciones[0], puntajes[0]) if i >= 0])
+                clave = ("denso", busqueda)
+                if clave not in self._memo["rankings"]:
+                    puntajes, posiciones = self.indice.search(self.encoder.codificar(busqueda), c["denso_top"])
+                    self._memo["rankings"][clave] = [(int(i) + 1, float(s)) for i, s in zip(posiciones[0], puntajes[0])
+                                                     if i >= 0]
+                rankings.append(self._memo["rankings"][clave])
         fijos, ruta, nombradas = [], [], {}
         if c.get("enrutar_normas", False):
             nombradas = self.evidencia.normas_de(entrada["pregunta"] + " " + " ".join((entrada.get("opciones") or {}).values()))
@@ -323,8 +346,12 @@ class RecuperadorHibrido:
             docs = {f["id"]: f["doc_id"] for f in self.fragmentos.filas(candidatos)} if reservar or reservar_agente else {}
         else:
             filas = self.fragmentos.filas(candidatos)
-            puntajes = self.reordenador.puntuar(texto, [f["texto_busqueda"] for f in filas])
-            orden = sorted(((f["id"], float(p)) for f, p in zip(filas, puntajes)), key=lambda x: (-x[1], x[0]))
+            memo = self._memo["reranker"]
+            nuevas = [f for f in filas if f["id"] not in memo]
+            if nuevas:
+                memo.update(zip((f["id"] for f in nuevas),
+                                map(float, self.reordenador.puntuar(texto, [f["texto_busqueda"] for f in nuevas]))))
+            orden = sorted(((f["id"], memo[f["id"]]) for f in filas), key=lambda x: (-x[1], x[0]))
             docs = {f["id"]: f["doc_id"] for f in filas}
         # El artículo nombrado va primero; después, si se pide, los mejores pasajes de la norma nombrada.
         reservados = [x[0] for x in orden if x[0] not in fijos and docs.get(x[0]) in nombradas][:reservar]

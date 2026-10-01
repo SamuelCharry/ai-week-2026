@@ -166,8 +166,11 @@ class DecoderTransformers:
     def generar(self, entrada, pasajes, evidencia, prefijo="{", repetition_penalty=None, extra=None):
         """Objeto JSON de la respuesta. `repetition_penalty` reemplaza el de la configuración (reintento
         cuando el JSON salió inválido); `extra` es un bloque adicional del prompt."""
-        return prefijo + self._continuar(self.mensajes(entrada, pasajes, evidencia, extra), prefijo,
-                                         self.config["max_nuevos_tokens"], repetition_penalty)
+        # Tope por formato (`max_nuevos_por_formato`): una semiabierta de ≤ 120 palabras no necesita 700 tokens, y un
+        # bucle de repetición que agota el tope cuesta tiempo y deja el JSON inválido.
+        maximo = self.config.get("max_nuevos_por_formato", {}).get(entrada["formato"], self.config["max_nuevos_tokens"])
+        return prefijo + self._continuar(self.mensajes(entrada, pasajes, evidencia, extra), prefijo, maximo,
+                                         repetition_penalty)
 
     def redactar(self, mensajes, max_nuevos):
         """Texto libre, sin JSON (hipótesis para la búsqueda, preguntas y respuestas de verificación)."""

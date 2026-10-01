@@ -6,6 +6,7 @@ Para iterar sobre Cerberus con los datos ya en su lugar (sin caché: tiempos y r
 
     python3 src/main.py --datos data                    # muestra + evaluador + cambios frente a la corrida anterior
     python3 src/main.py --datos data --comparar-con data/comparacion/entrega/submissions.jsonl
+    python3 src/main.py --datos data --config configs/cerberus_mk4.json   # otra versión de Cerberus
 
     python3 src/main.py --datos datos --prueba          # 3 preguntas, para medir y revisar
     python3 src/main.py --datos datos                   # las 50 de muestra + evaluador oficial
@@ -274,6 +275,27 @@ def evaluar(salida, ragas):
     print("Reporte:", reporte)
 
 
+def tiempos(salida):
+    """Promedio, p95 y máximo por pregunta, por formato y por etapa (registro["tiempos"] de agent.componentes)."""
+    filas = [json.loads(a.read_text(encoding="utf-8")) for a in salida.with_name(salida.stem + "_respuestas").glob("*.json")]
+    if not filas:
+        return []
+    totales = sorted(f["segundos"] for f in filas)
+    peor = max(filas, key=lambda f: f["segundos"])
+    lineas = [f"  tiempo: promedio {sum(totales) / len(totales):.1f} s · p95 {totales[int(0.95 * (len(totales) - 1))]:.1f} s · "
+              f"máximo {peor['segundos']:.1f} s (pregunta {peor['respuesta']['id']}) · presupuesto ~22 s"]
+    por_formato, por_etapa = {}, {}
+    for f in filas:
+        por_formato.setdefault(f["respuesta"]["formato"], []).append(f["segundos"])
+        for etapa, segundos in ((f.get("registro") or {}).get("tiempos") or {}).items():
+            por_etapa.setdefault(etapa, []).append(segundos)
+    lineas.append("  por formato: " + " · ".join(f"{k} {sum(v) / len(v):.1f} s" for k, v in sorted(por_formato.items())))
+    if por_etapa:
+        lineas.append("  por etapa (promedio donde actúa): " +
+                      " · ".join(f"{k} {sum(v) / len(v):.1f} s ({len(v)})" for k, v in por_etapa.items()))
+    return lineas
+
+
 def iteracion(config, salida, comparar_con, aproximar_ragas):
     """Resumen de la iteración: puntaje, cambios pregunta por pregunta frente a la corrida anterior y RAGAS≈."""
     import importlib.util
@@ -288,6 +310,7 @@ def iteracion(config, salida, comparar_con, aproximar_ragas):
               f"  total {reporte['total_automatico']['obtenidos']} · cerradas {reporte['cerradas']['aciertos']}/"
               f"{reporte['cerradas']['n']} ({reporte['cerradas']['puntos']}) · citas {reporte['citas']['puntos']} "
               f"(recall {reporte['citas']['recall_citas_ponderado']}) · abstención {reporte['abstencion']['puntos']}"]
+    lineas += tiempos(salida)
     actual = comparar.por_pregunta(ev, salida, muestra)
     previo = comparar.por_pregunta(ev, comparar_con, muestra) if comparar_con and comparar_con.is_file() else None
     if previo:
@@ -325,6 +348,8 @@ def main():
     ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas")
     ap.add_argument("--solo-preparar", action="store_true", help="revisa entorno, datos e índice y termina")
     ap.add_argument("--ragas", action="store_true", help="evalúa también texto libre (OPENROUTER_API_KEY)")
+    ap.add_argument("--config", type=Path, default=RAIZ / "configs/sistema.json",
+                    help="configuración a correr (p. ej. configs/cerberus_mk4.json); por defecto la de entrega")
     ap.add_argument("--comparar-con", type=Path,
                     help="entrega anterior para ver cambios pregunta por pregunta (por defecto, la corrida previa)")
     ap.add_argument("--sin-ragas-local", action="store_true", help="no calcula la aproximación local de RAGAS")
@@ -333,7 +358,7 @@ def main():
     from legalrag.config import leer_config
 
     os.chdir(RAIZ)
-    config = leer_config()
+    config = leer_config(args.config.resolve())
     if args.solo_corpus and not args.desde_raw:
         salir("--solo-corpus va con --desde-raw.")
     comprobar_entorno(gpu=not args.solo_corpus)

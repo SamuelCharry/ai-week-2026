@@ -1,0 +1,93 @@
+{
+  "notas": "Configuración de entrega: Cerberus Mark 3, tres agentes sobre Qwen3-8B (sugerido en la §3.1). Recuperación BM25 + BGE-M3 con RRF, enrutamiento por norma nombrada y reranker BGE-v2-m3. Agente reformulador anclado en los primeros pasajes (ITER-RETGEN): escribe con qué figura y normas se resuelve el caso, se vuelve a recuperar con eso y sus normas tienen lugares reservados (texto libre). Calculadora (montos en SMMLV y UVT con los decretos del corpus) y normalizador (leyes con el año equivocado); si dejan nota, en cerradas se razona antes de elegir la letra. Letra por probabilidad en float32, redacción directa alineada con la métrica de texto libre y reintento de JSON inválido. Mark 2 de referencia: src/comparar.py cerberus-mk2.",
+  "implementacion": "legalrag.agent.componentes:Sistema",
+  "entradas": {
+    "sample": "data/oficial/data/sample_50.jsonl",
+    "test": "data/oficial/data/test_992.jsonl"
+  },
+  "salidas": {
+    "sample": "data/reproduccion/submissions_sample.jsonl",
+    "test": "submissions.jsonl"
+  },
+  "oficial": "data/oficial",
+  "presupuesto_segundos": 22,
+  "corpus_indice": {
+    "url": null,
+    "sha256": null,
+    "archivo": "data/descargas/corpus_indice.zip",
+    "extraer_en": "data",
+    "requeridos": [
+      "data/experimentos/corpus_definitivo/chunks.sqlite",
+      "data/experimentos/corpus_definitivo/indices/BAAI__bge-m3/index.faiss",
+      "data/processed/corpus_preparado/textos",
+      "data/releases/corpus_eval_v1/corpus_manifest.json"
+    ]
+  },
+  "recuperacion": {
+    "fragmentos": "data/experimentos/corpus_definitivo/chunks.sqlite",
+    "indice_denso": "data/experimentos/corpus_definitivo/indices/BAAI__bge-m3/index.faiss",
+    "indice_meta": "data/experimentos/corpus_definitivo/indices/BAAI__bge-m3/complete.json",
+    "textos": "data/processed/corpus_preparado/textos",
+    "manifiesto": "data/releases/corpus_eval_v1/corpus_manifest.json",
+    "encoder": {
+      "repo_id": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+    },
+    "reranker": {
+      "repo_id": "BAAI/bge-reranker-v2-m3",
+      "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    },
+    "dtype": "bfloat16",
+    "max_tokens_encoder": 1024,
+    "max_tokens_reranker": 1024,
+    "lote_reranker": 6,
+    "bm25_top": 100,
+    "denso_top": 100,
+    "rrf_k": 60,
+    "rerank_top": 50,
+    "max_pasajes": 10,
+    "max_caracteres_pasaje": 2400,
+    "enrutar_normas": true,
+    "max_fijos": 3,
+    "consulta_con_tema": false,
+    "encabezado_norma": true,
+    "usar_bm25": true,
+    "usar_denso": true,
+    "usar_reranker": true,
+    "reservar_nombradas": 2,
+    "max_por_documento": 3,
+    "min_normativos": 2,
+    "ajustes_solo_texto_libre": true,
+    "expansion": "siempre",
+    "agente_expansion": "iterativo",
+    "expansion_articulos": true,
+    "max_tokens_hipotesis": 120,
+    "reservar_expansion": 2
+  },
+  "generacion": {
+    "decoder": {
+      "repo_id": "Qwen/Qwen3-8B",
+      "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "parametros": 8190735360,
+      "licencia": "apache-2.0",
+      "admitido_por_enunciado": "§3.1 del enunciado: opción sugerida Qwen/Qwen3-8B"
+    },
+    "dtype": "bfloat16",
+    "contexto": 6144,
+    "max_nuevos_tokens": 700,
+    "repetition_penalty": 1.1,
+    "max_caracteres_prompt": 1800,
+    "politica": {
+      "citar_evidencia": "respaldo",
+      "abstener_libre": "sin_evidencia",
+      "saneo": "cita",
+      "maximo_abiertas": 6
+    },
+    "letra_por_probabilidad": true,
+    "regenerar_json": true,
+    "calculadora": true,
+    "normalizador_citas": true,
+    "razonar_con_herramienta": true,
+    "estilo": "directo"
+  }
+}

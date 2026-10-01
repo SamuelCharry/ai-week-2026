@@ -29,6 +29,7 @@ Requisitos del enunciado que dependen de esta clase:
 """
 import importlib
 import json
+import time
 from pathlib import Path
 
 
@@ -81,7 +82,9 @@ class Sistema:
         from legalrag.generation import pasos
 
         rec = self.config["recuperacion"]
+        inicio = time.perf_counter()
         pasajes = self.recuperador.buscar(entrada)
+        self.tiempos = {"recuperacion": time.perf_counter() - inicio}
         self.ultima_expansion = None
         if not rec.get("expansion") or entrada["formato"] == "multiple_choice":
             return pasajes
@@ -94,8 +97,12 @@ class Sistema:
             mensajes = pasos.mensajes_reformulador(entrada)
         else:
             mensajes = pasos.mensajes_hipotesis(entrada)
+        inicio = time.perf_counter()
         texto = self.decoder.redactar(mensajes, rec.get("max_tokens_hipotesis", 160))
+        self.tiempos["reformulador"] = time.perf_counter() - inicio
+        inicio = time.perf_counter()
         expandidos = self.recuperador.buscar(entrada, expansion=texto)
+        self.tiempos["recuperacion_2"] = time.perf_counter() - inicio
         self.ultima_expansion = {"agente": agente, "hipotesis": texto, "docs_antes": [p["doc_id"] for p in pasajes],
                                  "docs_despues": [p["doc_id"] for p in expandidos]}
         return expandidos
@@ -105,6 +112,8 @@ class Sistema:
         from legalrag.citations.verificacion import abstencion, justificacion_de, respuesta_final
 
         evidencia = self.recuperador.evidencia
+        tiempos = getattr(self, "tiempos", None) or {}
+        inicio = time.perf_counter()
         usados = self.decoder.seleccionar(entrada, pasajes, evidencia)
         if not usados:
             self.ultimo_problema = "sin_evidencia_en_contexto"
@@ -147,6 +156,8 @@ class Sistema:
             return respuesta_final(entrada, texto, entregados, evidencia, gen["politica"], self.validador)
 
         respuesta, registro = final(crudo)
+        tiempos["generacion"] = time.perf_counter() - inicio
+        inicio = time.perf_counter()
         reintento = None
         if gen.get("regenerar_json") and gravedad(registro["problema"]) >= 1:
             # Greedy repite la misma salida: el reintento cambia la penalización de repetición (los JSON
@@ -157,6 +168,8 @@ class Sistema:
             reintento = {"problema_antes": registro["problema"], "problema_despues": registro_r["problema"]}
             if gravedad(registro_r["problema"]) < gravedad(registro["problema"]):
                 crudo, respuesta, registro = nuevo, respuesta_r, registro_r
+        if reintento:
+            tiempos["reintento"] = time.perf_counter() - inicio
         if probabilidades and not respuesta.get("abstencion"):
             respuesta["respuesta_correcta"] = letra
             respuesta["descarte_opciones"] = {k: v for k, v in respuesta["descarte_opciones"].items() if k != letra}
@@ -164,7 +177,9 @@ class Sistema:
         self.ultimo_registro = {**registro, "crudo": crudo, "probabilidades_letras": probabilidades,
                                 "pasajes_en_prompt": len(usados), "pasajes_entregados": len(entregados),
                                 "expansion": self.ultima_expansion, "reintento_json": reintento, "calculadora": nota,
-                                "modo_letra": modo if entrada["formato"] == "multiple_choice" else None}
+                                "modo_letra": modo if entrada["formato"] == "multiple_choice" else None,
+                                "tiempos": {k: round(v, 2) for k, v in tiempos.items()}}
+        self.tiempos = None
         return respuesta
 
     def __enter__(self):
