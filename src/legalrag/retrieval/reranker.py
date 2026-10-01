@@ -7,7 +7,7 @@ class Reranker:
                                                       revision=config.reranker_revision)
         self.model = AutoModelForSequenceClassification.from_pretrained(
             config.reranker_model, revision=config.reranker_revision,
-            torch_dtype=torch.float16 if config.device == "cuda" else torch.float32,
+            dtype=torch.float16 if config.device == "cuda" else torch.float32,
             trust_remote_code=False).to(config.device).eval()
         self.revision = getattr(self.model.config, "_commit_hash", None)
 

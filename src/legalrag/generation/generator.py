@@ -160,7 +160,7 @@ class Generator:
         try:
             self.model = AutoModelForCausalLM.from_pretrained(
                 config.llm_model, revision=config.llm_revision,
-                device_map={"": 0}, torch_dtype=torch.bfloat16,
+                device_map={"": 0}, dtype=torch.bfloat16,
                 trust_remote_code=False).eval()
             self._mode = "bf16"
         except (RuntimeError, torch.OutOfMemoryError):
@@ -168,7 +168,7 @@ class Generator:
                                              bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=torch.bfloat16)
             self.model = AutoModelForCausalLM.from_pretrained(
                 config.llm_model, revision=config.llm_revision, quantization_config=quantization,
-                device_map={"": 0}, torch_dtype=torch.bfloat16,
+                device_map={"": 0}, dtype=torch.bfloat16,
                 trust_remote_code=False).eval()
             self._mode = "4bit"
         self.revision = getattr(self.model.config, "_commit_hash", None)
@@ -282,8 +282,9 @@ class Generator:
             # Mark 43: el banco trae leyes con el año equivocado («Ley 1564 de 2002» por la de 2012).
             from legalrag.tools.normalizador import normalizador_del_corpus
             opciones = question.get("opciones")
-            nota = normalizador_del_corpus(self.config).nota(
-                {"pregunta": question["pregunta"], "opciones": opciones if isinstance(opciones, dict) else {}})
+            normalizador = normalizador_del_corpus(self.config)
+            nota = normalizador.nota({"pregunta": question["pregunta"],
+                                      "opciones": opciones if isinstance(opciones, dict) else {}}) if normalizador else None
             if nota:
                 user_content = user_content + "\n\n" + nota
         self.last_tools = computed

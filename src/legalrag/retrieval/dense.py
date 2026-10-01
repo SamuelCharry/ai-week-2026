@@ -47,7 +47,7 @@ class Retriever:
                 raise ValueError(f"Índice alterado: {tier}")
             self.verified.add(tier)
         self.index = faiss.read_index(str(path))
-        if self.index.d != self.encoder.model.get_sentence_embedding_dimension():
+        if self.index.d != (getattr(self.encoder.model, 'get_embedding_dimension', None) or self.encoder.model.get_sentence_embedding_dimension)():
             raise ValueError("Dimensión incompatible con el encoder.")
         self.loaded_tier = tier
         return self.index

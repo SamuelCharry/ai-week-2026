@@ -29,8 +29,10 @@ MARKS = {
 
 def comprobar(config):
     faltan = [str(p.relative_to(RAIZ)) for p in (config.index_dir / "build.json", config.prepared,
-                                                 RAIZ / "corpus_manifest.json", RAIZ / "data/oficial/data/sample_50.jsonl")
+                                                 RAIZ / "data/oficial/data/sample_50.jsonl")
               if not p.exists()]
+    if config.normalizador_citas and not (RAIZ / "corpus_manifest.json").is_file():
+        faltan.append("corpus_manifest.json (lo usa el normalizador de citas)")
     if faltan:
         sys.exit("Faltan datos en esta carpeta: " + ", ".join(faltan) + "\nEnlacen o copien index/, data/ y "
                  "corpus_manifest.json desde la carpeta donde se construyó el índice (la de Mark 42), por ejemplo:\n"
@@ -45,6 +47,8 @@ def main():
     ap.add_argument("--ragas", action="store_true", help="evalúa también texto libre (OPENROUTER_API_KEY)")
     args = ap.parse_args()
 
+    from legalrag.silencio import silenciar
+    silenciar()
     from legalrag.config import CONFIG
     from legalrag.pipeline import run
 

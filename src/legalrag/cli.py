@@ -5,6 +5,8 @@ from legalrag.config import CONFIG
 
 
 def main():
+    from legalrag.silencio import silenciar
+    silenciar()
     parser = argparse.ArgumentParser(description="Preguntas jurídicas con corpus colombiano")
     parser.add_argument("--root", type=Path, default=CONFIG.root)
     sub = parser.add_subparsers(dest="command", required=True)

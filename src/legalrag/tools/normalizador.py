@@ -60,13 +60,21 @@ _NORMALIZADOR = {}
 
 
 def normalizador_del_corpus(config):
-    """NormalizadorCitas sobre corpus_manifest.json (se carga una vez por raíz del proyecto)."""
+    """NormalizadorCitas sobre el inventario del corpus (se carga una vez). Si no lo encuentra, avisa una vez y
+    devuelve None: la corrida sigue sin el normalizador en vez de detenerse."""
     import json
 
     clave = str(config.root)
     if clave not in _NORMALIZADOR:
-        manifiesto = json.loads((config.root / "corpus_manifest.json").read_text(encoding="utf-8"))
-        documentos = manifiesto if isinstance(manifiesto, list) else \
-            manifiesto.get("documentos") or manifiesto.get("documents") or []
-        _NORMALIZADOR[clave] = NormalizadorCitas(documentos)
+        candidatos = [config.root / "corpus_manifest.json", config.root / "data/raw/base_manifest.json"]
+        ruta = next((c for c in candidatos if c.is_file()), None)
+        if ruta is None:
+            print("  AVISO: no está corpus_manifest.json en la raíz del proyecto; el normalizador de citas queda "
+                  "desactivado en esta corrida (cópienlo desde la carpeta del índice).", flush=True)
+            _NORMALIZADOR[clave] = None
+        else:
+            manifiesto = json.loads(ruta.read_text(encoding="utf-8"))
+            documentos = manifiesto if isinstance(manifiesto, list) else \
+                manifiesto.get("documentos") or manifiesto.get("documents") or []
+            _NORMALIZADOR[clave] = NormalizadorCitas(documentos)
     return _NORMALIZADOR[clave]

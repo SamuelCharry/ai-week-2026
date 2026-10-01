@@ -55,7 +55,7 @@ def build_index(config, replace=False):
     details = {}
     # Un índice en construcción a la vez. No se almacena una matriz duplicada.
     for tier in ("nucleo", "complementario"):
-        dimension = encoder.model.get_sentence_embedding_dimension()
+        dimension = (getattr(encoder.model, 'get_embedding_dimension', None) or encoder.model.get_sentence_embedding_dimension)()
         index = faiss.IndexFlatIP(dimension)
         db_path = config.index_dir / f"{tier}.sqlite.tmp"
         if db_path.exists():
