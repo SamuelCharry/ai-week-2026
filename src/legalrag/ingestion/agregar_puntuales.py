@@ -19,6 +19,7 @@ la lista de ampliaciones. Reanudable: un doc_id que ya está en chunks.sqlite no
 Uso:
     python -m legalrag.ingestion.agregar_puntuales                    # todo (el paso 5 usa la GPU)
     python -m legalrag.ingestion.agregar_puntuales --solo-descargar   # pasos 1 y 2, sin tocar el índice
+    python -m legalrag.ingestion.agregar_puntuales --solo-raw         # solo a data/raw, para reconstruir desde cero
     python -m legalrag.ingestion.agregar_puntuales --solo decreto_1572_2024 ...
 """
 import argparse
@@ -84,6 +85,14 @@ def revisar(doc, registro):
     return None
 
 
+def registrar_en_raw(entradas):
+    """Agrega (o reemplaza) las entradas en data/raw/manifest.json, de donde parte main.py --desde-raw."""
+    ids = {e["doc_id"] for e in entradas}
+    crudo = [d for d in json.loads((RAW / "manifest.json").read_text(encoding="utf-8")) if d["doc_id"] not in ids]
+    escribir_json(RAW / "manifest.json", crudo + entradas)
+    return len(crudo) + len(entradas)
+
+
 def actualizar_listas(registros, filas, rec):
     """documentos.jsonl, data/raw/manifest.json y el inventario (corpus_manifest.json + snapshot.json)."""
     ids = {f["doc_id"] for f in filas}
@@ -96,9 +105,7 @@ def actualizar_listas(registros, filas, rec):
         temporal.write_text("\n".join(sorted(lineas, key=lambda l: json.loads(l)["doc_id"])) + "\n", encoding="utf-8")
         temporal.replace(documentos)
     if (RAW / "manifest.json").is_file():
-        crudo = [d for d in json.loads((RAW / "manifest.json").read_text(encoding="utf-8")) if d["doc_id"] not in ids]
-        crudo += [json.loads((RAW / r["doc_id"] / "entrada.json").read_text(encoding="utf-8")) for r in registros]
-        escribir_json(RAW / "manifest.json", crudo)
+        registrar_en_raw([json.loads((RAW / r["doc_id"] / "entrada.json").read_text(encoding="utf-8")) for r in registros])
     manifiesto_ruta = RAIZ / rec["manifiesto"]
     manifiesto = [d for d in json.loads(manifiesto_ruta.read_text(encoding="utf-8")) if d["doc_id"] not in ids]
     manifiesto = sorted(manifiesto + filas, key=lambda d: d["doc_id"])
@@ -173,6 +180,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--solo", nargs="*", help="doc_id de configs/corpus_puntuales.json")
     ap.add_argument("--solo-descargar", action="store_true", help="descarga y extrae el texto; no toca el índice")
+    ap.add_argument("--solo-raw", action="store_true",
+                    help="descarga y registra en data/raw/manifest.json, sin tocar inventario ni índice "
+                         "(para reconstruir todo desde cero con main.py --desde-raw)")
     args = ap.parse_args(argv)
     rec = leer_config()["recuperacion"]
     docs = json.loads(FUENTES.read_text(encoding="utf-8"))["documentos"]
@@ -181,11 +191,15 @@ def main(argv=None):
         if desconocidos:
             ap.error(f"doc_id que no están en {FUENTES.name}: {sorted(desconocidos)}")
         docs = [d for d in docs if d["doc_id"] in args.solo]
-    en_corpus = {d["doc_id"] for d in json.loads((RAIZ / rec["manifiesto"]).read_text(encoding="utf-8"))}
+    if args.solo_raw and not (RAW / "manifest.json").is_file():
+        ap.error("No está data/raw/manifest.json: --solo-raw es para reconstruir desde data/raw")
+    manifiesto = RAIZ / rec["manifiesto"]
+    en_corpus = set() if args.solo_raw or not manifiesto.is_file() else \
+        {d["doc_id"] for d in json.loads(manifiesto.read_text(encoding="utf-8"))}
 
     from legalrag.preprocessing.inventario import fila_inventario
 
-    registros, filas, fallas = [], [], {}
+    registros, filas, entradas, fallas = [], [], [], {}
     for i, doc in enumerate(docs, 1):
         presente = {doc["doc_id"], "co_" + doc["doc_id"]} & en_corpus
         if presente:
@@ -203,6 +217,7 @@ def main(argv=None):
             print(f"[{i}/{len(docs)}] {doc['doc_id']}: FALLA {motivo}", flush=True)
             continue
         registros.append(registro)
+        entradas.append(entrada)
         filas.append(fila_inventario(registro, PREPARADO, RAIZ))
         print(f"[{i}/{len(docs)}] {doc['doc_id']}: {estado}, {registro['caracteres']:,} caracteres "
               f"({entrada['fuente']})", flush=True)
@@ -210,7 +225,10 @@ def main(argv=None):
     print(f"\nListos {len(filas)} de {len(docs)}; fallas {len(fallas)}")
     for doc_id, motivo in fallas.items():
         print(f"  {doc_id}: {motivo}")
-    if args.solo_descargar or not filas:
+    if args.solo_raw and entradas:
+        total = registrar_en_raw(entradas)
+        print(f"data/raw/manifest.json: {total} documentos. Siguiente: python3 src/main.py --desde-raw --solo-preparar")
+    if args.solo_descargar or args.solo_raw or not filas:
         return 1 if fallas else 0
 
     from legalrag.retrieval.hibrido import EncoderConsultas
