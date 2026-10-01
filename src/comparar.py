@@ -391,12 +391,13 @@ def informe(filas, detalles):
                       "cerradas": f"{f['aciertos_cerradas']}/{f['n_cerradas']}" if "n_cerradas" in f else "—",
                       "citas": f.get("citas", "—"), "recall": f.get("recall_citas", "—"),
                       "abstención": f.get("abstencion", "—"), **({"ragas": f["ragas"]} if f.get("ragas") is not None else {}),
+                      **({"RAGAS≈": f["ragas_aprox"]} if f.get("ragas_aprox") is not None else {}),
                       "s/preg": f["s_por_pregunta"], "min": f["minutos"],
                       "problemas": compacto(json.loads(f["problemas"]), NOMBRE_PROBLEMA),
                       "pasos del agente": " · ".join(texto_pasos) or "—"})
     columnas = list(dict.fromkeys(k for t in tabla for k in t))
     anchos = {c: max(len(c), *(len(str(t.get(c, ""))) for t in tabla)) for c in columnas}
-    numericas = {"total", "Δ base", "cerradas", "citas", "recall", "abstención", "ragas", "s/preg", "min"}
+    numericas = {"total", "Δ base", "cerradas", "citas", "recall", "abstención", "ragas", "RAGAS≈", "s/preg", "min"}
     formato = lambda c, v: str(v).rjust(anchos[c]) if c in numericas else str(v).ljust(anchos[c])  # noqa: E731
     lineas += ["", "SISTEMA (muestra de 50, evaluador oficial)", "",
                "  ".join(formato(c, c) for c in columnas), "  ".join("-" * anchos[c] for c in columnas)]
@@ -422,7 +423,9 @@ def informe(filas, detalles):
                f"  ninguna norma del fundamento:    {', '.join(map(str, sin_citas)) or '—'}",
                f"  fundamento citado en parte:      {', '.join(map(str, parciales)) or '—'}",
                "", "+ mejora · - empeora · ~ cambia sin efecto en el puntaje. Detalle por pregunta en "
-               "data/comparacion/<variante>/por_pregunta.csv"]
+               "data/comparacion/<variante>/por_pregunta.csv",
+               "RAGAS≈: aproximación local de los 30 puntos de texto libre (e5-large del evaluador + NLI); ordena "
+               "variantes, no reemplaza al juez oficial. Detalle en data/comparacion/<variante>/ragas_local.json"]
     return "\n".join(l.rstrip() for l in lineas)
 
 
@@ -469,7 +472,27 @@ def comparar_rerankers(config, nombres, ids):
                      "segundos_promedio", "sin_norma_en_pasajes"])
 
 
-def comparar_sistema(config, variantes, ids, ragas, cache=True):
+def ragas_local(filas, muestra, evaluador):
+    """Columna RAGAS≈ (legalrag.evaluation.ragas_local): aproximación gratuita de los 30 puntos de texto libre."""
+    from legalrag.evaluation.ragas_local import RagasLocal
+
+    print("\nAproximando RAGAS en local (e5-large del evaluador + NLI)...", flush=True)
+    juez = RagasLocal(VERIFICADOR_NLI["modelo"])
+    juez.abrir()
+    try:
+        for fila in filas:
+            salida = SALIDA / fila["variante"] / "submissions.jsonl"
+            if not salida.is_file():
+                continue
+            resultado = juez.evaluar({s["id"]: s for s in evaluador.read_jsonl(salida)}, muestra)
+            fila["ragas_aprox"] = resultado["puntos_aprox"]
+            salida.with_name("ragas_local.json").write_text(json.dumps(resultado, ensure_ascii=False, indent=2),
+                                                            encoding="utf-8")
+    finally:
+        juez.cerrar()
+
+
+def comparar_sistema(config, variantes, ids, ragas, cache=True, aproximar_ragas=True):
     from legalrag.agent.pipeline import responder_lote
 
     evaluador = evaluador_oficial(config)
@@ -544,6 +567,9 @@ def comparar_sistema(config, variantes, ids, ragas, cache=True):
         detalles[nombre] = por_pregunta(evaluador, salida, muestra)
         escribir_csv(salida.with_name("por_pregunta.csv"), list(detalles[nombre].values()))
         escribir_csv(SALIDA / "sistema.csv", filas)
+    if aproximar_ragas and not ragas:
+        ragas_local(filas, muestra, evaluador)
+        escribir_csv(SALIDA / "sistema.csv", filas)
     texto = informe(filas, detalles)
     (SALIDA / "resumen.txt").write_text(texto + "\n", encoding="utf-8")
     print(texto)
@@ -562,6 +588,7 @@ def main():
     ap.add_argument("--ragas", action="store_true", help="incluye el juez de texto libre (OPENROUTER_API_KEY)")
     ap.add_argument("--rerankers", nargs="+", choices=list(RERANKERS),
                     help="etapa 1b: compara rerankers sobre la recuperación del sistema (sin decoder)")
+    ap.add_argument("--sin-ragas-local", action="store_true", help="no calcula la aproximación local de RAGAS")
     ap.add_argument("--sin-cache", action="store_true",
                     help="genera todo de nuevo en cada variante (por defecto reutiliza generaciones con el mismo prompt)")
     args = ap.parse_args()
@@ -574,7 +601,8 @@ def main():
         comparar_rerankers(config, list(dict.fromkeys(args.rerankers)), args.ids)
     if args.sistema:
         # Una variante repetida en el comando se corre una sola vez.
-        comparar_sistema(config, list(dict.fromkeys(args.variantes)), args.ids, args.ragas, cache=not args.sin_cache)
+        comparar_sistema(config, list(dict.fromkeys(args.variantes)), args.ids, args.ragas, cache=not args.sin_cache,
+                         aproximar_ragas=not args.sin_ragas_local)
 
 
 if __name__ == "__main__":
