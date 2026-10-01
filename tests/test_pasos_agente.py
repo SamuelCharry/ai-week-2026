@@ -78,6 +78,16 @@ class Expansion(unittest.TestCase):
         self.assertTrue(r.expansiones[1])  # se buscó con la hipótesis del decoder
         self.assertEqual(s.ultima_expansion["docs_despues"], ["ley_472_1998"])
 
+    def test_reformulador_iterativo_lee_los_primeros_pasajes(self):
+        r, d = Recuperador([pasaje("sentencia_x", tipo="sentencia")], [pasaje("ley_472_1998")]), Decoder()
+        vistos = []
+        d.redactar = lambda mensajes, n: vistos.append(mensajes[-1]["content"]) or "Acción popular, Ley 472 de 1998."
+        config = {"recuperacion": {"expansion": "siempre", "agente_expansion": "iterativo"}, "generacion": {}}
+        with mock.patch("legalrag.generation.politica.bloque_pasajes", lambda p, e, n: "[1] Sentencia X\ntexto"):
+            sistema(config, r, d).recuperar(ABIERTA)
+        self.assertIn("PASAJES DE UNA PRIMERA BÚSQUEDA\n[1] Sentencia X", vistos[0])
+        self.assertEqual(r.expansiones[1], "Acción popular, Ley 472 de 1998.")
+
     def test_siempre_y_cerradas(self):
         fuerte = [pasaje("ley_472_1998", score=4.0)]
         r = Recuperador(fuerte, [pasaje("otra")])
@@ -129,6 +139,34 @@ class ReintentoYVerificacion(unittest.TestCase):
         self.assertEqual([l[0] for l in s.decoder.llamadas], ["generar", "redactar", "redactar", "generar"])
         self.assertTrue(s.decoder.llamadas[-1][2])  # la segunda generación lleva las verificaciones
         self.assertTrue(s.ultimo_registro["verificacion"]["aceptada"])
+
+    def test_razona_antes_de_la_letra_si_hay_nota_de_herramienta(self):
+        class Calculadora:
+            @staticmethod
+            def nota(entrada):
+                return "VALORES DE REFERENCIA\n- 30.000.000 pesos = 17,1 SMMLV"
+
+        class Decoder2(Decoder):
+            def probabilidades_letras(self, entrada, pasajes, evidencia, prefijo=None, **otros):
+                self.llamadas.append(("letras", prefijo))
+                return {"A": 0.2, "B": 0.8}
+
+        config = {"recuperacion": {}, "generacion": {"politica": {}, "letra_por_probabilidad": True,
+                                                     "razonar_con_herramienta": True}}
+        s = sistema(config, Recuperador([], []), Decoder2(['{"justificacion": "17 SMMLV es mínima cuantía"}']))
+        s.calculadora = Calculadora()
+        cerrada = {**CERRADA, "opciones": {"A": "x", "B": "y"}}
+
+        def final(entrada, crudo, pasajes, evidencia, politica, validador):
+            return ({"id": 2, "formato": "multiple_choice", "respuesta_correcta": "A",
+                     "descarte_opciones": {"A": "-", "B": "-"}}, {"problema": None})
+
+        with mock.patch("legalrag.citations.verificacion.respuesta_final", final):
+            s.responder(cerrada, [pasaje("ley_1564_2012")])
+        primera, segunda = s.decoder.llamadas[0], s.decoder.llamadas[1]
+        self.assertEqual(primera[0], "generar")  # primero razona…
+        self.assertEqual(segunda[0], "letras")   # …y después elige la letra con el razonamiento escrito
+        self.assertIn("17 SMMLV", segunda[1])
 
     def test_gravedad(self):
         self.assertGreater(gravedad("esquema_oficial: falta campo"), gravedad("json_invalido"))

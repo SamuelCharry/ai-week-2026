@@ -205,8 +205,15 @@ class Sistema:
         if modo == "debil" and not debil:
             return pasajes
         # Agente de expansión: "hipotesis" (HyDE: una respuesta breve) o "normas" (reformulador: lista de normas).
-        mensajes = (pasos.mensajes_reformulador(entrada) if rec.get("agente_expansion") == "normas"
-                    else pasos.mensajes_hipotesis(entrada))
+        agente = rec.get("agente_expansion")
+        if agente == "iterativo":
+            from legalrag.generation import politica
+            mensajes = pasos.mensajes_iterativo(entrada, politica.bloque_pasajes(
+                pasajes[:5], self.recuperador.evidencia, rec.get("max_caracteres_iterativo", 600)))
+        elif agente == "normas":
+            mensajes = pasos.mensajes_reformulador(entrada)
+        else:
+            mensajes = pasos.mensajes_hipotesis(entrada)
         hipotesis = self.decoder.redactar(mensajes, rec.get("max_tokens_hipotesis", 160))
         expandidos = self.recuperador.buscar(entrada, expansion=hipotesis)
         self.ultima_expansion.update(hipotesis=hipotesis, docs_antes=[p["doc_id"] for p in pasajes],
@@ -232,6 +239,10 @@ class Sistema:
         nota = "\n\n".join(n for n in (h.nota(entrada) for h in herramientas if h) if n) or None
         con_nota = {"extra": nota} if nota else {}
         modo = gen.get("letra_por_probabilidad")
+        if modo is True and nota and gen.get("razonar_con_herramienta") and entrada["formato"] == "multiple_choice":
+            # Con una nota de las herramientas (cálculo o aviso de norma), la letra se elige después de razonar: en una pasada el
+            # modelo no hacía la cuenta (528: «30.000.000 = 17,1 SMMLV» en el prompt y aun así «menor cuantía»).
+            modo = "razonada"
         prefijo = "{"
         if entrada["formato"] == "multiple_choice" and modo == "razonada":
             # Primero razona (justificación) y después se comparan las letras con ese razonamiento escrito.

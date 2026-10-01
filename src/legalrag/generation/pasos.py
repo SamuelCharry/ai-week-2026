@@ -50,6 +50,20 @@ def mensajes_reformulador(entrada):
                 "1998, artículo 2» o «Código General del Proceso, artículo 25»). Máximo 5 líneas, sin explicaciones.")}]
 
 
+def mensajes_iterativo(entrada, bloque_pasajes):
+    """Reformulador anclado en la evidencia (ITER-RETGEN, Shao et al., 2023): una respuesta breve escrita con los
+    primeros pasajes a la vista, que se usa como nueva consulta. Pedir las normas de memoria falló: Qwen3-8B nombró
+    leyes que no aplican o no existen (pregunta 247: «Ley 1295 de 2009» en vez de la Ley 472 de 1998)."""
+    opciones = "\n".join(f"{letra}) {texto}" for letra, texto in (entrada.get("opciones") or {}).items())
+    pregunta = entrada["pregunta"].strip() + ("\n" + opciones if opciones else "")
+    return [{"role": "system", "content": SISTEMA_HIPOTESIS},
+            {"role": "user", "content": (
+                f"PASAJES DE UNA PRIMERA BÚSQUEDA\n{bloque_pasajes}\n\nPREGUNTA ({entrada.get('area', '')})\n{pregunta}"
+                "\n\nCon base en esos pasajes, responde en máximo tres oraciones y nombra la figura jurídica y las normas "
+                "colombianas que regulan el caso (tipo, número y año, y el artículo si aparece). Si los pasajes no "
+                "bastan, nombra la figura jurídica que habría que buscar.")}]
+
+
 def evidencia_debil(pasajes, umbral, normativos=3, criterio="ambos"):
     """(débil, motivo) según CRAG. criterio: "puntaje" (mejor puntaje del reranker bajo el umbral), "normas"
     (ninguna ley, decreto o código entre los primeros) o "ambos" (cualquiera de los dos)."""
