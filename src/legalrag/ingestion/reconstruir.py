@@ -375,6 +375,10 @@ def buscar_gestor(tipo, numero, anio):
 
 
 def candidatas(doc, ficha):
+    if doc.get("solo_url"):
+        # Reemplazos por una fuente concreta (configs/corpus_puntuales.json): p. ej. la Ley 1581 de 2012 del Gestor
+        # Normativo, porque la página del Senado trae pegada la sentencia C-748 de 2011 (820.565 caracteres).
+        return [doc["url"]]
     urls = []
     if doc["doc_id"] in SENADO_CODIGOS:
         urls.append(f"{SENADO}/{SENADO_CODIGOS[doc['doc_id']]}")

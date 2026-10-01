@@ -20,6 +20,7 @@ Uso:
     python -m legalrag.ingestion.agregar_puntuales                    # todo (el paso 5 usa la GPU)
     python -m legalrag.ingestion.agregar_puntuales --solo-descargar   # pasos 1 y 2, sin tocar el índice
     python -m legalrag.ingestion.agregar_puntuales --solo-raw         # solo a data/raw, para reconstruir desde cero
+    python -m legalrag.ingestion.agregar_puntuales --sin-indice       # raw + textos + inventario (reemplazos incluidos)
     python -m legalrag.ingestion.agregar_puntuales --solo decreto_1572_2024 ...
 """
 import argparse
@@ -180,6 +181,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--solo", nargs="*", help="doc_id de configs/corpus_puntuales.json")
     ap.add_argument("--solo-descargar", action="store_true", help="descarga y extrae el texto; no toca el índice")
+    ap.add_argument("--sin-indice", action="store_true",
+                    help="actualiza data/raw, textos e inventario pero no el índice (luego src/reconstruir_indice.py)")
     ap.add_argument("--solo-raw", action="store_true",
                     help="descarga y registra en data/raw/manifest.json, sin tocar inventario ni índice "
                          "(para reconstruir todo desde cero con main.py --desde-raw)")
@@ -202,7 +205,7 @@ def main(argv=None):
     registros, filas, entradas, fallas = [], [], [], {}
     for i, doc in enumerate(docs, 1):
         presente = {doc["doc_id"], "co_" + doc["doc_id"]} & en_corpus
-        if presente:
+        if presente and not doc.get("reemplaza"):
             print(f"[{i}/{len(docs)}] {doc['doc_id']}: ya está en el corpus ({sorted(presente)[0]})")
             continue
         entrada, estado = descargar(doc)
@@ -230,6 +233,16 @@ def main(argv=None):
         print(f"data/raw/manifest.json: {total} documentos. Siguiente: python3 src/main.py --desde-raw --solo-preparar")
     if args.solo_descargar or args.solo_raw or not filas:
         return 1 if fallas else 0
+
+    if args.sin_indice:
+        documentos = actualizar_listas(registros, filas, rec)
+        print(f"Inventario: {documentos} documentos. Siguiente: python3 src/reconstruir_indice.py")
+        return 1 if fallas else 0
+    listos = {f["doc_id"] for f in filas}
+    reemplazos = [d["doc_id"] for d in docs if d.get("reemplaza") and d["doc_id"] in listos]
+    if reemplazos:
+        # Un reemplazo cambia fragmentos que ya están en el índice: no se puede agregar al final.
+        ap.error(f"{reemplazos} reemplazan documentos del corpus: usar --sin-indice y luego src/reconstruir_indice.py")
 
     from legalrag.retrieval.hibrido import EncoderConsultas
 

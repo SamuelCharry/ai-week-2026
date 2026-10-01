@@ -1,5 +1,5 @@
 {
- "descripcion": "Fuentes puntuales: normas que fijan valores que las preguntas dan por sabidos (SMMLV, auxilio de transporte, UVT) y normas que una pregunta del banco pide leer. Cada una de fuente oficial; 'clave' es la expresión que su texto debe contener.",
+ "descripcion": "Fuentes puntuales: normas que fijan valores que las preguntas dan por sabidos (SMMLV, auxilio de transporte, UVT) y normas que una pregunta del banco pide leer. Cada una de fuente oficial; 'clave' es la expresión que su texto debe contener. Los marcados con 'reemplaza' sustituyen a un documento del corpus por una fuente limpia (solo_url): las páginas del Senado de algunas leyes estatutarias traen pegada la sentencia de control.",
  "documentos": [
   {
    "doc_id": "decreto_2731_2014",
@@ -609,6 +609,44 @@
    "clave": "carrasco|relleno\\s+sanitario",
    "min_caracteres": 800,
    "excepcion_alcance": "Norma ambiental incluida porque una pregunta del banco público pide su lectura previa (pregunta 748); el resto de lo ambiental sigue fuera del alcance."
+  },
+  {
+   "doc_id": "ley_1581_2012",
+   "titulo": "Ley 1581 de 2012",
+   "tipo": "ley",
+   "numero": "1581",
+   "anio": 2012,
+   "organo_emisor": "Congreso de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=49981",
+   "areas": [
+    "Derecho de los mercados"
+   ],
+   "origen": "reemplazo_fuente_limpia",
+   "clave": "datos\\s+personales",
+   "min_caracteres": 10000,
+   "reemplaza": true,
+   "solo_url": true,
+   "motivo": "La versión del Senado trae pegada la sentencia C-748 de 2011: 820.565 caracteres y 164 menciones de magistrado ponente para 30 artículos."
+  },
+  {
+   "doc_id": "co_ley_1712_2014",
+   "titulo": "Ley de Transparencia y del Derecho de Acceso a la Información Pública Nacional",
+   "tipo": "ley",
+   "numero": "1712",
+   "anio": 2014,
+   "organo_emisor": "Congreso de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=56882",
+   "areas": [
+    "Derecho administrativo"
+   ],
+   "origen": "reemplazo_fuente_limpia",
+   "clave": "acceso\\s+a\\s+la\\s+informaci",
+   "min_caracteres": 10000,
+   "reemplaza": true,
+   "solo_url": true,
+   "motivo": "La versión del Senado trae pegada la sentencia C-274 de 2013: 719.842 caracteres y 215 menciones de magistrado ponente para 33 artículos."
   }
  ]
 }
