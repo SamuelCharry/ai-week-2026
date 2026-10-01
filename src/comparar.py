@@ -173,6 +173,8 @@ VARIANTES_SISTEMA = {
     "qwen3-8b-agentes": {**QWEN3_DIRECTA, **REFORMULADOR, "generacion.calculadora": True,
                          "generacion.normalizador_citas": True},
     "entrega": {},  # configs/sistema.json tal cual: debe dar lo mismo que qwen3-8b-agentes
+    # Entrega con Qwen3-Reranker-0.6B (1,2 GB: cabe junto a Qwen3-8B). MMTEB-R 66 frente a 58 de BGE-v2-m3.
+    "entrega-qwen3-reranker": {"recuperacion.reranker": RERANKERS["qwen3-0.6b"]},
     "qwen3-8b-agentes-cerradas": {**QWEN3_DIRECTA, **REFORMULADOR, "recuperacion.expansion_cerradas": True,
                                   "generacion.calculadora": True, "generacion.normalizador_citas": True},
     # Redacción alineada con la métrica de texto libre (politica.INSTRUCCIONES_DIRECTAS); se mide con RAGAS≈.
