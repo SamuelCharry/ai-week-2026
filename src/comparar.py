@@ -114,6 +114,11 @@ def multiagente(segundo, juez=True, opinion=True):
     return {**QWEN3_DIRECTA, "agentes": {"segundo": SEGUNDOS[segundo], "juez_evidencia": juez, "segunda_opinion": opinion}}
 
 
+# Agente reformulador: en cada pregunta de texto libre lista las normas aplicables; se buscan por nombre y sus
+# artículos entran como candidatos al reranker (auditoría: 58 y 247 se pierden antes del reranker).
+REFORMULADOR = {"recuperacion.expansion": "siempre", "recuperacion.agente_expansion": "normas",
+                "recuperacion.expansion_articulos": True, "recuperacion.max_tokens_hipotesis": 120}
+
 # Expansión solo cuando el reranker no encontró nada convincente y la pregunta no nombra una norma del corpus
 # (Adaptive-RAG); en la corrida anterior el criterio "ambos" la activó en 26 de 35 preguntas de texto libre.
 CALIBRADA = {**QWEN3_DIRECTA, "recuperacion.expansion": "debil", "recuperacion.criterio_evidencia_debil": "puntaje",
@@ -156,6 +161,13 @@ VARIANTES_SISTEMA = {
                                          "recuperacion.reranker": RERANKERS["qwen3-0.6b"]},
     # Agente calculadora (generation.calculadora): montos de la pregunta en SMMLV y UVT con los decretos del corpus.
     "qwen3-8b-calculadora": {**QWEN3_DIRECTA, "generacion.calculadora": True},
+    # Ronda 4 (tras la auditoría de fallas): herramientas y reformulador, sobre qwen3-8b-letra-directa.
+    "qwen3-8b-normalizador": {**QWEN3_DIRECTA, "generacion.normalizador_citas": True},
+    "qwen3-8b-reformulador": {**QWEN3_DIRECTA, **REFORMULADOR},
+    "qwen3-8b-agentes": {**QWEN3_DIRECTA, **REFORMULADOR, "generacion.calculadora": True,
+                         "generacion.normalizador_citas": True},
+    "qwen3-8b-agentes-cerradas": {**QWEN3_DIRECTA, **REFORMULADOR, "recuperacion.expansion_cerradas": True,
+                                  "generacion.calculadora": True, "generacion.normalizador_citas": True},
     # Ronda 3: multiagente por etapas sobre qwen3-8b-letra-directa (agent.componentes.preparar_lote).
     "multiagente-llama": multiagente("llama31-8b"),
     "multiagente-llama-juez": multiagente("llama31-8b", opinion=False),

@@ -27,6 +27,10 @@ Pasos opcionales del agente (configs/sistema.json, legalrag.generation.pasos), c
     recuperacion.recuperar_por_opcion            en cerradas, una búsqueda más por opción (retrieval.hibrido)
     generacion.calculadora                       agente calculadora: montos de la pregunta en SMMLV y UVT con los
                                                  decretos y resoluciones del corpus (generation.calculadora)
+    generacion.normalizador_citas                avisa si la pregunta u opción cita una ley con el año equivocado
+                                                 (citations.normalizador)
+    recuperacion.agente_expansion = "normas"     reformulador: lista las normas aplicables; con expansion_articulos
+                                                 sus artículos entran como candidatos al reranker
 
 Multiagente por etapas (`agentes`, ver `preparar_lote` y generation.pasos): un segundo modelo de otra familia
 (≤ 8.000 M) juzga los pasajes (juez_evidencia) y da su probabilidad de cada letra en cerradas (segunda_opinion)
@@ -85,6 +89,10 @@ class Sistema:
             self.calculadora = Calculadora.desde_corpus(
                 self.recuperador.evidencia.documentos.values(),
                 lambda doc_id: (textos / f"{doc_id}.txt").read_text(encoding="utf-8"))
+        self.normalizador = None
+        if self.config["generacion"].get("normalizador_citas"):
+            from legalrag.citations.normalizador import NormalizadorCitas
+            self.normalizador = NormalizadorCitas(self.recuperador.evidencia.documentos.values())
         if not self.config.get("agentes"):  # por etapas, el principal se carga después del segundo agente
             self.decoder.abrir()
         if self.verificador:
@@ -188,7 +196,10 @@ class Sistema:
         self.ultima_expansion = {"motivo": motivo, "puntaje_maximo": max((p["score"] for p in pasajes), default=None)}
         if modo == "debil" and not debil:
             return pasajes
-        hipotesis = self.decoder.redactar(pasos.mensajes_hipotesis(entrada), rec.get("max_tokens_hipotesis", 160))
+        # Agente de expansión: "hipotesis" (HyDE: una respuesta breve) o "normas" (reformulador: lista de normas).
+        mensajes = (pasos.mensajes_reformulador(entrada) if rec.get("agente_expansion") == "normas"
+                    else pasos.mensajes_hipotesis(entrada))
+        hipotesis = self.decoder.redactar(mensajes, rec.get("max_tokens_hipotesis", 160))
         expandidos = self.recuperador.buscar(entrada, expansion=hipotesis)
         self.ultima_expansion.update(hipotesis=hipotesis, docs_antes=[p["doc_id"] for p in pasajes],
                                      docs_despues=[p["doc_id"] for p in expandidos])
@@ -208,8 +219,9 @@ class Sistema:
             return abstencion(entrada, pasajes)
         probabilidades = eleccion = None
         gen = self.config["generacion"]
-        calculadora = getattr(self, "calculadora", None)
-        nota = calculadora.nota(entrada) if calculadora else None  # agente calculadora (generation.calculadora)
+        # Herramientas deterministas: calculadora (montos en SMMLV y UVT) y normalizador de citas (años equivocados).
+        herramientas = [getattr(self, "calculadora", None), getattr(self, "normalizador", None)]
+        nota = "\n\n".join(n for n in (h.nota(entrada) for h in herramientas if h) if n) or None
         con_nota = {"extra": nota} if nota else {}
         modo = gen.get("letra_por_probabilidad")
         prefijo = "{"

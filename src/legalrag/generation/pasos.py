@@ -33,6 +33,23 @@ def mensajes_hipotesis(entrada):
             {"role": "user", "content": f"{INSTRUCCION_HIPOTESIS}\n\nPREGUNTA ({entrada.get('area', '')})\n{pregunta}"}]
 
 
+SISTEMA_REFORMULADOR = ("Eres un abogado colombiano experto en identificar qué normas regulan un caso. Respondes "
+                        "solo con una lista de normas, sin explicaciones.")
+
+
+def mensajes_reformulador(entrada):
+    """Agente reformulador: lista las normas y artículos aplicables, para buscarlos por nombre (como hace el
+    enrutador cuando la pregunta los nombra). La pregunta de un caso («ampliar la avenida 68») rara vez se
+    parece al texto de la norma («acciones populares»)."""
+    opciones = "\n".join(f"{letra}) {texto}" for letra, texto in (entrada.get("opciones") or {}).items())
+    pregunta = entrada["pregunta"].strip() + ("\n" + opciones if opciones else "")
+    return [{"role": "system", "content": SISTEMA_REFORMULADOR},
+            {"role": "user", "content": (
+                f"PREGUNTA ({entrada.get('area', '')})\n{pregunta}\n\nLista las normas colombianas que regulan este "
+                "caso, una por línea, con tipo, número y año, y el artículo cuando lo sepas (por ejemplo: «Ley 472 de "
+                "1998, artículo 2» o «Código General del Proceso, artículo 25»). Máximo 5 líneas, sin explicaciones.")}]
+
+
 def evidencia_debil(pasajes, umbral, normativos=3, criterio="ambos"):
     """(débil, motivo) según CRAG. criterio: "puntaje" (mejor puntaje del reranker bajo el umbral), "normas"
     (ninguna ley, decreto o código entre los primeros) o "ambos" (cualquiera de los dos)."""

@@ -297,16 +297,25 @@ class RecuperadorHibrido:
                 rankings.append(ruta)
                 fijos = [f for doc_id, articulos in nombradas.items() for a in sorted(articulos)
                          for f in self.fragmentos.por_articulo(doc_id, a, 2)][:c.get("max_fijos", 3)]
+        de_expansion = []
         if expansion:
             # Normas que solo nombra la hipótesis: candidatos, sin lugar fijo ni reservado.
-            de_hipotesis = [d for d in self.evidencia.normas_de(expansion) if d not in nombradas]
+            normas_expansion = self.evidencia.normas_de(expansion)
+            de_hipotesis = [d for d in normas_expansion if d not in nombradas]
             if de_hipotesis:
                 rankings.append(self.fragmentos.bm25(texto + " " + expansion, c["bm25_top"], doc_ids=de_hipotesis))
+            if c.get("expansion_articulos"):
+                # Los artículos que nombra el agente entran directo al reranker (no como fijos): si el agente se
+                # equivoca, el reranker los deja fuera. La auditoría mostró que en la 58 y la 247 el reranker sí
+                # aceptaría la norma correcta; lo que faltaba era que llegara a los candidatos.
+                de_expansion = [f for doc_id, articulos in normas_expansion.items() for a in sorted(articulos)
+                                for f in self.fragmentos.por_articulo(doc_id, a, 2)][:c.get("max_articulos_expansion", 6)]
         reservar = c.get("reservar_nombradas", 0) if nombradas else 0
         # Con reserva, los mejores de la búsqueda dentro de la norma nombrada entran siempre al reranker.
         de_ruta = [f for f, _ in ruta[:max(5, 2 * reservar)]] if reservar else []
         candidatos = [f for f, _ in rrf(*rankings, k=max(c["bm25_top"], c["denso_top"]), constante=c["rrf_k"])]
-        candidatos = list(dict.fromkeys(fijos + de_ruta + candidatos))[:c["rerank_top"] + len(fijos) + len(de_ruta)]
+        candidatos = list(dict.fromkeys(fijos + de_ruta + de_expansion + candidatos))[
+            :c["rerank_top"] + len(fijos) + len(de_ruta) + len(de_expansion)]
         if self.reordenador is None or not c.get("usar_reranker", True):
             orden = [(f, 1.0 / (i + 1)) for i, f in enumerate(candidatos)]
             docs = {f["id"]: f["doc_id"] for f in self.fragmentos.filas(candidatos)} if reservar else {}

@@ -177,6 +177,25 @@ class PorOpcion(unittest.TestCase):
         r.ranking(entrada)
         return r.fragmentos.consultas
 
+    def test_articulos_del_reformulador_entran_como_candidatos(self):
+        from legalrag.retrieval.hibrido import RecuperadorHibrido
+
+        class Evidencia:
+            def normas_de(self, texto):
+                return {"ley_472_1998": {"2"}} if "472" in texto else {}
+
+        class ConArticulos(Fragmentos):
+            def por_articulo(self, doc_id, articulo, k=3):
+                return [900]
+
+        r = RecuperadorHibrido(".", {"bm25_top": 5, "denso_top": 5, "rrf_k": 60, "rerank_top": 5, "usar_denso": False,
+                                     "usar_reranker": False, "expansion_articulos": True})
+        r.fragmentos, r.evidencia = ConArticulos(), Evidencia()
+        ranking = r.ranking(ABIERTA, expansion="Ley 472 de 1998, artículo 2")
+        self.assertIn(900, [f for f, _ in ranking])
+        r.config["expansion_articulos"] = False
+        self.assertNotIn(900, [f for f, _ in r.ranking(ABIERTA, expansion="Ley 472 de 1998, artículo 2")])
+
     def test_una_busqueda_por_opcion_en_cerradas(self):
         cerrada = {**CERRADA, "pregunta": "¿Qué vicio configura?", "opciones": {"A": "Falsa motivación", "B": "Usurpación"}}
         consultas = self.ranking(cerrada, recuperar_por_opcion=True)
