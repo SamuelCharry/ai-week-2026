@@ -45,6 +45,16 @@ identificados por hash. Se conservan aparte para auditoría. No se excluye toda
 fuente con notas editoriales ni se asume que una norma derogada carece de utilidad
 para preguntas históricas.
 
+**Fuentes puntuales** ([configs/corpus_puntuales.json](configs/corpus_puntuales.json),
+`python -m legalrag.ingestion.agregar_puntuales`). El diagnóstico de la muestra mostró
+que el corpus usaba valores que no traía: citaba el salario mínimo pero no tenía
+ninguno de los decretos que lo fijan. Se agregan, de fuente oficial, los decretos del
+salario mínimo y del auxilio de transporte de 2015 a 2026, incluidos el 1469/2025
+(suspendido) y el transitorio 0159/2026, y las resoluciones de la UVT de la DIAN del
+mismo periodo. Única excepción al alcance no ambiental: la Resolución 0368 de 2014 del
+Ministerio de Ambiente, porque una pregunta del banco público pide leerla. Se agregan
+al índice existente sin reconstruirlo, y `snapshot.json` registra la ampliación.
+
 La justificación por áreas debe contrastarse con recall de documentos y unidades,
 errores por área/formato y preguntas sin fundamento disponible. El volumen no
 prueba cobertura de vigencia, excepciones, conflictos, precedentes o decisión judicial.

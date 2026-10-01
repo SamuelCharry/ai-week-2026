@@ -10,20 +10,32 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+CAMPOS = ("doc_id", "titulo", "tipo", "numero", "anio", "fuente", "url", "fecha_consulta", "organo_emisor",
+          "areas", "temas", "nivel", "vigencia", "vigencia_fuente", "licencia_fuente", "redistribuir_raw",
+          "edicion_con_anotaciones", "origen_ampliacion", "areas_por_epigrafe", "sha256_texto", "caracteres",
+          "estado_extraccion", "avisos")
+
+
+def fila_inventario(registro, preparado, raiz):
+    """Registro de corpus_manifest.json a partir del de documentos.jsonl."""
+    fila = {k: registro.get(k) for k in CAMPOS}
+    fila["texto_archivo"] = (Path(preparado).relative_to(raiz) / (registro.get("texto_archivo") or "")).as_posix()
+    fila["restricciones_especificas"] = sorted(set(registro.get("pendientes_preparacion", [])))
+    fila["archivos_raw"] = registro["archivos_raw"]
+    return fila
+
+
+def evaluable(registro):
+    return registro["estado_extraccion"] != "error" and registro.get("apta_para_busqueda") is not False
+
+
 def fijar_inventario(preparado, destino, raiz):
     """Inventario evaluable: los documentos extraídos y aptos para búsqueda, con texto y SHA-256."""
-    campos = ("doc_id", "titulo", "tipo", "numero", "anio", "fuente", "url", "fecha_consulta", "organo_emisor",
-              "areas", "temas", "nivel", "vigencia", "vigencia_fuente", "licencia_fuente", "redistribuir_raw",
-              "edicion_con_anotaciones", "origen_ampliacion", "areas_por_epigrafe", "sha256_texto", "caracteres",
-              "estado_extraccion", "avisos")
     elegidos, excluidos, restricciones = [], [], []
     for linea in (preparado / "documentos.jsonl").read_text(encoding="utf-8").splitlines():
         registro = json.loads(linea)
-        fila = {k: registro.get(k) for k in campos}
-        fila["texto_archivo"] = (Path(preparado).relative_to(raiz) / (registro.get("texto_archivo") or "")).as_posix()
-        fila["restricciones_especificas"] = sorted(set(registro.get("pendientes_preparacion", [])))
-        fila["archivos_raw"] = registro["archivos_raw"]
-        if registro["estado_extraccion"] == "error" or registro.get("apta_para_busqueda") is False:
+        fila = fila_inventario(registro, preparado, raiz)
+        if not evaluable(registro):
             excluidos.append(fila)
         else:
             elegidos.append(fila)

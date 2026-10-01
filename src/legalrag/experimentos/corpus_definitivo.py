@@ -135,9 +135,29 @@ def _db():
     return conn
 
 
+INSERT_CHUNK = ("INSERT INTO chunks(doc_id,titulo,tipo,articulo,seccion,unidad_id,unidad_inicio,unidad_fin,inicio,fin,"
+                "texto,texto_busqueda,avisos) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+
+
+def chunk_rows(doc, text):
+    """Filas de `chunks` de un documento (también las usa ingestion.agregar_puntuales)."""
+    from legalrag.preprocessing.ingesta import segmentar_documento
+    rows = []
+    for part in segmentar_documento(doc, text, max_chars=WINDOW_CHARS, solapamiento=OVERLAP_CHARS):
+        if not part["apta_para_busqueda"] or not part["texto"].strip():
+            continue
+        # La cabecera es señal de búsqueda, no se añade al pasaje literal.
+        header = " | ".join(str(x) for x in [doc["titulo"], part.get("seccion"),
+                                     "Artículo " + str(part["articulo"]) if part.get("articulo") else None] if x)
+        rows.append((doc["doc_id"], doc["titulo"], doc["tipo"], part.get("articulo"),
+                     part.get("seccion"), part["unidad_id"], part["unidad_inicio"],
+                     part["unidad_fin"], part["inicio"], part["fin"], part["texto"],
+                     header + "\n" + part["texto"], json.dumps(part["avisos"], ensure_ascii=False)))
+    return rows
+
+
 def build_lexical(force=False, limit_docs=None):
     """Segmentación fuente a fuente; nunca modifica corpus_eval_v1."""
-    from legalrag.preprocessing.ingesta import segmentar_documento
     RUNS.mkdir(parents=True, exist_ok=True)
     marker = RUNS / "chunks_complete.json"
     if marker.exists() and not force:
@@ -168,18 +188,8 @@ def build_lexical(force=False, limit_docs=None):
     t0 = time.perf_counter()
     for i, doc in enumerate(manifest, 1):
         text = (ROOT / doc["texto_archivo"]).read_text(encoding="utf-8")
-        chunks = segmentar_documento(doc, text, max_chars=WINDOW_CHARS, solapamiento=OVERLAP_CHARS)
-        for part in chunks:
-            if not part["apta_para_busqueda"] or not part["texto"].strip():
-                continue
-            # La cabecera es señal de búsqueda, no se añade al pasaje literal.
-            header = " | ".join(str(x) for x in [doc["titulo"], part.get("seccion"),
-                                         "Artículo " + str(part["articulo"]) if part.get("articulo") else None] if x)
-            row = (doc["doc_id"], doc["titulo"], doc["tipo"], part.get("articulo"),
-                   part.get("seccion"), part["unidad_id"], part["unidad_inicio"],
-                   part["unidad_fin"], part["inicio"], part["fin"], part["texto"],
-                   header + "\n" + part["texto"], json.dumps(part["avisos"], ensure_ascii=False))
-            cur = conn.execute("INSERT INTO chunks(doc_id,titulo,tipo,articulo,seccion,unidad_id,unidad_inicio,unidad_fin,inicio,fin,texto,texto_busqueda,avisos) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", row)
+        for row in chunk_rows(doc, text):
+            cur = conn.execute(INSERT_CHUNK, row)
             conn.execute("INSERT INTO fts(rowid,texto_busqueda) VALUES(?,?)", (cur.lastrowid, row[-2]))
             counts["chunks"] += 1
         counts["documentos"] += 1

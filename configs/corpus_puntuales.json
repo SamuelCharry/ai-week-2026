@@ -1,0 +1,614 @@
+{
+ "descripcion": "Fuentes puntuales: normas que fijan valores que las preguntas dan por sabidos (SMMLV, auxilio de transporte, UVT) y normas que una pregunta del banco pide leer. Cada una de fuente oficial; 'clave' es la expresión que su texto debe contener.",
+ "documentos": [
+  {
+   "doc_id": "decreto_2731_2014",
+   "titulo": "Salario mínimo mensual legal para el año 2015",
+   "tipo": "decreto",
+   "numero": "2731",
+   "anio": 2014,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=60319",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2732_2014",
+   "titulo": "Auxilio de transporte para el año 2015",
+   "tipo": "decreto",
+   "numero": "2732",
+   "anio": 2014,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=60326",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2552_2015",
+   "titulo": "Salario mínimo mensual legal para el año 2016",
+   "tipo": "decreto",
+   "numero": "2552",
+   "anio": 2015,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=67555",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2553_2015",
+   "titulo": "Auxilio de transporte para el año 2016",
+   "tipo": "decreto",
+   "numero": "2553",
+   "anio": 2015,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=67556",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2209_2016",
+   "titulo": "Salario mínimo mensual legal para el año 2017",
+   "tipo": "decreto",
+   "numero": "2209",
+   "anio": 2016,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=78793",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2210_2016",
+   "titulo": "Auxilio de transporte para el año 2017",
+   "tipo": "decreto",
+   "numero": "2210",
+   "anio": 2016,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=78794",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2269_2017",
+   "titulo": "Salario mínimo mensual legal para el año 2018",
+   "tipo": "decreto",
+   "numero": "2269",
+   "anio": 2017,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=84939",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2270_2017",
+   "titulo": "Auxilio de transporte para el año 2018",
+   "tipo": "decreto",
+   "numero": "2270",
+   "anio": 2017,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=84859",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2451_2018",
+   "titulo": "Salario mínimo mensual legal para el año 2019",
+   "tipo": "decreto",
+   "numero": "2451",
+   "anio": 2018,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=89971",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2452_2018",
+   "titulo": "Auxilio de transporte para el año 2019",
+   "tipo": "decreto",
+   "numero": "2452",
+   "anio": 2018,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=90182",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2360_2019",
+   "titulo": "Salario mínimo mensual legal para el año 2020",
+   "tipo": "decreto",
+   "numero": "2360",
+   "anio": 2019,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=104493",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2361_2019",
+   "titulo": "Auxilio de transporte para el año 2020",
+   "tipo": "decreto",
+   "numero": "2361",
+   "anio": 2019,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=104512",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_1785_2020",
+   "titulo": "Salario mínimo mensual legal para el año 2021",
+   "tipo": "decreto",
+   "numero": "1785",
+   "anio": 2020,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=154126",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_1786_2020",
+   "titulo": "Auxilio de transporte para el año 2021",
+   "tipo": "decreto",
+   "numero": "1786",
+   "anio": 2020,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=154127",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_1724_2021",
+   "titulo": "Salario mínimo mensual legal para el año 2022",
+   "tipo": "decreto",
+   "numero": "1724",
+   "anio": 2021,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=174267",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_1725_2021",
+   "titulo": "Auxilio de transporte para el año 2022",
+   "tipo": "decreto",
+   "numero": "1725",
+   "anio": 2021,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=174268",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2613_2022",
+   "titulo": "Salario mínimo mensual legal para el año 2023",
+   "tipo": "decreto",
+   "numero": "2613",
+   "anio": 2022,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=200172",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2614_2022",
+   "titulo": "Auxilio de transporte para el año 2023",
+   "tipo": "decreto",
+   "numero": "2614",
+   "anio": 2022,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=200173",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2292_2023",
+   "titulo": "Salario mínimo mensual legal para el año 2024",
+   "tipo": "decreto",
+   "numero": "2292",
+   "anio": 2023,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=227530",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_2293_2023",
+   "titulo": "Auxilio de transporte para el año 2024",
+   "tipo": "decreto",
+   "numero": "2293",
+   "anio": 2023,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=227490",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_1572_2024",
+   "titulo": "Salario mínimo mensual legal para el año 2025",
+   "tipo": "decreto",
+   "numero": "1572",
+   "anio": 2024,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=257156",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_1573_2024",
+   "titulo": "Auxilio de transporte para el año 2025",
+   "tipo": "decreto",
+   "numero": "1573",
+   "anio": 2024,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Departamento Administrativo de la Función Pública - Gestor Normativo",
+   "url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=256836",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_1469_2025",
+   "titulo": "Salario mínimo mensual legal para el año 2026 (suspendido provisionalmente por el Consejo de Estado)",
+   "tipo": "decreto",
+   "numero": "1469",
+   "anio": 2025,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Colpensiones - Compilación normativa",
+   "url": "https://normativa.colpensiones.gov.co/colpens/compilacion/docs/decreto_1469_2025.htm",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_1470_2025",
+   "titulo": "Auxilio de transporte para el año 2026",
+   "tipo": "decreto",
+   "numero": "1470",
+   "anio": 2025,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Colpensiones - Compilación normativa",
+   "url": "https://normativa.colpensiones.gov.co/colpens/compilacion/docs/decreto_1470_2025.htm",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "auxilio\\s+de\\s+transporte",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "decreto_159_2026",
+   "titulo": "Salario mínimo mensual legal fijado transitoriamente para el año 2026",
+   "tipo": "decreto",
+   "numero": "159",
+   "anio": 2026,
+   "organo_emisor": "Presidencia de la República",
+   "fuente": "Colpensiones - Compilación normativa",
+   "url": "https://normativa.colpensiones.gov.co/colpens/compilacion/docs/decreto_0159_2026.htm",
+   "areas": [
+    "Derecho laboral"
+   ],
+   "origen": "valores_anuales",
+   "clave": "salario\\s+m[ií]nimo",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0245_2014",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2015",
+   "tipo": "resolucion",
+   "numero": "245",
+   "anio": 2014,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0245_2014.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0115_2015",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2016",
+   "tipo": "resolucion",
+   "numero": "115",
+   "anio": 2015,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0115_2015.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0071_2016",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2017",
+   "tipo": "resolucion",
+   "numero": "71",
+   "anio": 2016,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0071_2016.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0063_2017",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2018",
+   "tipo": "resolucion",
+   "numero": "63",
+   "anio": 2017,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0063_2017.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0056_2018",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2019",
+   "tipo": "resolucion",
+   "numero": "56",
+   "anio": 2018,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0056_2018.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0084_2019",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2020",
+   "tipo": "resolucion",
+   "numero": "84",
+   "anio": 2019,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0084_2019.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0111_2020",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2021",
+   "tipo": "resolucion",
+   "numero": "111",
+   "anio": 2020,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "Rama Judicial - Sistema de Información Normativa (Diario Oficial 51.528)",
+   "url": "https://sidn.ramajudicial.gov.co/SIDN/NORMATIVA/TEXTOS_COMPLETOS/8_RESOLUCIONES/RESOLUCIONES%202020/DIAN%20Resoluci%C3%B3n%20000111%20(Fija%20el%20valor%20de%20la%20Unidad%20de%20Valor%20Tributario-%20UVT%20aplicable%20para%20el%20a%C3%B1o%202021).pdf",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0140_2021",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2022",
+   "tipo": "resolucion",
+   "numero": "140",
+   "anio": 2021,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0140_2021.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_1264_2022",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2023",
+   "tipo": "resolucion",
+   "numero": "1264",
+   "anio": 2022,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_1264_2022.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0187_2023",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2024",
+   "tipo": "resolucion",
+   "numero": "187",
+   "anio": 2023,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0187_2023.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0193_2024",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2025",
+   "tipo": "resolucion",
+   "numero": "193",
+   "anio": 2024,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0193_2024.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_dian_0238_2025",
+   "titulo": "Valor de la Unidad de Valor Tributario (UVT) para el año 2026",
+   "tipo": "resolucion",
+   "numero": "238",
+   "anio": 2025,
+   "organo_emisor": "Dirección de Impuestos y Aduanas Nacionales",
+   "fuente": "DIAN - Compilación jurídica",
+   "url": "https://normograma.dian.gov.co/dian/compilacion/docs/resolucion_dian_0238_2025.htm",
+   "areas": [
+    "Derecho tributario"
+   ],
+   "origen": "valores_anuales",
+   "clave": "unidad\\s+de\\s+valor\\s+tributario",
+   "min_caracteres": 800
+  },
+  {
+   "doc_id": "resolucion_minambiente_0368_2014",
+   "titulo": "Asunción de competencia del proyecto «Recuperación ambiental del relleno sanitario El Carrasco»",
+   "tipo": "resolucion",
+   "numero": "368",
+   "anio": 2014,
+   "organo_emisor": "Ministerio de Ambiente y Desarrollo Sostenible",
+   "fuente": "Ministerio de Ambiente y Desarrollo Sostenible - Normativa",
+   "url": "https://www.minambiente.gov.co/wp-content/uploads/2021/10/Resolucon-0368-de-2014.pdf",
+   "areas": [
+    "Derecho administrativo"
+   ],
+   "origen": "nombrada_en_pregunta",
+   "clave": "carrasco|relleno\\s+sanitario",
+   "min_caracteres": 800,
+   "excepcion_alcance": "Norma ambiental incluida porque una pregunta del banco público pide su lectura previa (pregunta 748); el resto de lo ambiental sigue fuera del alcance."
+  }
+ ]
+}
