@@ -83,7 +83,8 @@ class DecoderTransformers:
 
     def mensajes(self, entrada, pasajes, evidencia, extra=None):
         """Prompt v04/05; `extra` (p. ej. las verificaciones de CoVe) va justo antes de las instrucciones."""
-        mensajes = politica.mensajes(entrada, pasajes, evidencia, self.config.get("max_caracteres_prompt", 1800))
+        mensajes = politica.mensajes(entrada, pasajes, evidencia, self.config.get("max_caracteres_prompt", 1800),
+                                     self.config.get("estilo"))
         if extra:
             usuario = mensajes[-1]["content"].replace("\nINSTRUCCIONES\n", f"\n{extra}\n\nINSTRUCCIONES\n", 1)
             mensajes = mensajes[:-1] + [{**mensajes[-1], "content": usuario}]

@@ -58,6 +58,28 @@ INSTRUCCIONES = {
     ),
 }
 
+# Estilo "directo": alineado con la métrica de texto libre del evaluador (RAGAS answer correctness contra la
+# respuesta esperada: 0,75 · TP / (TP + 0,5·(FP + FN)) + 0,25 · similitud). Cada afirmación que no responde la
+# pregunta cuenta como FP y resta; responder primero lo que se pregunta asegura los TP. Las normas de respaldo
+# siguen yendo a `referencia_legal` (citas), que el juez no lee.
+INSTRUCCIONES_DIRECTAS = {
+    **INSTRUCCIONES,
+    "semi_open": (
+        "En \"respuesta\" contesta en 2 a 4 oraciones (máximo 120 palabras). La primera oración responde "
+        "directamente lo que se pregunta; las siguientes dan el fundamento principal (norma y artículo de los pasajes). "
+        "No agregues contexto, antecedentes ni salvedades que no respondan la pregunta.\n"
+        "En \"palabras_clave\" da de 3 a 6 términos jurídicos centrales.\n"
+        "En \"referencia_legal\" escribe la norma y el artículo principal."
+    ),
+    "open_ended": (
+        "En \"marco_normativo\" identifica solo las normas que deciden el caso (1 a 2 oraciones).\n"
+        "En \"analisis\" aplica esas normas a los hechos del caso en 4 a 6 oraciones, sin repetir el texto de la norma.\n"
+        "En \"jurisprudencia\" menciona solo sentencias que aparezcan en los pasajes y digan algo sobre el caso; si no "
+        "hay, escribe una oración sobre el criterio aplicable sin inventar números.\n"
+        "En \"conclusion\" responde directamente la pregunta en 1 a 2 oraciones."
+    ),
+}
+
 LONGITUDES = {
     "justificacion": 900, "descarte": 220, "respuesta": 1100, "palabra": 50,
     "referencia_legal": 250, "marco_normativo": 700, "analisis": 1600,
@@ -111,7 +133,7 @@ def bloque_pasajes(pasajes, evidencia, max_caracteres=1800):
     return "\n\n".join(lineas)
 
 
-def mensajes(entrada, pasajes, evidencia, max_caracteres=1800):
+def mensajes(entrada, pasajes, evidencia, max_caracteres=1800, estilo=None):
     formato = entrada["formato"]
     partes = ["PASAJES RECUPERADOS", bloque_pasajes(pasajes, evidencia, max_caracteres) or "(ninguno)", ""]
     tipo = {"multiple_choice": "selección múltiple", "semi_open": "respuesta corta",
@@ -119,7 +141,8 @@ def mensajes(entrada, pasajes, evidencia, max_caracteres=1800):
     partes += [f"PREGUNTA ({tipo}, {entrada.get('area', '')})", entrada["pregunta"].strip()]
     for letra, opcion in (entrada.get("opciones") or {}).items():
         partes.append(f"{letra}) {opcion}")
-    partes += ["", "INSTRUCCIONES", INSTRUCCIONES[formato],
+    instrucciones = INSTRUCCIONES_DIRECTAS if estilo == "directo" else INSTRUCCIONES
+    partes += ["", "INSTRUCCIONES", instrucciones[formato],
                "Responde solo con el objeto JSON, con las claves: " + ", ".join(
                    k for k in esquema(formato, list((entrada.get("opciones") or {"A": 0}).keys()))["properties"]) + "."]
     return [{"role": "system", "content": SISTEMA}, {"role": "user", "content": "\n".join(partes)}]

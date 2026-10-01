@@ -168,6 +168,10 @@ VARIANTES_SISTEMA = {
                          "generacion.normalizador_citas": True},
     "qwen3-8b-agentes-cerradas": {**QWEN3_DIRECTA, **REFORMULADOR, "recuperacion.expansion_cerradas": True,
                                   "generacion.calculadora": True, "generacion.normalizador_citas": True},
+    # Redacción alineada con la métrica de texto libre (politica.INSTRUCCIONES_DIRECTAS); se mide con RAGAS≈.
+    "qwen3-8b-agentes-directo": {**QWEN3_DIRECTA, **REFORMULADOR, "generacion.calculadora": True,
+                                 "generacion.normalizador_citas": True, "generacion.estilo": "directo",
+                                 "generacion.politica.maximo_abiertas": 3},
     # Ronda 3: multiagente por etapas sobre qwen3-8b-letra-directa (agent.componentes.preparar_lote).
     "multiagente-llama": multiagente("llama31-8b"),
     "multiagente-llama-juez": multiagente("llama31-8b", opinion=False),
