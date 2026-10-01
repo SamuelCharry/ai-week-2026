@@ -187,11 +187,15 @@ class Generator:
         try:
             inputs = self.tokenizer.apply_chat_template(
                 messages, add_generation_prompt=True, enable_thinking=enable_thinking,
-                tokenize=True, return_tensors="pt").to("cuda")
+                tokenize=True, return_tensors="pt")
         except TypeError:
             inputs = self.tokenizer.apply_chat_template(
                 messages, add_generation_prompt=True,
-                tokenize=True, return_tensors="pt").to("cuda")
+                tokenize=True, return_tensors="pt")
+        # transformers 5 devuelve un diccionario (input_ids, attention_mask); 4.x, el tensor de ids.
+        if not hasattr(inputs, "shape"):
+            inputs = inputs["input_ids"]
+        inputs = inputs.to("cuda")
         maximum = max_new_tokens or self.config.max_new_tokens
         context_limit = getattr(self.model.config, "max_position_embeddings", 8192)
         if inputs.shape[-1] > self.config.max_input_tokens or inputs.shape[-1] + maximum > context_limit:
