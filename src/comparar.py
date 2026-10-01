@@ -594,7 +594,8 @@ def main():
     ap.add_argument("--recuperacion", action="store_true", help="etapa 1: recuperación sin decoder")
     ap.add_argument("--sistema", action="store_true", help="etapa 2: sistema completo con evaluador oficial")
     ap.add_argument("--encoders", nargs="+", default=list(ENCODERS), choices=list(ENCODERS))
-    ap.add_argument("--variantes", nargs="+", default=["qwen25-7b", "qwen3-4b-2507"], choices=list(VARIANTES_SISTEMA))
+    ap.add_argument("--variantes", nargs="+", default=["qwen3-8b-letra-directa", "entrega"], choices=list(VARIANTES_SISTEMA),
+                    help="por defecto: la base sin agentes y la configuración de entrega (máximo 2 por prueba)")
     ap.add_argument("--ids", nargs="+", type=int, help="solo estas preguntas (prueba corta)")
     ap.add_argument("--ragas", action="store_true", help="incluye el juez de texto libre (OPENROUTER_API_KEY)")
     ap.add_argument("--rerankers", nargs="+", choices=list(RERANKERS),
@@ -611,8 +612,10 @@ def main():
     if args.rerankers:
         comparar_rerankers(config, list(dict.fromkeys(args.rerankers)), args.ids)
     if args.sistema:
-        # Una variante repetida en el comando se corre una sola vez.
-        comparar_sistema(config, list(dict.fromkeys(args.variantes)), args.ids, args.ragas, cache=not args.sin_cache,
+        variantes = list(dict.fromkeys(args.variantes))  # una variante repetida se corre una sola vez
+        if len(variantes) > 2:
+            ap.error("máximo 2 configuraciones por prueba (por ejemplo: qwen3-8b-letra-directa entrega)")
+        comparar_sistema(config, variantes, args.ids, args.ragas, cache=not args.sin_cache,
                          aproximar_ragas=not args.sin_ragas_local)
 
 
