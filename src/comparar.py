@@ -442,7 +442,7 @@ def informe(filas, detalles):
     return "\n".join(l.rstrip() for l in lineas)
 
 
-def comparar_rerankers(config, nombres, ids):
+def comparar_rerankers(config, nombres, ids, lote=16):
     """Etapa 1b: el sistema de recuperación actual con cada reranker, con y sin recuperación por opción.
     Sin decoder, así que el reranker de 4B cabe en la GPU."""
     from legalrag.evaluation.entrega import cargar_jsonl
@@ -463,9 +463,11 @@ def comparar_rerankers(config, nombres, ids):
             if "torch" in sys.modules:
                 sys.modules["torch"].cuda.empty_cache()
             print(f"\n[{nombre}] cargando {RERANKERS[nombre]['repo_id']}...", flush=True)
+            # Sin decoder en la GPU caben lotes más grandes (el sistema usa los de configs/sistema.json).
             recuperador.reordenador = crear_reordenador(RERANKERS[nombre], rec["dtype"], rec["max_tokens_reranker"],
-                                                        rec["lote_reranker"], rec.get("dispositivo", "cuda"))
-            for variante, cambios in (("sistema", {}), ("+por_opcion", {"recuperar_por_opcion": True})):
+                                                        lote, rec.get("dispositivo", "cuda"))
+            # Una sola medición por reranker: la búsqueda por opción ya se descartó (empeoró una cerrada).
+            for variante, cambios in (("sistema", {}),):
                 recuperador.config = {**rec, "reranker": RERANKERS[nombre], **cambios}
                 resultado = evaluar(recuperador, preguntas, recuperador.citaciones)
                 fallan = [d["id"] for d in resultado["detalle"] if not d["respaldo_en_pasajes"]]
@@ -602,6 +604,7 @@ def main():
     ap.add_argument("--ragas", action="store_true", help="incluye el juez de texto libre (OPENROUTER_API_KEY)")
     ap.add_argument("--rerankers", nargs="+", choices=list(RERANKERS),
                     help="etapa 1b: compara rerankers sobre la recuperación del sistema (sin decoder)")
+    ap.add_argument("--lote-reranker", type=int, default=16, help="lote de la etapa 1b (sin decoder caben más)")
     ap.add_argument("--sin-ragas-local", action="store_true", help="no calcula la aproximación local de RAGAS")
     ap.add_argument("--sin-cache", action="store_true",
                     help="genera todo de nuevo en cada variante (por defecto reutiliza generaciones con el mismo prompt)")
@@ -612,7 +615,7 @@ def main():
     if args.recuperacion:
         comparar_recuperacion(config, args.encoders, args.ids)
     if args.rerankers:
-        comparar_rerankers(config, list(dict.fromkeys(args.rerankers)), args.ids)
+        comparar_rerankers(config, list(dict.fromkeys(args.rerankers)), args.ids, args.lote_reranker)
     if args.sistema:
         variantes = list(dict.fromkeys(args.variantes))  # una variante repetida se corre una sola vez
         if len(variantes) > 2:
