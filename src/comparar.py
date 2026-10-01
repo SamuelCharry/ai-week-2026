@@ -262,10 +262,18 @@ NOMBRE_PROBLEMA = {"json_invalido": "JSON inválido", "campos_rellenados": "camp
 
 def evaluador_oficial(config):
     """evaluate.py oficial, sin modificar, para puntuar pregunta por pregunta con sus mismas funciones."""
-    import importlib
+    import importlib.util
 
-    sys.path.insert(0, str(RAIZ / config["oficial"] / "scripts"))
-    return importlib.import_module("evaluate")
+    scripts = RAIZ / config["oficial"] / "scripts"
+    ruta = scripts / "evaluate.py"
+    if not ruta.is_file():
+        sys.exit(f"No está el evaluador oficial en {ruta}.\n¿Se está corriendo en la carpeta correcta del proyecto "
+                 f"(la que tiene data/oficial, el índice y el corpus)? Carpeta actual del proyecto: {RAIZ}")
+    sys.path.insert(0, str(scripts))  # evaluate.py importa sus vecinos citations.py y common.py
+    spec = importlib.util.spec_from_file_location("evaluador_oficial", ruta)
+    modulo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modulo)
+    return modulo
 
 
 def por_pregunta(evaluador, salida, muestra):
