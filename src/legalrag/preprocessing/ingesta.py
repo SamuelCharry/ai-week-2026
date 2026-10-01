@@ -611,7 +611,12 @@ def _unidad(inicio, tipo, articulo=None, seccion=None, avisos=None, candidato=No
 
 def _siguiente(numero, anterior):
     if anterior is None:
-        return numero in {"1", "unico", "transitorio"} or bool(re.fullmatch(r"(?:\d+\.)+1", numero))
+        # Sin artículo previo se acepta también 2 o 3: si el 1 vino entre comillas (el Gestor Normativo marca así
+        # los derogados) se tomaba por cita y la cadena entera quedaba ambigua (Ley 9 de 1989: 0 de 123 artículos).
+        return numero in {"1", "2", "3", "unico", "transitorio"} or bool(re.fullmatch(r"(?:\d+\.)+1", numero))
+    if anterior == "unico":
+        # «ARTÍCULO ÚNICO. Expídese la siguiente codificación…» seguido del articulado del código (Decreto 1056 de 1953).
+        return numero == "1"
     if numero.isdigit() and anterior.isdigit():
         return int(numero) == int(anterior) + 1
     if re.fullmatch(re.escape(anterior) + "A", numero):
