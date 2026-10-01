@@ -119,7 +119,7 @@ class DecoderTransformers:
                 elegidos.append(pasaje)
         return elegidos
 
-    def probabilidades_letras(self, entrada, pasajes, evidencia, prefijo='{"respuesta_correcta": "'):
+    def probabilidades_letras(self, entrada, pasajes, evidencia, prefijo='{"respuesta_correcta": "', extra=None):
         """{letra: probabilidad} del siguiente token tras `prefijo`, normalizada entre las opciones.
 
         El prefijo por defecto pide la letra de entrada; con la justificación ya escrita en el prefijo
@@ -127,20 +127,40 @@ class DecoderTransformers:
         import torch
 
         letras = list((entrada.get("opciones") or {}).keys())
-        entrada_tokens = self._tokens(self.mensajes(entrada, pasajes, evidencia), prefijo)
+        entrada_tokens = self._tokens(self.mensajes(entrada, pasajes, evidencia, extra), prefijo)
         ids = [self._id_letra(prefijo, letra) for letra in letras]
 
         def calcular():
-            tokens = torch.tensor([entrada_tokens], device=self.config.get("dispositivo", "cuda"))
+            return torch.softmax(self._logits_precisos(entrada_tokens, ids), dim=0).tolist()
+
+        probabilidades = self._en_cache(["letras_fp32", list(entrada_tokens), ids], calcular)
+        return dict(zip(letras, probabilidades))
+
+    def _logits_precisos(self, entrada_tokens, ids):
+        """Logits de `ids` en la última posición, con la última capa (lm_head) en float32.
+
+        En bf16 los logits tienen ~3 cifras significativas: en la pregunta 748, A y C quedaron con la misma
+        probabilidad y ganó la A por orden alfabético. Se captura la entrada de lm_head (el estado oculto ya
+        normalizado) y el producto se hace en float32 solo para estos ids."""
+        import torch
+
+        capa = self.modelo.get_output_embeddings()
+        capturado = {}
+        gancho = capa.register_forward_hook(lambda modulo, entrada, salida: capturado.__setitem__("oculto", entrada[0]))
+        tokens = torch.tensor([entrada_tokens], device=self.config.get("dispositivo", "cuda"))
+        try:
             with torch.inference_mode():
                 try:  # solo la última posición: con 10k tokens de contexto, todas pesarían ~3 GB en la GPU
-                    logits = self.modelo(tokens, logits_to_keep=1).logits[0, -1].float()
+                    self.modelo(tokens, logits_to_keep=1)
                 except TypeError:
-                    logits = self.modelo(tokens).logits[0, -1].float()
-            return torch.softmax(logits[ids], dim=0).tolist()
-
-        probabilidades = self._en_cache(["letras", list(entrada_tokens), ids], calcular)
-        return dict(zip(letras, probabilidades))
+                    self.modelo(tokens)
+                oculto = capturado["oculto"][0, -1].float()
+                logits = capa.weight[ids].float() @ oculto
+                if getattr(capa, "bias", None) is not None:
+                    logits = logits + capa.bias[ids].float()
+        finally:
+            gancho.remove()
+        return logits
 
     def probabilidad_si(self, mensajes, si="Sí", no="No"):
         """P(«Sí») frente a «No» como siguiente token de la respuesta: un juicio sin generar texto."""
@@ -150,15 +170,9 @@ class DecoderTransformers:
         ids = [self.tokenizer.encode(palabra, add_special_tokens=False)[0] for palabra in (si, no)]
 
         def calcular():
-            tokens = torch.tensor([entrada_tokens], device=self.config.get("dispositivo", "cuda"))
-            with torch.inference_mode():
-                try:
-                    logits = self.modelo(tokens, logits_to_keep=1).logits[0, -1].float()
-                except TypeError:
-                    logits = self.modelo(tokens).logits[0, -1].float()
-            return torch.softmax(logits[ids], dim=0)[0].item()
+            return torch.softmax(self._logits_precisos(entrada_tokens, ids), dim=0)[0].item()
 
-        return self._en_cache(["si_no", list(entrada_tokens), ids], calcular)
+        return self._en_cache(["si_no_fp32", list(entrada_tokens), ids], calcular)
 
     def generar(self, entrada, pasajes, evidencia, prefijo="{", repetition_penalty=None, extra=None):
         """Objeto JSON de la respuesta. `repetition_penalty` reemplaza el de la configuración (reintento

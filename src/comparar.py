@@ -154,6 +154,8 @@ VARIANTES_SISTEMA = {
                                         "generacion.verificador_nli": VERIFICADOR_NLI},
     "qwen3-8b-calibrada-opciones-rr06": {**CALIBRADA, "recuperacion.recuperar_por_opcion": True,
                                          "recuperacion.reranker": RERANKERS["qwen3-0.6b"]},
+    # Agente calculadora (generation.calculadora): montos de la pregunta en SMMLV y UVT con los decretos del corpus.
+    "qwen3-8b-calculadora": {**QWEN3_DIRECTA, "generacion.calculadora": True},
     # Ronda 3: multiagente por etapas sobre qwen3-8b-letra-directa (agent.componentes.preparar_lote).
     "multiagente-llama": multiagente("llama31-8b"),
     "multiagente-llama-juez": multiagente("llama31-8b", opinion=False),

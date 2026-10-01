@@ -25,6 +25,8 @@ Pasos opcionales del agente (configs/sistema.json, legalrag.generation.pasos), c
     generacion.verificador_nli                   cada oración de texto libre contra los pasajes con un modelo NLI
                                                  pequeño (citations.respaldo_nli); registra o quita las contradichas
     recuperacion.recuperar_por_opcion            en cerradas, una búsqueda más por opción (retrieval.hibrido)
+    generacion.calculadora                       agente calculadora: montos de la pregunta en SMMLV y UVT con los
+                                                 decretos y resoluciones del corpus (generation.calculadora)
 
 Multiagente por etapas (`agentes`, ver `preparar_lote` y generation.pasos): un segundo modelo de otra familia
 (≤ 8.000 M) juzga los pasajes (juez_evidencia) y da su probabilidad de cada letra en cerradas (segunda_opinion)
@@ -76,6 +78,13 @@ class Sistema:
                              .read_text(encoding="utf-8"))
         self.validador = jsonschema.validators.validator_for(esquema)(esquema)
         self.recuperador.abrir()
+        self.calculadora = None
+        if self.config["generacion"].get("calculadora"):
+            from legalrag.generation.calculadora import Calculadora
+            textos = self.recuperador._ruta("textos")
+            self.calculadora = Calculadora.desde_corpus(
+                self.recuperador.evidencia.documentos.values(),
+                lambda doc_id: (textos / f"{doc_id}.txt").read_text(encoding="utf-8"))
         if not self.config.get("agentes"):  # por etapas, el principal se carga después del segundo agente
             self.decoder.abrir()
         if self.verificador:
@@ -148,7 +157,9 @@ class Sistema:
                 if agentes.get("segunda_opinion") and entrada["formato"] == "multiple_choice":
                     usados = segundo.seleccionar(entrada, datos.get("para_prompt") or datos["pasajes"], evidencia)
                     if usados:
-                        datos["letras_segundo"] = segundo.probabilidades_letras(entrada, usados, evidencia)
+                        nota = self.calculadora.nota(entrada) if getattr(self, "calculadora", None) else None
+                        datos["letras_segundo"] = segundo.probabilidades_letras(
+                            entrada, usados, evidencia, **({"extra": nota} if nota else {}))
                 tiempos[entrada["id"]] += time.perf_counter() - inicio
         finally:
             segundo.cerrar()
@@ -197,16 +208,20 @@ class Sistema:
             return abstencion(entrada, pasajes)
         probabilidades = eleccion = None
         gen = self.config["generacion"]
+        calculadora = getattr(self, "calculadora", None)
+        nota = calculadora.nota(entrada) if calculadora else None  # agente calculadora (generation.calculadora)
+        con_nota = {"extra": nota} if nota else {}
         modo = gen.get("letra_por_probabilidad")
         prefijo = "{"
         if entrada["formato"] == "multiple_choice" and modo == "razonada":
             # Primero razona (justificación) y después se comparan las letras con ese razonamiento escrito.
             prefijo = '{"justificacion": "'
-            crudo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo)
+            crudo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo, **con_nota)
             razon = justificacion_de(crudo)
             probabilidades = self.decoder.probabilidades_letras(
                 entrada, usados, evidencia,
-                prefijo='{"justificacion": ' + json.dumps(razon, ensure_ascii=False) + ', "respuesta_correcta": "')
+                prefijo='{"justificacion": ' + json.dumps(razon, ensure_ascii=False) + ', "respuesta_correcta": "',
+                **con_nota)
             probabilidades, letra = self._con_segunda_opinion(etapa, probabilidades)
         elif entrada["formato"] == "multiple_choice" and modo:
             # La letra sale de comparar las opciones sin generar texto; el texto se genera ya con esa letra.
@@ -215,16 +230,16 @@ class Sistema:
                 from legalrag.generation.eleccion import elegir
                 letra, eleccion = elegir(
                     lambda opciones: self.decoder.probabilidades_letras({**entrada, "opciones": opciones}, usados,
-                                                                        evidencia),
+                                                                        evidencia, **con_nota),
                     entrada["opciones"], gen.get("permutar_opciones", False), gen.get("descarte_mantener", 0))
                 probabilidades = eleccion.get("final", eleccion["promedio"])
             else:
-                probabilidades = self.decoder.probabilidades_letras(entrada, usados, evidencia)
+                probabilidades = self.decoder.probabilidades_letras(entrada, usados, evidencia, **con_nota)
             probabilidades, letra = self._con_segunda_opinion(etapa, probabilidades)
             prefijo = f'{{"respuesta_correcta": "{letra}", "justificacion": "'
-            crudo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo)
+            crudo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo, **con_nota)
         else:
-            crudo = self.decoder.generar(entrada, usados, evidencia)
+            crudo = self.decoder.generar(entrada, usados, evidencia, **con_nota)
         # Con entregar_todos, la evidencia entregada son los pasajes recuperados completos (máx. 10), aunque el
         # prompt solo haya usado los que caben: el respaldo de citas y el fundamento se miden sobre ellos.
         entregados = pasajes[:10] if gen.get("entregar_todos") or etapa.get("para_prompt") else usados
@@ -238,7 +253,8 @@ class Sistema:
                 and registro["problema"] != "json_invalido":
             # CoVe factorizado: preguntas desde el borrador, respuestas solo con los pasajes, y respuesta de nuevo.
             verificacion = self._verificar(entrada, usados, evidencia, respuesta)
-            nuevo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo, extra=verificacion["bloque"])
+            nuevo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo,
+                                         extra="\n\n".join(b for b in (nota, verificacion["bloque"]) if b) or None)
             respuesta_v, registro_v = final(nuevo)
             verificacion["aceptada"] = gravedad(registro_v["problema"]) <= gravedad(registro["problema"])
             if verificacion["aceptada"]:
@@ -247,7 +263,7 @@ class Sistema:
         if gen.get("regenerar_json") and gravedad(registro["problema"]) >= 1:
             # Greedy repite la misma salida: el reintento cambia la penalización de repetición (los JSON
             # inválidos casi siempre son bucles que agotan los tokens).
-            nuevo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo,
+            nuevo = self.decoder.generar(entrada, usados, evidencia, prefijo=prefijo, **con_nota,
                                          repetition_penalty=gen.get("repetition_penalty_reintento", 1.3))
             respuesta_r, registro_r = final(nuevo)
             reintento = {"problema_antes": registro["problema"], "problema_despues": registro_r["problema"]}
@@ -266,7 +282,7 @@ class Sistema:
                                 "expansion": self.ultima_expansion, "verificacion": verificacion,
                                 "reintento_json": reintento, "verificacion_nli": nli,
                                 "juez_evidencia": etapa.get("juez"), "letras_segundo": etapa.get("letras_segundo"),
-                                "letras_principal": etapa.get("letras_principal")}
+                                "letras_principal": etapa.get("letras_principal"), "calculadora": nota}
         return respuesta
 
     def _con_segunda_opinion(self, etapa, probabilidades):
